@@ -2,7 +2,7 @@
 // page and copied into Godot's in-memory file system under /tlcweb/ (scripts/web_assets.gd). Each one is stored
 // as WebP: "cardimages/BT01-001.png" -> assets/cardimages/BT01-001.webp -> /tlcweb/cardimages/BT01-001.webp.
 (function () {
-  const done = {};
+  const done = {}, pending = {};
   let manText = null;
   const webp = (rel) => rel.replace(/\.(png|jpe?g|webp)$/i, '.webp');
   const fsPath = (rel) => '/tlcweb/' + webp(rel);
@@ -35,17 +35,18 @@
       for (let i = 0; i < s.length; i++) b[i] = s.charCodeAt(i) & 255;
       return put(rel, b);
     },
-    isDone(rel) { return !!done[rel]; },
+    isDone(rel) { return rel in done; }, // downloaded, or failed (then getSync tries once more)
     // background downloads, a few at a time
     prefetch(rels) {
-      const q = rels.filter((r) => !done[r]);
+      const q = rels.filter((r) => !done[r] && !pending[r]);
+      q.forEach((r) => (pending[r] = true));
       let busy = 0;
       const next = () => {
         while (busy < 6 && q.length) {
           const rel = q.shift();
           busy++;
           fetch(url(rel)).then((r) => (r.ok ? r.arrayBuffer() : null)).then((buf) => { if (buf && !done[rel]) put(rel, new Uint8Array(buf)); })
-            .catch(() => {}).finally(() => { busy--; next(); });
+            .catch(() => {}).finally(() => { delete pending[rel]; if (!done[rel]) done[rel] = ''; busy--; next(); });
         }
       };
       next();
