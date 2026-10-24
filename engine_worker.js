@@ -1,0 +1,1 @@
+(()=>{self.onmessage=s=>{let n=s.data;if(!n||!n.init)return;self.onmessage=null;let e=globalThis;e.__TLC_VFS=n.vfs,e.__TLC_WD=n.init,e.__TLC_BOX=new Int32Array(n.init.box,0,2),e.__TLC_BOXB=new Uint8Array(n.init.box),self.importScripts("engine_game.js")};})();
