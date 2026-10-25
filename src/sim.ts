@@ -163,7 +163,8 @@ export function validateDeck(d: any, defs: Map<string, Def>): string[] {
   // copy limit per card name across main + side (LIFE is checked on its own)
   for (const [nm, xs] of [['Main + Side', [...main, ...side]], ['LIFE', life]] as [string, Def[]][]) {
     const cnt = new Map<string, { n: number; lim: number }>();
-    for (const x of xs) { const e = cnt.get(x.name) || { n: 0, lim: x.limit ?? 4 }; e.n++; e.lim = Math.max(e.lim, x.limit ?? 4); cnt.set(x.name, e); }
+    // bugfix1 item 3 (user): a LIFE set holds 5 different cards (1 copy per name)
+    for (const x of xs) { const l0 = nm === 'LIFE' ? 1 : x.limit ?? 4; const e = cnt.get(x.name) || { n: 0, lim: l0 }; e.n++; e.lim = Math.max(e.lim, l0); cnt.set(x.name, e); }
     for (const [name, e] of cnt) if (e.n > e.lim) errs.push(`${nm}: ${e.n} copies of ${name}; the limit is ${e.lim} per card name.`);
   }
   // "#" deck-building rules

@@ -739,9 +739,10 @@ Object.assign(FX, {
       const t = best(P(g, s.ctrl).avatars.filter((a) => !hasKw(g, a, 'unite')), (a) => (a.asleep ? 0 : 3) + power(g, a));
       if (t) { grantKw(g, t, 'unite'); log(g, `บิฟร็อสต์: ${t.def.name} gains สามัคคี until end of turn`); }
     },
-    onMilled: (g, c, p) => {
-      const src = currentSource();
-      const ok = !!src && (src.def.type === 'Magic' || (isA(src) && hasSym(g, src, 'เทพ') && hasColor(src, 'ม่วง')));
+    // bugfix1 item 8 (user): onMilled runs after the milling ability ends, so the miller comes from info.src (was currentSource)
+    onMilled: (g, c, p, v, info) => {
+      const src = info ? info.src : currentSource();
+      const ok = (!!info && info.duringMagic) || (!!src && (src.def.type === 'Magic' || (isA(src) && hasSym(g, src, 'เทพ') && hasColor(src, 'ม่วง'))));
       if (ok && P(g, p).hell.includes(c)) { if (addToHand(g, c, p, { from: 'hell' })) log(g, 'บิฟร็อสต์ returns to hand'); }
     },
   },

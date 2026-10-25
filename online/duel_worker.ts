@@ -450,6 +450,7 @@ setPay((g, p, cost, cands, dflt, forCard) => {
   const mask = ask(p, {
     type: 'pay', title: `Pay ${cost} GEM${forCard ? ' for ' + forCard.def.name : ''}: click cards in your hand`,
     cost, for: forCard ? forCard.uid : null, def,
+    forColor: forCard ? colorsEn(forCard).join('/') : '', // bugfix1 item 1: "#" extra colours (เตียวเลี้ยว is blue + purple)
     req: reqOf(g, forCard),
     options: cands.map((c) => ({ ...brief(g, c), gem: gemOf(g, c, forCard), gemColor: gemColorOf(g, c, forCard), label: `${c.def.name} · GEM ${gemOf(g, c, forCard)} ${gemColorOf(g, c, forCard)}` })),
     pass: 'Cancel',

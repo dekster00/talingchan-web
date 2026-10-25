@@ -6,6 +6,7 @@ import { canChangeCtrl, takeControl, grantKw, landIs as landOn, isLandOn, placeL
 import type { Fx, HandAct } from '../cards.ts';
 import { FX, value, best, worst, pickN, worstN, mayDo, chooseMode, oppChoice, oppTargets, sacrifice, search, inMain, cancel } from '../cards.ts';
 import { costFirst } from '../cards.ts'; // other-team audit Q9
+import { emit, askChoose } from '../engine.ts'; // bugfix1
 import {
   P, opp, power, draw, destroy, toHell, toHand, discard, detach, summon, shuffle, mill,
   nameHas, canPlaceAvatar, critical, onceUsed, markOnce, keepValue, log, findCard, fx, rand,
@@ -303,8 +304,14 @@ const G3: Record<string, Fx> = {
     keep: 0.5,
     usedAsCost: (g, p, c, s) => {
       if (!colorIs(s, 'ม่วง')) return;
+      // bugfix1 item 12 (user): show the scouted card and let the owner choose top or Hell (was a silent bot pick)
       const pl = P(g, p); const top = pl.deck[0];
-      if (top && keepValue(g, top) < 3) { pl.deck.shift(); pl.hell.push(top); }
+      if (!top) return;
+      const msg = `P${p} วิไลวรรณ แม่แบงค์: สอดแนม 1 = ${top.def.name}`;
+      log(g, msg);
+      emit(g, { ev: 'reveal', who: p, cards: [{ uid: top.uid, print: top.def.print, name: top.def.name }], s: msg });
+      const k = decide(g, p, () => askChoose(g, `วิไลวรรณ แม่แบงค์: สอดแนม 1 = ${top.def.name}`, ['Keep on top of Deck · ไว้บนสุดของ Deck', 'Send to Hell · ส่งลงนรก'], keepValue(g, top) < 3 ? 1 : 0));
+      if (k === 1 && pl.deck[0] === top) { pl.deck.shift(); pl.hell.push(top); emit(g, { ev: 'mill', who: p, uid: top.uid, print: top.def.print, name: top.def.name, i: 1, n: 1 }); }
     },
   },
   'นายนิรยบาล หมอ': {

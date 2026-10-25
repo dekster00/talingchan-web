@@ -2,6 +2,7 @@
 // Card effects live in cards.ts; decisions are delegated to a Brain (bot.ts).
 import type { Card, Def, Game, Player, PID, MagicKind, Life, GemColor, LifeSpec } from './types.ts';
 import { FX, value, worstN } from './cards.ts';
+import type { HandAct } from './cards.ts'; // bugfix1
 import './cards2.ts';
 import './fx/index.ts';
 import { hasSymbol, hasName, viewCost, bindGame, bindCard, originZone, noteOrigin } from './view.ts'; // v14 core-view
@@ -382,8 +383,31 @@ export function findCard(g: Game, uid: number): Card | null {
   if (g.land && g.land.uid === uid) return g.land;
   return null;
 }
-export function onceUsed(g: Game, pl: Player, key: string) { return pl.once[key] === g.turn; }
-export function markOnce(g: Game, pl: Player, key: string) { pl.once[key] = g.turn; }
+export function onceUsed(g: Game, pl: Player, key: string) { return pl.once[onceK(key)] === g.turn; }
+export function markOnce(g: Game, pl: Player, key: string) { pl.once[onceK(key)] = g.turn; }
+// bugfix1 item 11 (user): "เทิร์นละครั้ง" on a field ability is once per COPY (two ซีกรุน may each use theirs), unless the
+// text limits the name ("ชื่อนี้"). The fx files key once() by name; while a field ability is checked (learn) or run, the
+// keys its can() checks get the card's uid added.
+const ONCE_CARD: Card[] = [];
+const ONCE_KEYS = new Map<string, Set<string>>();
+const PER_COPY = new Map<string, boolean>();
+let ONCE_LEARN = false;
+function perCopy(c: Card): boolean {
+  let v = PER_COPY.get(c.def.name);
+  if (v === undefined) { const t = cardText(c).replace(/\s+/g, ' '); v = /เทิร์นละ\s*ครั้ง/.test(t) && !/ชื่อนี้|ชื่อเดียวกัน/.test(t); PER_COPY.set(c.def.name, v); }
+  return v;
+}
+function onceK(key: string): string {
+  const c = ONCE_CARD[ONCE_CARD.length - 1];
+  if (!c || !perCopy(c)) return key;
+  let s = ONCE_KEYS.get(c.def.name);
+  if (ONCE_LEARN) { if (!s) ONCE_KEYS.set(c.def.name, (s = new Set())); s.add(key); }
+  return s && s.has(key) ? key + '#' + c.uid : key;
+}
+function withOnceCard<T>(c: Card, learn: boolean, fn: () => T): T {
+  const l0 = ONCE_LEARN; ONCE_CARD.push(c); ONCE_LEARN = learn;
+  try { return fn(); } finally { ONCE_CARD.pop(); ONCE_LEARN = l0; }
+}
 
 // ---------- power ----------
 export function power(g: Game, c: Card): number {
@@ -959,7 +983,8 @@ function respondIn(g: Game, ev: Ev) {
     for (const c of pay) payCard(g, r, c, null);
     detach(g, choice);
     (pl.resolving ||= []).push(choice);
-    if (!f.react.ignoreLimit) { if (!f.react.noLimit) useMagicSlot(g, r, choice); else pl.used.React = true; } // simplify1
+    // bugfix1 item 6 (user): อย่าให้มีครั้งที่ 2 is only free as the 2nd React; used first it takes this turn's React slot
+    if (!f.react.ignoreLimit || !pl.used.React) { if (!f.react.noLimit) useMagicSlot(g, r, choice); else pl.used.React = true; } // simplify1
     if (f.react.onceKey) markOnce(g, pl, f.react.onceKey);
     log(g, `P${r} reacts with ${choice.def.name}`);
     // "when we use a Magic" abilities also see React Magic used in a response window
@@ -1229,7 +1254,7 @@ export function mainActs(g: Game, p: PID): Act[] {
   for (const c of fieldCards) {
     const f = fx(c);
     if (c.def.exactKw && isAvatarDef(c.def) && !c.f.exact) continue; // พอดี abilities need an exact payment
-    if (f && f.fieldActs && !silenced(g, c) && abilityAllowed(g, p, c)) f.fieldActs(g, p, c).forEach((a, i) => { if (a.can(g) && !(c.f['neg:' + i] === g.turn && actOnce(c, i))) acts.push({ k: 'field', uid: c.uid, opt: i, label: a.label }); });
+    if (f && f.fieldActs && !silenced(g, c) && abilityAllowed(g, p, c)) f.fieldActs(g, p, c).forEach((a, i) => { if (withOnceCard(c, true, () => a.can(g)) && !(c.f['neg:' + i] === g.turn && actOnce(c, i))) acts.push({ k: 'field', uid: c.uid, opt: i, label: a.label }); });
   }
   acts.push(...linkActs(g, p)); // v14 features item 2: Link action
   const seen = new Set<string>();
@@ -1278,7 +1303,11 @@ function doActBody(g: Game, p: PID, a: Act): boolean {
   const f = fx(c);
   const list = a.k === 'hand' ? f.handActs!(g, p, c) : a.k === 'hell' ? f.hellActs!(g, p, c) : a.k === 'exile' ? f.exileActs!(g, p, c) : f.fieldActs!(g, p, c);
   const x = list[a.opt];
-  if (!x || !quiet(() => x.can(g))) return false;
+  if (a.k === 'field') return withOnceCard(c, false, () => runAct(g, p, a, c, x));
+  return runAct(g, p, a, c, x);
+}
+function runAct(g: Game, p: PID, a: Act, c: Card, x: HandAct): boolean {
+  if (!(a.k === 'field' ? withOnceCard(c, true, () => quiet(() => x.can(g))) : quiet(() => x.can(g)))) return false;
   log(g, x.label);
   // v13 (สั่งใช้ ruling): an Activate ability of a card in play opens the opponent's React window before it resolves
   if (a.k === 'field' && !g.sim) {
@@ -1413,10 +1442,11 @@ function attackBody(g: Game, p: PID, att: Card, target: Card | null, unite: Card
     hitLife(g, o, att);
     if (g.winner === null) respond(g, { kind: 'lifeHit', actor: p, source: att, target: null, cancelled: false, depth: 0 }); // v14 window
   } else {
-    for (const [a, b] of [[att, target], [target, att]] as [Card, Card][]) {
-      const f = fx(a); if (f && f.battle && !silenced(g, a)) decide(g, a.ctrl, () => f.battle!(g, a, b));
-      for (const m of a.mods) { const mf = fx(m); if (mf && mf.wearerBattle) decide(g, a.ctrl, () => mf.wearerBattle!(g, m, a, b)); }
-    }
+    // bugfix1 item 10 (user): worn cards' fight effects first (มีมมิ นักเรียนดีเด่น turns the foe purple), then the fighters'
+    // own (เซอร์นัท ดาบแห่งแสงอรุณ +3 vs purple sees it)
+    const pairs = [[att, target], [target, att]] as [Card, Card][];
+    for (const [a, b] of pairs) for (const m of a.mods) { const mf = fx(m); if (mf && mf.wearerBattle) decide(g, a.ctrl, () => mf.wearerBattle!(g, m, a, b)); }
+    for (const [a, b] of pairs) { const f = fx(a); if (f && f.battle && !silenced(g, a)) decide(g, a.ctrl, () => f.battle!(g, a, b)); }
     // React windows during the fight: defender first, then attacker
     const e1: Ev = { kind: 'fight', actor: p, source: att, target, cancelled: false, depth: 0 };
     respond(g, e1);

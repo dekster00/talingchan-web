@@ -820,8 +820,13 @@ const NEW: Record<string, Fx> = {
   'ไอ้นัท - คนบ้าจั่ว': { keep: 3.5, onAttack: (g, c) => { if (once(g, c.ctrl, 'natdraw:' + c.uid)) { markOnce(g, P(g, c.ctrl), 'natdraw:' + c.uid); draw(g, c.ctrl, 1); } } },
   'ไอ้นัท คนข้ามเวลา': {
     keep: 3,
-    fieldActs: (g, p, c) => [act('ไอ้นัท: attach ไอ้นัท from hell', (g2) => inMain(g2, p) && once(g2, p, 'nattime') && hellAvatars(g2, p, (x) => named(x, 'ไอ้นัท') && x.def.name !== c.def.name).length > 0,
-      (g2) => { markOnce(g2, P(g2, p), 'nattime'); const n = best(hellAvatars(g2, p, (x) => named(x, 'ไอ้นัท') && x.def.name !== c.def.name), (x) => x.def.power); if (n) attach(g2, n, c); })],
+    // bugfix1 item 9 (user): worn by เซอร์นัท (who gets the worn ไอ้นัท's abilities) it can be used, and the ไอ้นัท goes on เซอร์นัท
+    fieldActs: (g, p, c) => {
+      const host = (g2: Game) => (c.wearer >= 0 ? findCard(g2, c.wearer) : P(g2, p).avatars.includes(c) ? c : null);
+      const hostOk = (g2: Game) => { const h = host(g2); return !!h && (h === c || (P(g2, p).avatars.includes(h) && named(h, 'เซอร์นัท') && !silenced(g2, h))); };
+      return [act('ไอ้นัท คนข้ามเวลา: attach a ไอ้นัท from your Hell', (g2) => inMain(g2, p) && hostOk(g2) && once(g2, p, 'nattime') && hellAvatars(g2, p, (x) => named(x, 'ไอ้นัท') && x.def.name !== c.def.name).length > 0,
+        (g2) => { markOnce(g2, P(g2, p), 'nattime'); const h = host(g2); const n = best(hellAvatars(g2, p, (x) => named(x, 'ไอ้นัท') && x.def.name !== c.def.name), (x) => x.def.power); if (n && h) attach(g2, n, h); })];
+    },
   },
   'มีมมิ นักเรียนดีเด่น': {
     keep: 1.5, costOnlyFor: NAT,
