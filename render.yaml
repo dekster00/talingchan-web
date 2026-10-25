@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: talingchan-online
+    runtime: docker
+    plan: free
+    healthCheckPath: /online/ping
+    autoDeploy: true

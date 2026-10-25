@@ -1,0 +1,5846 @@
+{
+ "BT01-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT01-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT02-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT03-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-012": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT03-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT03-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-036": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT03-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-039": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT03-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT03-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-007": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT04-008": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT04-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-011": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT04-012": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT04-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT04-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-018": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT04-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-020": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-021": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-022": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-023": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-028": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-031": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-032": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-036": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT04-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-038": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-047": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-049": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-052": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-053": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT04-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-055": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-056": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT04-057": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT04-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT04-059": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT04-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-007": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT05-008": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT05-009": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT05-010": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT05-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-017": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT05-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-019": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT05-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT05-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-024": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT05-025": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT05-026": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT05-027": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT05-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-035": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-036": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-038": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-045": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT05-046": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT05-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-051": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT05-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-053": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT05-054": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-055": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-067": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT05-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT05-070": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-002": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-003": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-009": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-013": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT06-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT06-016": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT06-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT06-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-023": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT06-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-027": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT06-028": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT06-029": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT06-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-032": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-036": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-038": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-042": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT06-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-049": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-052": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT06-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-054": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-056": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-062": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT06-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT06-069": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT06-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-002": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT07-003": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT07-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-006": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT07-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-012": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-013": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-016": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-017": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-018": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-019": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-021": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-024": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-025": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-026": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-029": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-030": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-031": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-037": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-038": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-044": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT07-045": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-046": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-047": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-050": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-051": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-052": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-053": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-060": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-062": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-063": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-064": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT07-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-068": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT07-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-071": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT07-072": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT07-073": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-002": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-003": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-007": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-011": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT08-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-013": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-019": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-022": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-024": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-025": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-026": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-027": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-033": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-037": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-041": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-043": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-045": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-046": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-051": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-052": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-053": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-058": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT08-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-062": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT08-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-064": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT08-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT08-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT09-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT09-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-012": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-013": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-018": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-025": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT09-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-036": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-037": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-038": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-041": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-043": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-044": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-045": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT09-046": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT09-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-048": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-049": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT09-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-059": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-060": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-071": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT09-072": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-073": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-074": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT09-075": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-006": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-012": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-016": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-017": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-018": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-019": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-021": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-022": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-025": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-026": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-027": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-028": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-029": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-031": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-033": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-037": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-040": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-041": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-044": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-051": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-052": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT10-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-054": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-058": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-059": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-061": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-063": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-064": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-065": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT10-066": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT10-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-068": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT10-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-071": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-072": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-073": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT10-074": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-006": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-009": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-010": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-016": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-017": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-021": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-022": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-023": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-036": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-037": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-038": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-040": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-041": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-043": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-046": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-048": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-049": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-050": {
+  "gemColor": "red/blue",
+  "req": null
+ },
+ "BT11-051": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT11-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-055": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-059": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-060": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-069": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT11-070": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT11-071": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-072": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT11-073": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT11-074": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC01-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-002": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-003": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-006": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC01-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-009": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC01-010": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC01-011": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "CC01-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-015": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "CC01-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-019": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC01-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-040": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "CC01-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-044": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC01-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-049": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC01-050": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC01-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC01-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC02-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC02-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-010": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC02-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-015": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "CC02-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-019": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC02-020": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC02-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-025": {
+  "gemColor": "red",
+  "req": null
+ },
+ "CC02-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-031": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "CC02-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-036": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "CC02-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC02-040": {
+  "gemColor": "green",
+  "req": null
+ },
+ "CC02-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "CC02-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "FPRO-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "FPRO-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "FPRO-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "FPRO-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "FPRO-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "FPRO-006": {
+  "gemColor": "green",
+  "req": null
+ },
+ "FPRO-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD00-00A": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD00-00B": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD00-00C": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD00-00D": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-002": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD01-003": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD01-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD01-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD01-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-007": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD01-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-014": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "KD02-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD03-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-008": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-010": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-012": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-014": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-016": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-017": {
+  "gemColor": "red",
+  "req": null
+ },
+ "KD04-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD04-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-061": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-069": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-071": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-072": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-073": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-074": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-075": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-076": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-077": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-078": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-079": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-080": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-081": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-082": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-083": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-084": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-085": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-086": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-087": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-088": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-089": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "ODY1-090": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-001-2": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRE0-005-2": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-015": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-022": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-024": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-027": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-029": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-033": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-035": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-036": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-039": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-040": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-046": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-047": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-049": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-052": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-055": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-0562": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-058": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-060": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-061": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-062": {
+  "gemColor": "red",
+  "req": null
+ },
+ "PRMO-063": {
+  "gemColor": "red",
+  "req": null
+ },
+ "PRMO-064": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-069": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-070": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-071": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-072": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-073": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-074": {
+  "gemColor": "red",
+  "req": null
+ },
+ "PRMO-075": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-076": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-077": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-078": {
+  "gemColor": "red",
+  "req": null
+ },
+ "PRMO-079": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-083": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-084": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-085": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-086": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-087": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-088": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-089": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-090": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-091": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-095": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-096": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-100": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-101": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-102": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-103": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-104": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-105": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-106": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-107": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-108": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-109": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-110": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-114": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-115": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-118": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-119": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD01-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD02-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD03-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-008": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD04-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-012": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD04-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD04-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-007": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-008": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-009": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-011": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-012": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-013": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD05-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD05-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-007": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-011": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-012": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-013": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SD06-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD06-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD07-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-003": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-005": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-006": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-007": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-008": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-009": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-010": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-011": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-017": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD08-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD08-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SD09-001": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-002": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-003": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-004": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-005": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-006": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-007": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-008": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-009": {
+  "gemColor": "green",
+  "req": null
+ },
+ "SD09-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-015": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SD09-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL02-001": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SL02-002": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SL02-003": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SL02-004": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL02-005": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "SL02-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL02-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL02-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "SL02-009": {
+  "gemColor": "red",
+  "req": null
+ },
+ "SL02-010": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-009": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-010": {
+  "gemColor": "red/blue",
+  "req": null
+ },
+ "BT12-011": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-014": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-016": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-019": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-027": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-028": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-033": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-040": {
+  "gemColor": "purple/green",
+  "req": null
+ },
+ "BT12-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-043": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-048": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-049": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-050": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-064": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-065": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-068": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-074": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT12-076": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-001": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-002": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-003": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-004": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-005": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-006": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-008": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-009": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-010": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-011": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-012": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-013": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-014": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-015": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "RM01-016": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-017": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-018": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-019": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "RM01-020": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "RM01-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-022": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "RM01-023": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-024": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-026": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-027": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-028": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-029": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-031": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-032": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-033": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-034": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-035": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-036": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-037": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-038": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-039": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-040": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-041": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-042": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-043": {
+  "gemColor": "green",
+  "req": null
+ },
+ "RM01-044": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-045": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-046": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "RM01-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-048": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-049": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-050": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "RM01-051": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-052": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-053": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-054": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-055": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-057": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-058": {
+  "gemColor": "red",
+  "req": null
+ },
+ "RM01-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "RM01-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "KD02-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-005": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-007": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-020": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-056": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-072": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-092": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-093": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-094": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-111": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-112": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-113": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-116": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-117": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT12-024": {
+  "gemColor": "blue",
+  "req": null
+ }
+}

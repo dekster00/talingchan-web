@@ -1,0 +1,26 @@
+{
+  "_about": "Short button / popup labels from v14/choice-labels.xlsx (v14/tools/import_choice_labels.py). Format: engine/src/labels.ts",
+  "พรของอิศวร": {
+    "cast:0": "จั่วการ์ด",
+    "cast:1": "ทำลาย",
+    "cast:2": "เก็บการ์ด"
+  },
+  "เลือกมันสำหรับพวก จน !!!": {
+    "cast:0": "เลือกจากนรก",
+    "cast:1": "เลือกจากเด็ค"
+  },
+  "พี่หน่วงเพชรฆาตโซเชียล": {
+    "field:0": "สอดแนม 5",
+    "field:1": "switch side"
+  },
+  "Skill : Full Drive": {
+    "cast:0": "เด็ค",
+    "cast:1": "นรก"
+  },
+  "ผู้โดยสาร Super Air": {
+    "text:ผู้โดยสาร Super Air: destroy it instead of เครื่องบิน Super Air?": {
+      "th": "ทำลายผู้โดยสาร Super Air แทนเครื่องบิน?",
+      "en": "Destroy a passenger instead of the plane?"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+# World chat word filter (one per line). Thai words match anywhere; English words match whole words.
+# A line starting with ! is an allowed word that contains a bad word (it is never starred).
+# Server admins can add more in DATA_DIR/badwords.txt and reload with /online/admin {op:"reloadwords"}.
+ควย
+เย็ด
+เหี้ย
+!เหี้ยม
+สัส
+สัด
+!สัดส่วน
+!สัตว์
+ส้นตีน
+ไอ้สัตว์
+อีสัตว์
+อีดอก
+อีตอแหล
+ตอแหล
+ระยำ
+จัญไร
+ชาติหมา
+แม่มึงตาย
+พ่อมึงตาย
+หน้าหี
+หี
+!หีบ
+กะหรี่
+แตด
+fuck
+fck
+fuk
+shit
+bitch
+cunt
+dick
+pussy
+asshole
+bastard
+motherfucker
+nigger
+nigga
+faggot
+retard
+whore
+slut
