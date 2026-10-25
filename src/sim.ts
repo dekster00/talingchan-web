@@ -149,7 +149,9 @@ export function validateDeck(d: any, defs: Map<string, Def>): string[] {
   const main = part('main'), life = part('life'), side = part('side');
   const only = main.filter((x) => x.only);
   if (main.length !== 50) errs.push(`Main deck has ${main.length} cards; it must have exactly 50 (49 + 1 Only #1).`);
-  if (only.length !== 1) errs.push(`Main deck has ${only.length} "Only #1" cards; it must have exactly 1.`);
+  // 2026-10-25 (user): พระไตรปิฎก is the one Only #1 card that may take up to 3 slots (its own "#" line allows 3 copies)
+  const onlyMax = only.length > 0 && only.every((x) => x.name === 'พระไตรปิฎก') ? 3 : 1;
+  if (only.length < 1 || only.length > onlyMax) errs.push(onlyMax === 3 ? `Main deck has ${only.length} พระไตรปิฎก; it may have 1 to 3.` : `Main deck has ${only.length} "Only #1" cards; it must have exactly 1.`);
   const bad = main.filter((x) => x.type === 'Life');
   const tok = [...main, ...life, ...side].filter((x) => x.type === 'Token'); // v14: Token cards (BT12-076) are summoned by effects only
   if (tok.length) errs.push(`Token cards can't be put in a deck (${[...new Set(tok.map((x) => x.print))].join(', ')}).`);
@@ -173,6 +175,45 @@ export function validateDeck(d: any, defs: Map<string, Def>): string[] {
     if (bad2.length) errs.push(`เพมมุ ยอดมนุษย์: no other คน / ต่างชาติ Avatars allowed (${bad2.slice(0, 5).join(', ')}${bad2.length > 5 ? '…' : ''}).`);
   }
   if (main.some((x) => x.name === 'พญายม With The Shotgun') && !main.some((x) => x.name === 'สุวาน')) errs.push('พญายม With The Shotgun: the deck must also hold 1 สุวาน.');
+  for (const e of banlistErrors(all)) errs.push(e);
+  return errs;
+}
+
+// ---------- official ban list (data/banlist.json, from the user's picture; 2026-10-25 = August 69) ----------
+// banned: 0 copies; limit1 / limit2: max copies per card name (Main + Side); pickOne: only one of the two names in a deck;
+// onlyRules: when the deck holds that Only #1 card, every Avatar (or the deck's Only #1) must pass the check.
+export const BANLIST_FILE = path.resolve(ROOT, 'data/banlist.json');
+let BAN: any = null, TEXTS: Map<string, string> | null = null;
+export function banlist(): any {
+  if (BAN) return BAN;
+  try { BAN = JSON.parse(fs.readFileSync(BANLIST_FILE, 'utf8')); } catch { BAN = { banned: [], limit1: [], limit2: [], pickOne: [], onlyRules: [] }; }
+  return BAN;
+}
+const textOf = (x: Def) => {
+  if (!TEXTS) { TEXTS = new Map(); for (const c of JSON.parse(fs.readFileSync(CARDS, 'utf8'))) if (!TEXTS.has(c.code)) TEXTS.set(c.code, String(c.effect || '')); }
+  return TEXTS.get(x.print) || '';
+};
+const hasSym = (x: Def, s: string) => x.symbol === s || (x.syms || []).includes(s);
+export function banlistErrors(cards: Def[]): string[] {
+  const b = banlist(), errs: string[] = [], tag = b.name ? ` (${b.name})` : '';
+  const cnt = new Map<string, number>();
+  for (const x of cards) cnt.set(x.name, (cnt.get(x.name) || 0) + 1);
+  // an entry is a name or a list of names of one card (spelling variants share the limit)
+  const sum = (e: string | string[]) => ([] as string[]).concat(e).reduce((n, x) => n + (cnt.get(x) || 0), 0);
+  const nm = (e: string | string[]) => ([] as string[]).concat(e)[0];
+  for (const e of b.banned || []) if (sum(e)) errs.push(`${nm(e)} is banned${tag}.`);
+  for (const [k, lim] of [['limit1', 1], ['limit2', 2]] as [string, number][]) for (const e of b[k] || []) if (sum(e) > lim) errs.push(`${nm(e)}: ${sum(e)} copies; the ban list allows ${lim}${tag}.`);
+  for (const pr of b.pickOne || []) if (pr.every((n: string) => cnt.get(n))) errs.push(`Pick one: ${pr.join(' or ')}, not both${tag}.`);
+  for (const r of b.onlyRules || []) {
+    if (!cnt.get(r.only)) continue;
+    const avs = cards.filter((x) => x.type === 'Avatar');
+    let bad: string[] = [];
+    if (r.check === 'avatarNameOrText') bad = avs.filter((x) => !x.name.includes(r.value) && !(x.aka || []).some((a) => a.includes(r.value)) && !textOf(x).includes(r.value)).map((x) => x.name);
+    else if (r.check === 'avatarSymbolOrText') bad = avs.filter((x) => !hasSym(x, r.value) && !new RegExp(`\\{\\s*[Ss]ymbol\\s+${r.value}\\s*\\}`).test(textOf(x))).map((x) => x.name);
+    else if (r.check === 'onlySymbol') bad = cards.filter((x) => x.only && !hasSym(x, r.value)).map((x) => x.name);
+    bad = [...new Set(bad)];
+    if (bad.length) errs.push(`${r.only}: ${r.text} Not allowed: ${bad.slice(0, 5).join(', ')}${bad.length > 5 ? '…' : ''}${tag}.`);
+  }
   return errs;
 }
 

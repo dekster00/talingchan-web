@@ -16,7 +16,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { Worker, MessageChannel } from 'node:worker_threads';
-import { CARDS, loadDefs, loadDeck, validateDeck } from '../src/sim.ts';
+import { CARDS, loadDefs, loadDeck, validateDeck, banlistErrors } from '../src/sim.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -58,6 +58,9 @@ function cleanDeck(d: any): { deck?: any; error?: string; warnings?: string[] } 
   const deck: any = { name: String(d.name || 'deck').slice(0, 40), main: part(d.main || d.cards), life: part(d.life), side: part(d.side) };
   if (d.art && typeof d.art === 'object') { deck.art = {}; for (const k of Object.keys(d.art).slice(0, 80)) deck.art[String(k)] = String(d.art[k]).slice(0, 8); }
   try { loadDeck(deck, DEFS); } catch (e) { return { error: (e as Error).message }; }
+  // 2026-10-25 (user): PvP follows the official ban list; a deck that breaks it can't be used
+  const ban = banlistErrors([...deck.main, ...deck.side].flatMap((c: any) => Array(c.qty).fill(DEFS.get(c.print)).filter(Boolean)));
+  if (ban.length) return { error: 'Ban list: ' + ban.join(' ') };
   // no LIFE deck = the default LIFE deck is used, so that note is left out
   return { deck, warnings: validateDeck(deck, DEFS).filter((w) => !/^LIFE deck has 0 cards/.test(w)) };
 }
@@ -105,7 +108,7 @@ function appendJsonl(file: string, o: any) { try { fs.appendFileSync(path.join(D
 
 // ---------------------------------------------------------------- users
 type User = {
-  id: string; token: string; name: string; discord?: string; ip: string; seen: number; room: string | null;
+  id: string; token: string; name: string; avatar?: string; discord?: string; ip: string; seen: number; room: string | null;
   sent: number[]; strikes: number; muteMsg: number;
 };
 const USERS = new Map<string, User>(); // token -> user
@@ -118,11 +121,13 @@ setInterval(() => {
   if (!usersDirty) return;
   usersDirty = false;
   const keep = [...USERS.values()].filter((u) => u.seen === 0 || Date.now() - u.seen < 30 * 864e5).slice(-5000);
-  try { fs.writeFileSync(path.join(DATA, 'users.json'), JSON.stringify(keep.map(({ id, token, name, discord }) => ({ id, token, name, discord })))); } catch (e) { console.error(e); }
+  try { fs.writeFileSync(path.join(DATA, 'users.json'), JSON.stringify(keep.map(({ id, token, name, avatar, discord }) => ({ id, token, name, avatar, discord })))); } catch (e) { console.error(e); }
 }, 5000).unref();
 const online = () => [...USERS.values()].filter((u) => Date.now() - u.seen < 60000);
 const mutedUntil = (u: User) => Number(MOD.muted[u.id] || 0);
-const pub = (u: User | undefined | null) => (u ? { id: u.id, name: u.name } : null);
+const pub = (u: User | undefined | null) => (u ? { id: u.id, name: u.name, avatar: u.avatar || '' } : null);
+// profile picture: a character id like "c07" (the game shows that character's face)
+const cleanAvatar = (a: any) => { const s = String(a ?? '').toLowerCase(); return /^[a-z0-9_]{1,12}$/.test(s) ? s : ''; };
 function uniqueName(want: string, self?: User): string {
   const taken = (n: string) => online().some((u) => u !== self && u.name.toLowerCase() === n.toLowerCase());
   if (!taken(want)) return want;
@@ -166,7 +171,7 @@ function newCode(): string {
 const seatOf = (r: Room, u: User) => r.seats.findIndex((s) => s && s.user === u.id);
 function roomBrief(r: Room) {
   return {
-    code: r.priv ? '' : r.code, name: r.name, host: BY_ID.get(r.host)?.name || '', locked: !!r.password, bo3: r.bo3,
+    code: r.priv ? '' : r.code, name: r.name, host: BY_ID.get(r.host)?.name || '', hostAvatar: BY_ID.get(r.host)?.avatar || '', locked: !!r.password, bo3: r.bo3,
     players: r.seats.filter(Boolean).map((s) => BY_ID.get(s!.user)?.name || '?'), status: r.duel && !r.duel.ended ? 'playing' : 'waiting',
     full: r.seats.every(Boolean),
   };
@@ -176,7 +181,7 @@ function roomDetail(r: Room, me: User) {
   const d = r.duel;
   return {
     code: r.code, name: r.name, host: r.host, hostName: BY_ID.get(r.host)?.name || '', locked: !!r.password, priv: r.priv, bo3: r.bo3,
-    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
+    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
     score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games,
     chat: r.chat.slice(-50), last: r.last ? { ...r.last, youWon: r.last.winnerId === me.id } : null,
     duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine] } : null,
@@ -417,7 +422,7 @@ function report(u: User, msgId: number, reason: string) {
 function lobbyView(u: User, chatFrom: number) {
   const r = u.room ? ROOMS.get(u.room) : null;
   return {
-    v: LV, version: VERSION, me: { id: u.id, name: u.name, muted: Math.max(0, mutedUntil(u) - Date.now()), discord: !!u.discord },
+    v: LV, version: VERSION, me: { id: u.id, name: u.name, avatar: u.avatar || '', muted: Math.max(0, mutedUntil(u) - Date.now()), discord: !!u.discord },
     online: online().length, rooms: [...ROOMS.values()].filter((x) => !x.priv || x === r).map(roomBrief).slice(0, 200),
     chat: WORLD.filter((m) => m.id > chatFrom).slice(-100), room: r ? roomDetail(r, u) : null,
     turnSec: TURN_SEC, reactSec: REACT_SEC, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL),
@@ -459,6 +464,7 @@ http.createServer(async (req, res) => {
       if (old) {
         if (MOD.banned[old.id]) return send(res, 403, { error: 'This account is banned from online play.' });
         old.seen = Date.now(); old.ip = ip;
+        if (cleanAvatar(b.avatar)) { old.avatar = cleanAvatar(b.avatar); usersDirty = true; }
         if (b.name && !old.discord) { const nm = filterText(cleanLine(b.name, 16)); if (nm.length >= 2 && !nm.includes('*')) old.name = uniqueName(nm, old); usersDirty = true; }
         return send(res, 200, { ok: true, token: old.token, id: old.id, name: old.name });
       }
@@ -467,6 +473,7 @@ http.createServer(async (req, res) => {
       if ([...nm].length < 2) return send(res, 400, { error: 'Pick a name of 2 to 16 characters. · ตั้งชื่อ 2-16 ตัวอักษร' });
       if (filterText(nm) !== nm) return send(res, 400, { error: 'Pick another name. · กรุณาเปลี่ยนชื่อ' });
       const u = login(nm, ip);
+      u.avatar = cleanAvatar(b.avatar);
       bump();
       return send(res, 200, { ok: true, token: u.token, id: u.id, name: u.name });
     }
@@ -550,7 +557,7 @@ http.createServer(async (req, res) => {
       const c = cleanDeck(b.deck);
       if (c.error) return send(res, 400, { error: c.error });
       const s = room.seats[mySeat]!;
-      s.deck = c.deck; s.deckName = c.deck.name; s.warnings = c.warnings || []; s.ready = false; s.char = cleanLine(b.char, 12);
+      s.deck = c.deck; s.deckName = c.deck.name; s.warnings = c.warnings || []; s.ready = false; s.char = cleanAvatar(b.char) || u.avatar || '';
       bump();
       return send(res, 200, { ok: true, warnings: s.warnings });
     }
