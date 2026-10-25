@@ -2,6 +2,13 @@
 // COOP/COEP headers, so Godot's service worker (index.service.worker.js, which adds them) is installed and the page
 // reloads once. Godot's own shell only does this for threaded exports, so the web build does it here.
 (function () {
+  // a new deploy: the new service worker takes over at once (build_web.py) while this page still runs the old
+  // game files, so load the page again once
+  if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+    let done = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => { if (!done) { done = true; window.location.reload(); } });
+    navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {}); // look for a new deploy now
+  }
   if (window.crossOriginIsolated || !('serviceWorker' in navigator) || !window.isSecureContext) return;
   let tries = 0;
   try { tries = Number(sessionStorage.getItem('tlcCoiReload') || 0); } catch (e) {}
