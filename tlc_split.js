@@ -3,12 +3,16 @@
 // Godot loader asks for index.pck / index.wasm. The hash in the names changes every build, so the parts can be cached
 // for good. build_web.py fills in PARTS.
 (function () {
-  const PARTS = {"index.pck": {"size": 87988004, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.be0f422994.pck.0", "parts/index.be0f422994.pck.1", "parts/index.be0f422994.pck.2", "parts/index.be0f422994.pck.3", "parts/index.be0f422994.pck.4"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.158ae7bc07.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
+  const PARTS = {"index.pck": {"size": 55766880, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.1d63977421.pck.0", "parts/index.1d63977421.pck.1", "parts/index.1d63977421.pck.2"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.ceb5fd2045.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
   const orig = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
     const e = PARTS[url.split('?')[0].split('/').pop()];
     if (!e) return orig(input, init);
+    // tlc_mobile.js holds the download after a crash on a phone until the player taps Try again
+    return (window.tlcGate || Promise.resolve()).then(() => join(e));
+  };
+  function join(e) {
     const resps = e.parts.map((p) => orig(p, { credentials: 'same-origin' }));
     return resps[0].then((r0) => {
       if (!r0.ok) return r0;
@@ -29,5 +33,5 @@
       if (e.gzip) body = body.pipeThrough(new DecompressionStream('gzip'));
       return new Response(body, { status: 200, headers: { 'Content-Type': e.type, 'Content-Length': String(e.size) } });
     });
-  };
+  }
 })();
