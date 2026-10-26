@@ -60,6 +60,11 @@ const humanTop = () => HUMANS.has(topDecider());
 export function askSeat(): number { for (let i = DECIDER.length - 1; i >= 0; i--) if (HUMANS.has(DECIDER[i])) return DECIDER[i]; return ASK_FOR; }
 /** True when the human player is the one deciding right now (play mode). */
 export function humanDeciding(g: Game) { return !!ASK && !g.sim && humanTop(); }
+/** bugfix2 item 4 (user, แอสการ์ด): a Land's canCast is mostly the bot's "is it worth it" check; a human may always place a
+ *  Land while they do not already own the one in the Land zone. */
+export function humanLand(g: Game, p: number, c: Card) { return c.def.type === 'Magic' && c.def.subtype === 'Land' && humanSeat(g, p) && !(g.land && g.land.owner === p); }
+/** bugfix2: p is a human seat in the real game (also inside quiet(), e.g. while the Main menu is listed). */
+export function humanSeat(g: Game, p: number) { return !!ASK && !g.sim && HUMANS.has(p); }
 // optional: the human may also choose none (returns null); the bot's default is dflt.
 /** Run fn with p as the deciding player (the human is asked only in the real game, never in a look-ahead copy). */
 export function decide<T>(g: Game, p: number, fn: () => T): T { return withDecider(g.sim ? -1 : p, fn); }
@@ -1166,7 +1171,7 @@ export function castMagic(g: Game, p: PID, c: Card, opt: number): boolean {
   const pl = P(g, p);
   const kind = c.def.subtype as MagicKind;
   if (!f || !magicSlotFree(g, p, c) || !castAllowed(g, p, c)) return false; // v14: cast rules; simplify1: RuleDef.extraMagic
-  if (f.canCast && !quiet(() => f.canCast!(g, p, c, opt))) return false;
+  if (f.canCast && !quiet(() => f.canCast!(g, p, c, opt)) && !humanLand(g, p, c)) return false;
   const cost = costOf(g, p, c);
   const pay = choosePayment(g, p, cost, [c], c);
   if (!pay) return false;
@@ -1244,12 +1249,12 @@ export function mainActs(g: Game, p: PID): Act[] {
       if (kind === 'Land' && lands(g).some((l) => fx(l)?.lockLand)) continue;
       if (bestPayment(g, p, costOf(g, p, c), [c], c) === null) continue;
       const n = f.options || 1;
-      for (let o = 0; o < n; o++) if (!f.canCast || f.canCast(g, p, c, o)) acts.push({ k: 'cast', uid: c.uid, opt: o, label: `cast ${c.def.name} ${o}` });
+      for (let o = 0; o < n; o++) if (!f.canCast || f.canCast(g, p, c, o) || humanLand(g, p, c)) acts.push({ k: 'cast', uid: c.uid, opt: o, label: `cast ${c.def.name} ${o}` });
     }
   }
   const fieldCards: Card[] = [...pl.avatars];
   for (const a of pl.avatars) fieldCards.push(...a.mods.filter((m) => m.owner === p));
-  if (g.land && g.land.owner === p) fieldCards.push(g.land);
+  if (g.land) fieldCards.push(g.land); // bugfix2 item 7 (user): the shared Land's abilities can be used by both players
   fieldCards.push(...pl.mz);
   for (const c of fieldCards) {
     const f = fx(c);

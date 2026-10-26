@@ -57,7 +57,7 @@ function cv(g: Game, c: Card): any {
     const bt = buffTargetOf(g, c); if (bt) { v.buffTo = bt.uid; v.buffKind = c.f.buffK === 1 ? 'unity' : 'backstab'; } // v14 features item 9: this helper's pending buff goes to that uid
     const pb = c.temp.filter((t) => !!t.buff); if (pb.length) v.buffs = pb.map((t) => ({ from: t.buff, amount: t.power }));
   }
-  if (c.owner === VIEW || c.ctrl === VIEW) v.act = CURS[VIEW].field.has(c.uid);
+  if (c.owner === VIEW || c.ctrl === VIEW || CURS[VIEW].field.has(c.uid)) v.act = CURS[VIEW].field.has(c.uid); // bugfix2: the opponent's Land too
   // v14 view: what differs from the printed card (symbols, names, cost, GET texts, origin tag, notes); absent = nothing
   const vw = cardView(g, c);
   if (vw) v.vw = vw;

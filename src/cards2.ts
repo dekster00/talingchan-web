@@ -19,7 +19,7 @@ import {
   P, opp, power, draw, destroy, toHell, toHand, toExile, discard, detach, summon, shuffle, mill,
   nameHas, canPlaceAvatar, flippedLife, onceUsed, markOnce, keepValue, log, findCard, fx, rand,
   bestPayment, choosePayment, costOf, hitLife, silenced, critical,
-  symIs, symAny, colorIs, scoutDeck, putBottom, silenceFull, summonExact, colorsEn, arrangeTopBottom, decide, humanDeciding
+  symIs, symAny, colorIs, scoutDeck, putBottom, silenceFull, summonExact, colorsEn, arrangeTopBottom, decide, humanDeciding, humanSeat
 } from './engine.ts';
 
 // ---------- helpers ----------
@@ -240,6 +240,7 @@ const NEW: Record<string, Fx> = {
     resolve: (g, p) => { mill(g, p, 3); draw(g, p, distinctNames(hellAvatars(g, p, (x) => symIs(x, 'นรก'))) >= 5 ? 2 : 1); },
     onMilled: (g, c, p) => { // optional: only exile it when there is a นายนิรยบาล to summon
       if (!canPlaceAvatar(P(g, p)) || !hellAvatars(g, p, (x) => named(x, 'นายนิรยบาล')).length) return;
+      if (!mayDo(g, c, 'exile it to summon a นายนิรยบาล from Hell', true)) return; // bugfix2 item 3 (user): "สามารถ" = you choose
       toExile(g, c); fromZoneSummon(g, p, P(g, p).hell, (x) => named(x, 'นายนิรยบาล'));
     },
   },
@@ -267,7 +268,8 @@ const NEW: Record<string, Fx> = {
   'ไวรัสแห่งความเป็นไปได้ ครีปเปอร์': virus({
     keep: 5,
     onAttack: (g, c) => {
-      if (!once(g, c.ctrl, 'creeper')) return; markOnce(g, P(g, c.ctrl), 'creeper');
+      // bugfix2 item 2 (user): once per turn per ครีปเปอร์ (three of them each trigger)
+      if (!once(g, c.ctrl, 'creeper:' + c.uid)) return; markOnce(g, P(g, c.ctrl), 'creeper:' + c.uid);
       if (allMill(g, c.ctrl, 3) >= 4) { const t = pickN(P(g, opp(c.ctrl)).avatars, 1, (a) => value(g, a), { optional: true, title: 'ครีปเปอร์: you may make 1 opposing Avatar lose its abilities, POWER 0' })[0]; if (t) { t.silencedTurn = g.turn; boost(t, -t.def.power); } } // bugs7 item 7: "สามารถ" = optional
     },
   }),
@@ -524,7 +526,8 @@ const NEW: Record<string, Fx> = {
   },
   'แอสการ์ดคือสถานที่ไม่ใช่ผู้คน': {
     keep: 3,
-    canCast: (g, p) => (!g.land || g.land.owner !== p) && (P(g, p).avatars.some((a) => a.def.name.includes('นนทก')) || P(g, opp(p)).avatars.some((a) => a.asleep && a.def.cost <= 3)),
+    // bugfix2 item 4 (user): it can always be placed (the bot still waits for a use: canCast is also its play check)
+    canCast: (g, p) => (!g.land || g.land.owner !== p) && (humanSeat(g, p) || P(g, p).avatars.some((a) => a.def.name.includes('นนทก')) || P(g, opp(p)).avatars.some((a) => a.asleep && a.def.cost <= 3)),
     fieldActs: (g, p, c) => [act('แอสการ์ด: borrow a sleeping Avatar', (g2) => inMain(g2, p) && once(g2, p, 'asgard') && P(g2, p).hand.length >= 1 && canPlaceAvatar(P(g2, p))
       && P(g2, opp(p)).avatars.some((a) => a.asleep && a.def.cost <= 3),
     (g2) => {

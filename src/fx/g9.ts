@@ -152,7 +152,9 @@ function lowered(g: Game, w: Card): number {
     return n;
   } finally { LOW_BUSY--; }
 }
-const oppMzAvatars = (g: Game, p: PID) => P(g, opp(p)).mz.filter(isA);
+// bugfix2 item 5 (user): a Construct (it fights like an Avatar) in the Magic Zone counts as "Avatar บน Magic Zone"
+const mzAvatar = (c: Card) => isA(c) || c.def.type === 'Construct';
+const oppMzAvatars = (g: Game, p: PID) => P(g, opp(p)).mz.filter(mzAvatar);
 // กุนซือลงสนาม BT12-055
 function onlyGenerals(g: Game, p: PID) {
   const pl = P(g, p);
@@ -372,7 +374,7 @@ Object.assign(FX, {
     })],
     onAnyLeave: (g: Game, self: Card, gone: Card, info: any) => {
       const p = self.ctrl;
-      if (!P(g, p).avatars.includes(self) || !self.asleep || info.zone !== 'mz' || !isA(gone) || info.ctrl !== opp(p)) return;
+      if (!P(g, p).avatars.includes(self) || !self.asleep || info.zone !== 'mz' || !mzAvatar(gone) || info.ctrl !== opp(p)) return;
       if (info.how !== 'destroy') return;
       if (!once(g, p, 'akasW:' + self.uid)) return;
       use(g, p, 'akasW:' + self.uid); self.asleep = false;
@@ -420,9 +422,18 @@ Object.assign(FX, {
     // "ไม่รับผลความสามารถจากการ์ด {symbol นรก}" (v14d shieldFrom: POWER changes, being chosen, being removed)
     shieldFrom: (g: Game, self: Card, t: Card, src: Card) => t.mods.includes(self) && him(t) && src !== t && symIs(src, 'นรก'),
     leaveGuard: (g: Game, self: Card, t: Card, info: any) => {
+      // bugfix2 item 1 (user): "นำการ์ดใบนี้กลับเข้า Deck แทนการถูกทำลาย" = this card goes back into the Deck instead of to
+      // Hell; the wearer is still destroyed (ฮิมไลน์ is saved only once per summon, by its own ability)
       if (t.uid !== self.wearer || !t.mods.includes(self)) return null;
-      if (info.how === 'destroy') return { optional: false, label: `return ${self.def.name} to the Deck instead`, run: () => toDeck(g, self, 'shuffle', { cost: true }) };
+      self.f.deckOnDrop = info.how === 'destroy' ? g.turn : 0;
       return null;
+    },
+    onWearerLeave: (g: Game, m: Card) => {
+      if (m.f.deckOnDrop !== g.turn) return false;
+      m.f.deckOnDrop = 0;
+      const pl = P(g, m.owner); pl.deck.push(m); shuffle(g, pl.deck);
+      log(g, `${m.def.name} goes back into the Deck (shuffled) instead of to Hell`);
+      return true;
     },
     getFor: (g: Game, self: Card, t: Card) => t.mods.includes(self) && him(t) && 'แอสคาลอน: POWER +2 vs {นรก}, ไม่รับผลการ์ด {นรก}',
   },
