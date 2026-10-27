@@ -23,28 +23,69 @@ export function botNoSummon(c: Card | null): boolean { return !!c && (c.def.name
 // bot games use it); Hard holds React cards for big moments, guards its LIFE and weighs threats more; Easy plays loosely.
 export type Level = 'easy' | 'normal' | 'hard';
 export const LEVELS: Level[] = ['easy', 'normal', 'hard'];
-interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean }
-const TUNE: Record<Level, Tune> = {
-  easy: { depth: 1, beam: 0, lifeW: 7, exposeW: 0.5, noise: 3, stopChance: 0.2, reactHold: 0, reactSkip: 0.5, lifeGuard: false },
-  normal: { depth: 1, beam: 0, lifeW: 7, exposeW: 1, noise: 0, stopChance: 0, reactHold: 0, reactSkip: 0, lifeGuard: false },
-  hard: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true },
+// pro (2026-10-26, user's Thai pro playbook + the "How to Counter" guides): LIFE pacing (take the opponent to 3 LIFE,
+// then only push on for the kill), key-unit priorities for attacks and React cards, a small opening board (1-2 Avatars)
+// against one-turn kills, hand building, and fair look-ahead (its own draws and the opponent's hidden cards are
+// shuffled in every look-ahead copy, so it never plans with cards it could not know).
+interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean; pro: boolean; handW: number; fair?: boolean; samples?: number; curve?: boolean; threatW?: number; landW?: number; opening?: boolean; reactPro?: boolean }
+const TUNE: Record<string, Tune> = {
+  easy: { depth: 1, beam: 0, lifeW: 7, exposeW: 0.5, noise: 3, stopChance: 0.2, reactHold: 0, reactSkip: 0.5, lifeGuard: false, pro: false, handW: 0.6 },
+  normal: { depth: 1, beam: 0, lifeW: 7, exposeW: 1, noise: 0, stopChance: 0, reactHold: 0, reactSkip: 0, lifeGuard: false, pro: false, handW: 0.6 },
+  hard: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: true, handW: 0.8, fair: true, curve: true, threatW: 1, landW: 1, opening: true, reactPro: true, samples: 3 },
+  hard0: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: false, handW: 0.6 }, // the Hard of 2026-10-21 (tests)
 };
+TUNE.hard0f = { ...TUNE.hard0, fair: true }; // tests: the old Hard without peeking
+// tests only: BOT_X='{"fair":true,...}' makes level hardx = hard0 plus those settings (node; never in the browser)
+try { const x = (globalThis as any).process?.env?.BOT_X; if (x) TUNE.hardx = { ...TUNE.hard0, ...JSON.parse(x) }; } catch { /* no env */ }
+
+// Key units of the meta decks (what pros remove first) and how much more they are worth than their stats say.
+const THREAT: Record<string, number> = {
+  'นินจาไร้นาม': 3, 'ฟูมะ นินจาแห่งสายลม': 4, 'ชิโยเมะ นินจาสาว': 3, 'โกเอมอน นินจาจอมโจร': 3,
+  'ไวรัสแห่งความเป็นไปได้ ครีปเปอร์': 4, 'ไวรัสแห่งการช่วงชิง โทรจัน': 3, 'ไวรัสแห่งการแพร่เชื้อ บลาสเตอร์': 2,
+  'วันชัยเปรตรุ่นพ่อ': 3, 'วันชัย พ่อบุญลือ': 3, 'น้องนาว ชู้วันชัย': 3, 'บุญลือ วีรบุรุษเปรต': 2,
+  'เซอร์นัท ดาบแห่งแสงอรุณ': 4, 'เซอร์นัท ผู้นำแห่งอัศวินตลิ่งชัน': 4, 'เลอร์ติ๊ก สหายอัศวินตลิ่งชัน': 3, 'ไอ้นัท - คนบ้าจั่ว': 3, 'ไอ้นัท คนข้ามเวลา': 2,
+  'พญายักษ์ ทศกัณฐ์': 4, 'กุมภกรรณ ทดน้ำ': 3, 'พิเภก': 3, 'มณโฑ ราชินีเหล่ายักษ์': 3, 'นางมณโฑ': 2, 'ท้าวเวสสุวรรณ': 3,
+  'เจค นักฆ่ามือเก๋า': 3, 'พาลี วานรแห่งเมืองขีดขิน': 3, 'ศาสตราจารย์วานร': 3, 'ปีศาจแห่งพันรเลือด เมฟิสโตเฟเลส': 5,
+  'อีสานสลิงเกอร์ เปอร์': 2,
+  // big Magic worth a cancel
+  'เมตตาระยะยาว': 6, 'เลือกมันสำหรับพวก จน !!!': 3, 'สัญญาเลือด': 3,
+};
+// Lands that run a deck's engine: worth removing (ไต้ฝุ่น) and worth keeping
+const KEY_LAND = new Set(['ด่านตรวจเข้าเมือง', 'หมู่บ้านเห็ด', 'โคกอีสานนูน', 'พิภพรัททาทุย']);
+export const threatOf = (c: Card | null | undefined): number => (c ? THREAT[c.def.name] || 0 : 0);
+// The opponent's LIFE as the pros count it: 1-3 face up is the target; the 4th and 5th only matter on the way to the
+// kill (each LIFE card hit gives its owner an effect and cards, and at 4 face up เลือกจน gets better).
+const PRO_LIFE = [0, 7, 14, 21, 22.5, 24];
 let T: Tune = TUNE.normal; // the tuning of the brain that is thinking right now (set by each Brain call)
 // the bot's own dice for Easy's sloppiness: never the game's rng, so look-ahead and replays stay identical
 let botSeed = 12345;
 function botRand(): number { botSeed = (botSeed * 1103515245 + 12345) & 0x7fffffff; return botSeed / 0x7fffffff; }
+// the face-down LIFE cards change places among themselves (face-up ones stay where they are)
+function shuffleDown(life: Card[]) { const idx = life.map((l, i) => (l.faceUp ? -1 : i)).filter((i) => i >= 0); const cs = idx.map((i) => life[i]); shuffleBot(cs); idx.forEach((i, k) => { life[i] = cs[k]; }); }
+function shuffleBot<X>(a: X[]) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(botRand() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } }
+// A look-ahead copy. Pro: no peeking: its own deck order and the opponent's hand and deck order are shuffled.
+// Every copy made for one decision gets the same hidden-card order (common random numbers), so candidate moves are
+// compared on equal luck rather than on who happened to draw well in its copy.
+let lookSeed = 1;
+function newDecision() { lookSeed = (lookSeed * 69069 + 1) & 0x7fffffff; }
+function look(g: Game, me: PID): Game {
+  const c = cloneSim(g);
+  if (T.fair) { const keep = botSeed; botSeed = lookSeed + g.turn * 7 + c.p[0].deck.length * 131 + c.p[1].deck.length; shuffleBot(P(c, me).deck); shuffleBot(P(c, opp(me)).deck); shuffleBot(P(c, opp(me)).hand); shuffleDown(P(c, opp(me)).life); botSeed = keep; }
+  return c;
+}
 
 export function evaluate(g: Game, me: PID): number {
   if (g.winner === me) return 1000;
   if (g.winner === opp(me)) return -1000;
   const my = P(g, me), o = P(g, opp(me));
   let s = 0;
-  s += 7 * flippedLife(o) - T.lifeW * flippedLife(my);
+  s += (T.curve ? PRO_LIFE[Math.min(5, flippedLife(o))] : 7 * flippedLife(o)) - T.lifeW * flippedLife(my);
   if (critical(o)) s += 6;
   if (critical(my)) s -= 6;
   for (const a of my.avatars) s += value(g, a);
-  for (const a of o.avatars) s -= value(g, a);
-  for (const c of my.hand) s += 0.6 + keepValue(g, c) * 0.15;
+  for (const a of o.avatars) s -= value(g, a) + (T.threatW || 0) * threatOf(a);
+  for (const c of my.hand) s += T.handW + keepValue(g, c) * 0.15;
+  if (T.landW && g.land) s += T.landW * (g.land.owner === me ? 1 : -1) * (KEY_LAND.has(g.land.def.name) ? 3 : 1);
   s -= 0.7 * o.hand.length;
   // LIFE exposure: each of their Avatars beyond our board count can hit LIFE next turn
   const exposed = Math.max(0, o.avatars.length - my.avatars.length);
@@ -97,7 +138,7 @@ function oppReply(c: Game, me: PID) {
 }
 function scoreAfter(g: Game, me: PID): number {
   if (g.winner !== null) return evaluate(g, me);
-  const c = cloneSim(g);
+  const c = look(g, me);
   c.phase = 'Battle';
   if (g.turn > 1) quickBattle(c, me);
   const now = evaluate(c, me);
@@ -108,18 +149,32 @@ function scoreAfter(g: Game, me: PID): number {
 
 const Classic: Brain = {
   main(g, me) {
+    let summons = 0;
+    const opening = !!T.opening && g.turn <= 2; // pro: the first turn puts down 1-2 Avatars, not the whole hand (one-turn kills)
     for (let it = 0; it < 30 && g.winner === null; it++) {
       // v14 features item 2: form every คู่หู / [Link] pair that is available (greedy)
       const la = linkActs(g, me);
       if (la.length) { doAct(g, me, la[0]); continue; }
-      const base = scoreAfter(g, me);
+      newDecision();
+      // fair look-ahead: each move is judged over a few guesses of the hidden cards (the same guesses for every move)
+      const dec = lookSeed, ns = T.fair ? Math.max(1, T.samples || 1) : 1;
+      let base = 0;
+      for (let k = 0; k < ns; k++) { lookSeed = dec + k * 977; base += scoreAfter(g, me) / ns; }
       let best = null as ReturnType<typeof mainActs>[number] | null, bestS = base + 0.05;
       const scored: [ReturnType<typeof mainActs>[number], number, Game][] = [];
       for (const a of mainActs(g, me)) {
         if (a.k === 'summon' && botNoSummon(findCard(g, a.uid))) continue; // linkbot item 2
-        const c = cloneSim(g);
-        if (!doAct(c, me, a)) continue;
-        const s = scoreAfter(c, me) + (T.noise ? (botRand() - 0.5) * 2 * T.noise : 0);
+        if (a.k === 'summon' && opening && summons >= 2) continue;
+        let s = T.noise ? (botRand() - 0.5) * 2 * T.noise : 0, c: Game | null = null;
+        for (let k = 0; k < ns; k++) {
+          lookSeed = dec + k * 977;
+          const ck = look(g, me);
+          if (!doAct(ck, me, a)) { c = null; break; }
+          s += scoreAfter(ck, me) / ns;
+          if (k === 0) c = ck;
+        }
+        lookSeed = dec;
+        if (!c) continue;
         if (T.depth > 1) scored.push([a, s, c]);
         if (s > bestS) { bestS = s; best = a; }
       }
@@ -130,7 +185,7 @@ const Classic: Brain = {
           let s2 = s0;
           for (const b of mainActs(c, me)) {
             if (b.k === 'summon' && botNoSummon(findCard(c, b.uid))) continue;
-            const c2 = cloneSim(c);
+            const c2 = look(c, me);
             if (!doAct(c2, me, b)) continue;
             const v = scoreAfter(c2, me);
             if (v > s2) s2 = v;
@@ -139,6 +194,7 @@ const Classic: Brain = {
         }
       }
       if (!best) break;
+      if (best.k === 'summon') summons++;
       doAct(g, me, best);
       if (T.stopChance && botRand() < T.stopChance) break; // Easy: sometimes ends its Main Phase early
     }
@@ -157,7 +213,7 @@ const Classic: Brain = {
         if (!f || !f.handActs) continue;
         f.handActs(g, me, c).forEach((x) => {
           if (g.phase === 'Battle' && x.can(g)) {
-            const sim = cloneSim(g); const sc = sim.p[me].hand.find((h) => h.uid === c.uid);
+            const sim = look(g, me); const sc = sim.p[me].hand.find((h) => h.uid === c.uid);
             if (!sc) return;
             const before = evaluate(sim, me); fx(sc).handActs!(sim, me, sc)[0].run(sim);
             if (evaluate(sim, me) > before) x.run(g);
@@ -169,13 +225,14 @@ const Classic: Brain = {
         const bas = battleActs(g, me);
         if (!bas.length) break;
         let pick: (typeof bas)[number] | null = null, bestA = evaluate(g, me) + 0.3;
-        for (const a of bas) { const sim = cloneSim(g); if (!doAct(sim, me, a)) continue; const s = evaluate(sim, me); if (s > bestA) { bestA = s; pick = a; } }
+        for (const a of bas) { const sim = look(g, me); if (!doAct(sim, me, a)) continue; const s = evaluate(sim, me); if (s > bestA) { bestA = s; pick = a; } }
         if (!pick || !doAct(g, me, pick)) break;
       }
       const atts = P(g, me).avatars.filter((a) => canAttack(g, me, a));
       if (atts.length === 0) break;
       // pick the single best (attacker, target) by look-ahead, or stop
-      const bs = cloneSim(g); const bnow = evaluate(bs, me); oppReply(bs, me);
+      newDecision();
+      const bs = look(g, me); const bnow = evaluate(bs, me); oppReply(bs, me);
       const base = 0.4 * bnow + 0.6 * evaluate(bs, me);
       let pick: [number, number | null, number[]] | null = null, bestS = base + 0.05;
       // v14 features item 1: a Construct is chosen as a target only with 15% probability when an Avatar or LIFE is open
@@ -191,7 +248,7 @@ const Classic: Brain = {
         if (!conOk && ts.some((t) => !isConstruct(t))) ts = ts.filter((t) => !isConstruct(t));
         for (const t of ts) {
           for (const hs of sets) {
-            const sim = cloneSim(g);
+            const sim = look(g, me);
             const sa = findCard(sim, att.uid)!, st = t ? findCard(sim, t.uid) : null;
             // v14 features item 9: helpers give their buff in the Battle Phase first (applyBuff), then the attack
             for (const u of hs) { const su = findCard(sim, u.uid); if (su) applyBuff(sim, me, su, sa); }
@@ -235,9 +292,17 @@ const Classic: Brain = {
     }
     const cands: Card[] = reactCands(g, me); // v14: also attached cards, Magic Zone, Land
     const usable = cands.filter((c) => canUseReact(g, me, c, ev));
+    // pro: a key unit of the opponent's deck (ไร้นาม, ฟูมะ, ครีปเปอร์, วันชัย, เซอร์นัท, ทศกัณฐ์, เมตตาระยะยาว...) gets the React
+    if (T.reactPro && usable.length && ev.source && ev.actor !== me && threatOf(ev.source) >= 3 && ev.source.ctrl !== me) {
+      const r = usable.find((c) => !fx(c).react!.on || (fx(c).react!.on as string[]).includes(ev.kind));
+      if (r) return r;
+    }
+    // pro: removal is saved for key units; an ordinary summon has to be really big to be worth it
+    const proSkip = (c: Card) => !!T.reactPro && ev.kind === 'summon' && !!ev.source && threatOf(ev.source) < 3 && value(g, ev.source) < 8 && !!fx(c).react!.on && (fx(c).react!.on as string[]).includes('summon');
     if (usable.length && T.reactHold && reactStakes(g, me, ev) < T.reactHold / Math.min(usable.length, 2)) return null; // Hard: hold it
     for (const c of usable) {
       if (T.reactSkip && botRand() < T.reactSkip) continue; // Easy: misses some chances
+      if (proSkip(c)) continue;
       if (fx(c).react!.want(g, me, c, ev)) return c;
     }
     return null;
@@ -258,7 +323,7 @@ const Classic: Brain = {
   offTurn(g, me, acts) {
     let pick: (typeof acts)[number] | null = null, bestS = evaluate(g, me) + 0.5;
     for (const a of acts) {
-      const sim = cloneSim(g);
+      const sim = look(g, me);
       if (!doAct(sim, me, a)) continue;
       const s = evaluate(sim, me);
       if (s > bestS) { bestS = s; pick = a; }
@@ -281,7 +346,7 @@ function reactStakes(g: Game, me: PID, ev: Ev): number {
 }
 
 /** A bot brain for a level. Each call sets the tuning used by evaluate() and the helpers above. */
-export function makeBot(level: Level = 'normal'): Brain {
+export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' = 'normal'): Brain {
   const tune = TUNE[level] || TUNE.normal;
   const run = <R>(fn: () => R): R => { const prev = T; T = tune; try { return fn(); } finally { T = prev; } };
   return {

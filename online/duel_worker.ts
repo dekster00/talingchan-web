@@ -225,7 +225,7 @@ function actLabel(a: Act, c: Card | null): string {
   if (!c) return a.label;
   if (a.k === 'summon') return (c.def.type === 'Construct' ? 'Build ' : 'Summon ') + c.def.name;
   if (a.k === 'cast') return cardLabel(c.def.print, c.def.name, 'cast:' + a.opt, `Cast ${c.def.name}` + ((fx(c)?.options || 1) > 1 ? ` (${fx(c)?.optLabels?.[a.opt] ?? 'option ' + (a.opt + 1)})` : ''));
-  if (a.k === 'hand' || a.k === 'field' || a.k === 'hell' || a.k === 'exile') return cardLabel(c.def.print, c.def.name, a.k + ':' + a.opt, a.label);
+  if (a.k === 'hand' || a.k === 'field' || a.k === 'hell' || a.k === 'exile' || a.k === 'deck') return cardLabel(c.def.print, c.def.name, a.k + ':' + a.opt, a.label);
   return a.label;
 }
 function evText(g: Game, ev: Ev): string {
@@ -256,7 +256,7 @@ function makeHuman(seat: PID): Brain { return {
   main(g, me) {
     for (let guard = 0; guard < 120 && g.winner === null; guard++) {
       const acts = groupPiles(g, me, quiet(() => mainActs(g, me))); // bugs7 item 6
-      const opts = acts.map((a) => { const c = findCard(g, a.uid); return a.k === 'link' ? { label: actLabel(a, c), uid: a.uid, kind: 'link', partner: a.opt, ak: a.k } : { label: actLabel(a, c), uid: a.uid, ak: a.k }; }); // ak: the action's kind, so the screen can write ACTIVE / CAST // v14 features: Link (kind 'link', partner uid)
+      const opts = acts.map((a) => { const c = findCard(g, a.uid); return a.k === 'link' ? { label: actLabel(a, c), uid: a.uid, kind: 'link', partner: a.opt, ak: a.k } : a.k === 'deck' && c ? { label: actLabel(a, c), uid: a.uid, ak: a.k, print: c.def.print, name: c.def.name } : { label: actLabel(a, c), uid: a.uid, ak: a.k }; }); // bugfix3: a Deck ability (จอมมาร): the screen shows that card // ak: the action's kind, so the screen can write ACTIVE / CAST // v14 features: Link (kind 'link', partner uid)
       // The first player can't attack on turn 1, so there is no Battle Phase to go to.
       const q: any = { type: 'main', title: 'Main Phase: play a card or end the phase', options: opts };
       if (g.turn === 1) q.pass = 'Go to End Phase';

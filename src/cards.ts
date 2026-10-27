@@ -66,6 +66,7 @@ export interface Fx {
   gemAs?(g: Game, c: Card, forCard: Card | null): number;
   hellActs?(g: Game, p: PID, c: Card): HandAct[];
   exileActs?(g: Game, p: PID, c: Card): HandAct[];
+  deckActs?(g: Game, p: PID, c: Card): HandAct[]; // bugfix3: "สั่งใช้ จาก Deck" (จอมมาร BT12-001)
   stayMz?: boolean; // Normal Magic that stays in the Magic Zone
   // attached-card hooks
   protectWearer?(g: Game, m: Card, wearer: Card, by: PID | null, viaMagic: boolean): boolean;

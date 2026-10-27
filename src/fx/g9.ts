@@ -11,7 +11,7 @@ import {
   P, opp, power, draw, destroy, toHell, toExile, toDeck, discard, detach, summon, shuffle, mill, placeToken,
   canPlaceAvatar, flippedLife, critical, onceUsed, markOnce, keepValue, log, findCard, rand, hitLife,
   uniqueBlocked, bestPayment, choosePayment, costOf, nameHas, symIs, colorIs, colorsEn, scoutDeck, isAvatarDef,
-  canChangeCtrl, withSource, fieldZone, summonAllowed, flipLifeCard, RULES, addRule, RULE_GAME, handWatch, silenced,
+  canChangeCtrl, withSource, fieldZone, humanSeat, summonAllowed, flipLifeCard, RULES, addRule, RULE_GAME, handWatch, silenced,
   attach as attachE, canWear as canWearE, addPower, contOff, lands,
 } from '../engine.ts';
 import { symbolsOf, namesOf, addName, addNote } from '../view.ts';
@@ -187,6 +187,31 @@ function storyHandActs(name: string): Fx['handActs'] {
     return [...xs.filter(ok), ...xs.filter((x) => !ok(x))]; // the bot's Battle Phase loop runs [0]
   };
 }
+
+
+// bugfix3 (2026-10-27, user's 6 new BT12 cards): จอมมาร ไอม์ อางส์ กูล BT12-001 and the "กองทัพปีศาจ" (BT12-002/003/004,
+// กองทัพรุกราน BT12-057). The texts spell the boss อางส์ / ฮางส์ / คูล, so any of those names counts.
+const boss = (c: Card) => named(c, 'อางส์') || named(c, 'ฮางส์') || named(c, 'ไอม์');
+const army = (c: Card) => isA(c) && named(c, 'กองทัพปีศาจ');
+/** "ถ้าบน Avatar Zone เรา หรือ มิติมืดเรา มี "ไอม์ อางส์ กูล"" */
+const bossNear = (g: Game, p: PID) => P(g, p).avatars.some(boss) || P(g, p).exile.some(boss);
+/** "Main Phase แรกสุดของเรา": the Main Phase of our first turn of the game (turn 1 for the first player, turn 2 for the other). */
+const firstMain = (g: Game, p: PID) => inMain(g, p) && g.turn === (p === g.first ? 1 : 2);
+function armySummon(g: Game, p: PID, src: Card, zone: Card[], n: number) {
+  for (let i = 0; i < n; i++) {
+    const pool = zone.filter((x) => army(x) && !uniqueBlocked(g, p, x) && summonAllowed(g, p, x, 'effect') && canPlaceAvatar(P(g, p), false, x));
+    if (!pool.length) return;
+    const x = pickN(pool, 1, (y) => value(g, y), { optional: i > 0, title: `${src.def.name}: summon a "กองทัพปีศาจ"` })[0];
+    if (!x || !summon(g, p, x, 'effect')) return;
+    x.f.endDestroy = g.turn; // destroyed in the End Phase of this turn
+  }
+}
+
+/** อูเบล BT12-004: other "กองทัพปีศาจ" / "จอมมาร" {นรก} Avatars on our Avatar Zone get โล่มนุษย์ and POWER +1 */
+const ubelGets = (g: Game, s: Card, t: Card) => t !== s && t.ctrl === s.ctrl && P(g, s.ctrl).avatars.includes(s) && P(g, s.ctrl).avatars.includes(t)
+  && (named(t, 'กองทัพปีศาจ') || named(t, 'จอมมาร')) && symIs(t, 'นรก');
+/** ออกอาวุธ ออกอาวุธ BT12-063: a {mod} that is not Only #1 */
+const armsMod = (c: Card) => c.def.type === 'Magic' && c.def.subtype === 'Modification' && !c.def.only;
 
 Object.assign(FX, {
   // ===== BT12 red =====
@@ -718,4 +743,75 @@ Object.assign(FX, {
     canCast: (g, p) => humanOr(g, p, () => P(g, p).avatars.filter(ruinSym).length > P(g, opp(p)).avatars.filter(ruinSym).length),
     landPower: (g, l, a) => (ruinSym(a) ? 1 : 0), // both players' Avatars (no "ฝ่ายเรา" in the text)
   },
+  // ===== bugfix3: new BT12 cards (2026-10-27) =====
+  'จอมมาร ไอม์ อางส์ กูล': {
+    keep: 4,
+    handActs: (g, p, c) => [act('จอมมาร: exile from hand, draw 2', (g2) => firstMain(g2, p) && P(g2, p).hand.includes(c),
+      (g2) => withSource(c, () => { if (toExile(g2, c)) draw(g2, p, 2); }))],
+    deckActs: (g, p, c) => [act('จอมมาร: exile from Deck, shuffle', (g2) => firstMain(g2, p) && P(g2, p).deck.includes(c),
+      (g2) => withSource(c, () => { if (toExile(g2, c)) shuffle(g2, P(g2, p).deck); log(g2, `${c.def.name} is banished from the Deck to มิติมืด`); }))],
+    exileActs: (g, p, c) => [act('จอมมาร: return กองทัพปีศาจ to Deck, summon from มิติมืด', (g2) => inMain(g2, p) && P(g2, p).exile.includes(c)
+      && canPlaceAvatar(P(g2, p), false, c) && !uniqueBlocked(g2, p, c) && summonAllowed(g2, p, c, 'own'),
+      (g2) => withSource(c, () => {
+        const pl = P(g2, p);
+        const pool = pl.exile.filter((x) => x !== c && army(x));
+        const back = pickN(pool, pool.length, () => 1, { optional: true, title: 'จอมมาร: return "กองทัพปีศาจ" to the Deck (any number)' });
+        let n = 0;
+        for (const x of back) if (toDeck(g2, x, 'shuffle')) n++;
+        if (!summon(g2, p, c, 'own')) return;
+        c.f.armyN = n; // POWER ตั้งต้น = the number returned
+        log(g2, `${c.def.name}: ${n} "กองทัพปีศาจ" back to the Deck, base POWER ${n}`);
+        for (let k = 0; k < Math.floor(n / 5); k++) {
+          const ts = g2.p.flatMap((q) => [...q.avatars, ...q.mz]).filter((x) => x !== c);
+          const t = pickN(ts, 1, (x) => (x.ctrl === p ? -10 : value(g2, x)), { optional: true, title: `${c.def.name}: send a card on the field to Hell (${k + 1})` })[0];
+          if (!t || (t.ctrl === p && !humanSeat(g2, p))) break;
+          if (toHell(g2, t, { by: p })) log(g2, `${c.def.name}: ${t.def.name} goes to Hell`);
+        }
+      }))],
+    staticPower: (g, c) => c.f.armyN || 0,
+    aura: (g, s, t) => (t !== s && t.ctrl === s.ctrl && P(g, s.ctrl).avatars.includes(s) && P(g, s.ctrl).avatars.includes(t) && army(t) ? 1 : 0),
+  },
+  'กองทัพปีศาจ กริมฟรีค': {
+    keep: 2.5,
+    battle: (g, c, other) => { if (symIs(other, 'คน') || symIs(other, 'ต่างชาติ')) { boost(c, 3, 'battle'); log(g, `${c.def.name}: POWER +3 (fights a {คน}/{ต่างชาติ} Avatar)`); } },
+    deathCry: (g, c, owner) => {
+      if (!bossNear(g, owner) || !P(g, owner).hell.includes(c)) return;
+      withSource(c, () => { if (toExile(g, c)) draw(g, owner, 1); });
+    },
+  },
+  'กองทัพปีศาจ ฟรีซเชอร์': {
+    keep: 2,
+    hellActs: (g, p, c) => [act('ฟรีซเชอร์: exile from Hell, scout 4, take a กองทัพปีศาจ', (g2) => inMain(g2, p) && P(g2, p).hell.includes(c) && bossNear(g2, p) && P(g2, p).deck.length > 0,
+      (g2) => withSource(c, () => {
+        if (!toExile(g2, c)) return;
+        peek(g2, p, 4, (cs) => { takeHand(g2, p, cs, army); }, 'bottom');
+      }))],
+  },
+  'กองทัพปีศาจ อูเบล': {
+    keep: 3.5,
+    grant: (g, s, t, kw) => kw === 'shield' && ubelGets(g, s, t),
+    aura: (g, s, t) => (ubelGets(g, s, t) ? 1 : 0),
+    deathCry: (g, c, owner) => {
+      if (!bossNear(g, owner) || !P(g, owner).hell.includes(c)) return;
+      withSource(c, () => toExile(g, c));
+    },
+  },
+  'กองทัพรุกราน': {
+    keep: 2.5, options: 2,
+    optLabels: ['summon up to 2 กองทัพปีศาจ from มิติมืด', 'summon 1 กองทัพปีศาจ from นรก'],
+    canCast: (g, p, c, o) => canPlaceAvatar(P(g, p)) && (o === 0 ? P(g, p).exile : P(g, p).hell).some((x) => army(x) && summonAllowed(g, p, x, 'effect')),
+    resolve: (g, p, c, o) => withSource(c, () => armySummon(g, p, c, o === 0 ? P(g, p).exile : P(g, p).hell, o === 0 ? 2 : 1)),
+  },
+  'ออกอาวุธ ออกอาวุธ': {
+    keep: 2,
+    canCast: (g, p, c) => P(g, p).hand.some((x) => x !== c) && (humanSeat(g, p) || P(g, p).deck.some(armsMod)),
+    resolve: (g, p, c) => withSource(c, () => {
+      if (!discardN(g, p, 1, [c], () => true, `${c.def.name}: discard 1 (cost)`)) return;
+      const pl = P(g, p);
+      const m = best(pl.deck.filter(armsMod), (x) => keepValue(g, x));
+      if (m) { pl.deck.splice(pl.deck.indexOf(m), 1); pl.hand.push(m); handWatch(g, m, 'deck'); log(g, `${c.def.name}: ${m.def.name} to hand`); }
+      shuffle(g, pl.deck);
+    }),
+  },
+
 } as Record<string, Fx>);

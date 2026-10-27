@@ -8,7 +8,7 @@ import './fx/index.ts';
 import { hasSymbol, hasName, viewCost, bindGame, bindCard, originZone, noteOrigin } from './view.ts'; // v14 core-view
 
 // ---------- decisions interface ----------
-export interface Act { k: 'summon' | 'cast' | 'hand' | 'field' | 'land' | 'hell' | 'exile' | 'link'; uid: number; opt: number; label: string } // v14 features: 'link' = form คู่หู / [Link] (uid = clicked Avatar, opt = partner uid)
+export interface Act { k: 'summon' | 'cast' | 'hand' | 'field' | 'land' | 'hell' | 'exile' | 'link' | 'deck'; uid: number; opt: number; label: string } // v14 features: 'link' = form คู่หู / [Link] (uid = clicked Avatar, opt = partner uid)
 // v14 window kinds (see engine/v14-hooks.md): partner = actor's Avatar entered คู่หู / [Link] (source = that Avatar);
 // endTurn = actor is about to end the turn (start of End Phase); lifeHit = actor's attack on LIFE resolved (source = attacker);
 // destroyed / left = source was destroyed / left the field and is already in its new zone (ev.leave says how; actor = the
@@ -1273,6 +1273,13 @@ export function mainActs(g: Game, p: PID): Act[] {
     const f = fx(c);
     if (f && f.exileActs && abilityAllowed(g, p, c)) f.exileActs(g, p, c).forEach((a, i) => { if (a.can(g)) acts.push({ k: 'exile', uid: c.uid, opt: i, label: a.label }); });
   }
+  const seenD = new Set<string>(); // bugfix3 (จอมมาร BT12-001): "สั่งใช้ จาก Deck", one entry per name
+  for (const c of pl.deck) {
+    const f = fx(c);
+    if (!f || !f.deckActs || seenD.has(c.def.name) || !abilityAllowed(g, p, c)) continue;
+    seenD.add(c.def.name);
+    f.deckActs(g, p, c).forEach((a, i) => { if (a.can(g)) acts.push({ k: 'deck', uid: c.uid, opt: i, label: a.label }); });
+  }
   return acts;
 }
 /** bugs7 item 6: every usable ability of every card in p's Hell ('hell') or Dark dimension ('exile'), one Act per card and
@@ -1306,7 +1313,7 @@ function doActBody(g: Game, p: PID, a: Act): boolean {
   if (a.k === 'link') { const b = findCard(g, a.opt); return !!b && linkPair(g, p, c, b); } // v14 features item 2
   if (!abilityAllowed(g, p, c)) return false; // v14: ability rules (โรงบาล)
   const f = fx(c);
-  const list = a.k === 'hand' ? f.handActs!(g, p, c) : a.k === 'hell' ? f.hellActs!(g, p, c) : a.k === 'exile' ? f.exileActs!(g, p, c) : f.fieldActs!(g, p, c);
+  const list = a.k === 'hand' ? f.handActs!(g, p, c) : a.k === 'hell' ? f.hellActs!(g, p, c) : a.k === 'exile' ? f.exileActs!(g, p, c) : a.k === 'deck' ? f.deckActs!(g, p, c) : f.fieldActs!(g, p, c);
   const x = list[a.opt];
   if (a.k === 'field') return withOnceCard(c, false, () => runAct(g, p, a, c, x));
   return runAct(g, p, a, c, x);
