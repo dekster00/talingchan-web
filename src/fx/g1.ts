@@ -307,16 +307,14 @@ const NEW: Record<string, any> = {
     canCast: (g: Game, p: PID) => P(g, p).avatars.some(isHellSym),
     modTarget: (g: Game, p: PID) => best(P(g, p).avatars.filter(isHellSym), (a) => (a.asleep ? 0 : 3) + power(g, a)),
     modPower: (g: Game, m: Card, w: Card) => (symIs(w, 'นรก') ? 1 : 0),
-    // v14 ruling: once it was sent to Hell by ธรณีสูบ it can be used from Hell like a Modification Magic from hand, at any
-    // later Main Phase of ours (it uses this turn's Modification Magic), for as long as it stays in Hell
-    onMilled: (g: Game, c: Card) => { c.f.milled = 1; },
-    hellActs: (g: Game, p: PID, c: Card) => [act('หอกแหลม: use from Hell (milled)', (g2) => inMain(g2, p) && !P(g2, p).used.Modification && P(g2, p).hell.includes(c)
-      && !!c.f.milled && castAllowed(g2, p, c) && P(g2, p).avatars.some(isHellSym),
-    (g2) => {
-      const w = best(P(g2, p).avatars.filter(isHellSym), (a) => (a.asleep ? 0 : 3) + power(g2, a));
+    // bugfix4 (user): used right when ธรณีสูบ sends it to Hell (if no Modification Magic was used this turn), never later by
+    // hand from Hell: "สามารถ" = the owner may attach it to one of their {นรก} Avatars at once
+    onMilled: (g: Game, c: Card, p: PID) => {
+      if (!P(g, p).hell.includes(c) || P(g, p).used.Modification || !castAllowed(g, p, c)) return;
+      const w = pickN(P(g, p).avatars.filter(isHellSym), 1, (a) => (a.asleep ? 0 : 3) + power(g, a), { optional: true, title: 'หอกแหลม (milled): you may use it from Hell: attach to' })[0];
       if (!w) return;
-      P(g2, p).used.Modification = true; delete c.f.milled; attach(g2, c, w);
-    })],
+      P(g, p).used.Modification = true; attach(g, c, w);
+    },
   },
   'สิมพลีนรก': {
     keep: 3,

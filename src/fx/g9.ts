@@ -631,6 +631,9 @@ Object.assign(FX, {
     battle: (g, c, other) => withSource(c, () => {
       const p = c.ctrl;
       if (!byTraveler(c) || critical(P(g, p))) return;
+      const key = g.turn + ':' + other.uid; // bugfix4: once per fight ("1 ครั้ง")
+      if (c.f.k49 === key) return;
+      c.f.k49 = key;
       const ts = P(g, opp(p)).avatars;
       if (!ts.length) return;
       if (!mayDo(g, c, 'damage your LIFE 1: an opposing Avatar loses all abilities until the end of the opponent\'s turn',
@@ -812,6 +815,34 @@ Object.assign(FX, {
       if (m) { pl.deck.splice(pl.deck.indexOf(m), 1); pl.hand.push(m); handWatch(g, m, 'deck'); log(g, `${c.def.name}: ${m.def.name} to hand`); }
       shuffle(g, pl.deck);
     }),
+  },
+
+  // bugfix4 (2026-10-30, user's picture): โจผี BT12-026
+  'โจผี ขุนพลผู้สืบทอดแห่งวุยก๊ก': {
+    keep: 3.5,
+    jutsu: (g, c) => withSource(c, () => {
+      const p = c.ctrl;
+      peek(g, p, 3, (cs) => {
+        const pool = cs.filter((x) => isA(x) && named(x, 'วุยก๊ก') && !uniqueBlocked(g, p, x) && summonAllowed(g, p, x, 'effect') && canPlaceAvatar(P(g, p), false, x));
+        const x = pickN(pool, 1, (y) => value(g, y), { title: 'โจผี: summon a "วุยก๊ก" Avatar from the scouted cards' })[0];
+        if (x) summon(g, p, x, 'effect');
+      }, 'shuffle');
+    }),
+    // "ความสามารถ สอดแนม ของ Avatar "โจโฉ" {ต่างชาติ} ฝ่ายเรา +2"
+    scoutBonus: (g: Game, self: Card, owner: PID, n: number, by: PID | null, src: Card | null) =>
+      (P(g, self.ctrl).avatars.includes(self) && by === self.ctrl && !!src && isA(src) && src.ctrl === self.ctrl && named(src, 'โจโฉ') && symIs(src, 'ต่างชาติ') ? 2 : 0),
+    // start of the opponent's Battle Phase: one of their Avatars must attack this turn if it can
+    // (approx: the "must attack" lasts while โจผี stays on the field)
+    startBattle: (g: Game, self: Card) => {
+      const p = self.ctrl;
+      if (g.active !== opp(p) || !P(g, p).avatars.includes(self) || !P(g, opp(p)).avatars.length) return;
+      const t = decide(g, p, () => withSource(self, () => best(P(g, opp(p)).avatars, (a) => -power(g, a) - (a.asleep ? 5 : 0))));
+      if (!t) return;
+      t.f.mustAtk = g.turn;
+      addNote(g, t, `ต้องโจมตีเสมอถ้าทำได้ จนจบเทิร์น (${self.def.name})`, g.turn);
+      log(g, `${self.def.name}: ${t.def.name} must attack this turn if it can`);
+    },
+    mustAttack: (g: Game, self: Card, a: Card) => a.f.mustAtk === g.turn && a.ctrl !== self.ctrl,
   },
 
 } as Record<string, Fx>);

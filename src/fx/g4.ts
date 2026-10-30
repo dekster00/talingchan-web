@@ -884,14 +884,13 @@ Object.assign(FX, {
     canCast: (g: Game, p: PID) => wearers(g, p, () => true).length > 0,
     modTarget: (g: Game, p: PID) => best(wearers(g, p, () => true), (a) => (symIs(a, 'นรก') ? 5 : 0) + value(g, a)),
     modPower: (g: Game, m: Card, w: Card) => (symIs(w, 'นรก') ? 1 : 0),
-    onMilled: (g: Game, c: Card) => { c.f.milled = 1; },
-    hellActs: (g: Game, p: PID, c: Card) => [act('หอกแหลม: cast from hell', (g2) => inMain(g2, p) && P(g2, p).hell.includes(c) && !!c.f.milled
-      && !P(g2, p).used.Modification && wearers(g2, p, (a) => symIs(a, 'นรก')).length > 0,
-    (g2) => {
-      P(g2, p).used.Modification = true; c.f.milled = 0;
-      const w = best(wearers(g2, p, (a) => symIs(a, 'นรก')), (a) => value(g2, a));
-      if (w) attach(g2, c, w);
-    })],
+    // bugfix4 (user): used right when ธรณีสูบ sends it to Hell, never later by hand from Hell
+    onMilled: (g: Game, c: Card, p: PID) => {
+      if (!P(g, p).hell.includes(c) || P(g, p).used.Modification) return;
+      const w = pickN(wearers(g, p, (a) => symIs(a, 'นรก')), 1, (a) => value(g, a), { optional: true, title: 'หอกแหลม (milled): you may use it from Hell: attach to' })[0];
+      if (!w) return;
+      P(g, p).used.Modification = true; attach(g, c, w);
+    },
   },
 
   // ===== PRE0 =====

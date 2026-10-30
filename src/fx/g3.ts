@@ -6,7 +6,7 @@ import { canChangeCtrl, takeControl, grantKw, landIs as landOn, isLandOn, placeL
 import type { Fx, HandAct } from '../cards.ts';
 import { FX, value, best, worst, pickN, worstN, mayDo, chooseMode, oppChoice, oppTargets, sacrifice, search, inMain, cancel } from '../cards.ts';
 import { costFirst } from '../cards.ts'; // other-team audit Q9
-import { emit, askChoose } from '../engine.ts'; // bugfix1
+import { emit, askChoose, addPower } from '../engine.ts'; // bugfix1; bugfix4: addPower
 import {
   P, opp, power, draw, destroy, toHell, toHand, discard, detach, summon, shuffle, mill,
   nameHas, canPlaceAvatar, critical, onceUsed, markOnce, keepValue, log, findCard, fx, rand,
@@ -698,8 +698,8 @@ const G3: Record<string, Fx> = {
   },
   'เจ๊หมวย เจ้าของร้านหม่าล่า': {
     keep: 2.5,
-    onAttack: (g, c) => boost(c, 3),
-    onTargeted: (g, c) => boost(c, -3),
+    onAttack: (g, c) => addPower(g, c, 3, 'perm', c), // bugfix4 (user): no duration in the text: it stays
+    onTargeted: (g, c) => addPower(g, c, -3, 'perm', c),
   },
   'ลุงไนท์ ราชาวานร': {
     keep: 4.5,

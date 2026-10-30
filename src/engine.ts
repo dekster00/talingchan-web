@@ -62,7 +62,7 @@ export function askSeat(): number { for (let i = DECIDER.length - 1; i >= 0; i--
 export function humanDeciding(g: Game) { return !!ASK && !g.sim && humanTop(); }
 /** bugfix2 item 4 (user, แอสการ์ด): a Land's canCast is mostly the bot's "is it worth it" check; a human may always place a
  *  Land while they do not already own the one in the Land zone. */
-export function humanLand(g: Game, p: number, c: Card) { return c.def.type === 'Magic' && c.def.subtype === 'Land' && humanSeat(g, p) && !(g.land && g.land.owner === p); }
+export function humanLand(g: Game, p: number, c: Card) { return c.def.type === 'Magic' && c.def.subtype === 'Land' && humanSeat(g, p); } // bugfix4 (user): also over our own Land
 /** bugfix2: p is a human seat in the real game (also inside quiet(), e.g. while the Main menu is listed). */
 export function humanSeat(g: Game, p: number) { return !!ASK && !g.sim && HUMANS.has(p); }
 // optional: the human may also choose none (returns null); the bot's default is dflt.

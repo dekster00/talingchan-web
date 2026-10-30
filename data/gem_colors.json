@@ -5448,7 +5448,7 @@
   "req": null
  },
  "BT12-017": {
-  "gemColor": "colorless",
+  "gemColor": "blue",
   "req": null
  },
  "BT12-019": {
@@ -5864,6 +5864,10 @@
   "req": null
  },
  "BT12-063": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-026": {
   "gemColor": "colorless",
   "req": null
  }

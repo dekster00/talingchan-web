@@ -400,8 +400,8 @@ export const FX: Record<string, Fx> = {
       const p = c.ctrl;
       const t = best(oppTargets(g, p, false).filter((a) => symAny(a, ['คน', 'เทพ', 'นรก']) && canChangeCtrl(g, a, p, c)), (a) => value(g, a));
       // with 4 real Avatars, sacrificing a token would not free a slot for the stolen one
-      // other-team audit Q15 (user): it may sacrifice itself; no later Activate
-      const fodder = P(g, p).avatars.filter((a) => realAvatars(P(g, p)).length < 4 || !a.token);
+      // bugfix4 (user 2026-10-30, replaces audit Q15): "Avatar ใบอื่น" = never itself
+      const fodder = P(g, p).avatars.filter((a) => a !== c && (realAvatars(P(g, p)).length < 4 || !a.token));
       if (!t || fodder.length === 0 || value(g, t) < 3) return;
       if (!sacrifice(g, p, fodder, 1)) return;
       if (!canPlaceAvatar(P(g, p)) || !P(g, opp(p)).avatars.includes(t)) return;

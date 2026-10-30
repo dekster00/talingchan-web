@@ -6,7 +6,7 @@ import type { Brain, Ev } from './engine.ts';
 import {
   P, opp, power, mainActs, doAct, cloneSim, legalTargets, canAttack, attack, fx, canUseReact,
   flippedLife, critical, castMagic, keepValue, findCard, toExile, hasKw, helpersFor, colorsEn, shieldOptions, useShield, reactCands, battleActs,
-  linkActs, buffActs, applyBuff, isConstruct, rand,
+  linkActs, buffActs, applyBuff, isConstruct, rand, quiet, withDecider,
 } from './engine.ts';
 import { value } from './cards.ts';
 
@@ -96,8 +96,21 @@ export function evaluate(g: Game, me: PID): number {
 
 // Estimated battle powers including "when this fights" effects.
 function estBattle(g: Game, a: Card, d: Card): [number, number] {
-  const a2 = { ...a, temp: [...a.temp] }, d2 = { ...d, temp: [...d.temp] };
   const fa = fx(a), fd = fx(d);
+  // bugfix4 (user, ผู้กำหนดชีวิต): "when this fights" hooks can have real effects (flip our LIFE, delete text): in a real game
+  // they run on a look-ahead copy, never on the real cards
+  if (!g.sim && ((fa && fa.battle) || (fd && fd.battle))) {
+    try {
+      const c = cloneSim(g), a3 = findCard(c, a.uid), d3 = findCard(c, d.uid);
+      if (a3 && d3) return quiet(() => withDecider(-1, () => {
+        if (fa && fa.battle && a.silencedTurn !== g.turn) fa.battle!(c, a3, d3);
+        if (fd && fd.battle && d.silencedTurn !== g.turn) fd.battle!(c, d3, a3);
+        return [power(c, a3), power(c, d3)] as [number, number];
+      }));
+    } catch { /* fall back to the plain estimate */ }
+    return [power(g, a), power(g, d)];
+  }
+  const a2 = { ...a, temp: [...a.temp] }, d2 = { ...d, temp: [...d.temp] };
   if (fa && fa.battle && a.silencedTurn !== g.turn) fa.battle(g, a2, d2);
   if (fd && fd.battle && d.silencedTurn !== g.turn) fd.battle(g, d2, a2);
   return [power(g, a2), power(g, d2)];

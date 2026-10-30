@@ -17,6 +17,7 @@ import {
 } from '../engine.ts';
 import { canWear as canWearE, attach as attachE } from '../engine.ts'; // v14d central attach
 import { inLink as inLinkG8 } from '../engine.ts'; // linkbot
+import { humanSeat } from '../engine.ts'; // bugfix4
 import { setSymbols, setName, swapCostPower } from '../view.ts';
 import * as fs from 'node:fs';
 
@@ -680,7 +681,7 @@ Object.assign(FX, {
       }
     })],
     hellActs: (g, p, c) => [act('ซีเกิร์ด: mill 9, summon from hell', (g2) => inMain(g2, p) && P(g2, p).hell.includes(c) && onZone(g2, p, 'บรุนฮิลด์').length > 0
-      && canPlaceAvatar(P(g2, p)) && P(g2, p).deck.length > 14,
+      && canPlaceAvatar(P(g2, p)) && P(g2, p).deck.length > (humanSeat(g2, p) ? 8 : 14), // bugfix4: the 14-card margin is the bot's
     (g2) => { myMill(g2, p, 9); if (P(g2, p).hell.includes(c)) summon(g2, p, c, 'own'); })],
   },
   'ศาสตราวุธศักดิ์สิทธิ์ โวลุสปา': {
