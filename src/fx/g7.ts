@@ -891,6 +891,7 @@ const NEW: Record<string, Fx> = {
   },
   [PLACHOD]: {
     keep: 3, onSummon: (g) => fishLock(g), endPhase: (g) => fishLock(g),
+    afterAction: (g: Game) => fishLock(g), // bugfix5 (user's tester): also when บึงทมิฬ is placed later, or an Avatar changes side
     blockSummon: (g, self, p, c) => P(g, self.ctrl).avatars.includes(self) && fishLand(g) && !symIs(c, 'ปลา')
       && P(g, p).avatars.some((a) => !symIs(a, 'ปลา')),
   },
