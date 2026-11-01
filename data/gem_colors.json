@@ -5870,5 +5870,9 @@
  "BT12-026": {
   "gemColor": "colorless",
   "req": null
+ },
+ "BT12-T01": {
+  "gemColor": "red",
+  "req": null
  }
 }

@@ -845,4 +845,19 @@ Object.assign(FX, {
     mustAttack: (g: Game, self: Card, a: Card) => a.f.mustAtk === g.turn && a.ctrl !== self.ctrl,
   },
 
+  // bugfix6 (2026-11-01): ลกซุน, the user's test card (temporary code BT12-T01 until the real number and picture come out).
+  // "ในกองเรา" = our Hell (user confirmed 2026-11-01).
+  'ลกซุน ขุนพลวัยเยาว์แห่งง่อก๊ก': {
+    keep: 3,
+    fieldActs: (g, p, c) => [act('ลกซุน: discard 1, a red ขุนพล from Hell to Deck, draw 1', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'loksun:' + c.uid)
+      && P(g2, p).hand.length >= 1 && P(g2, p).hell.some(redGeneral),
+    (g2) => withSource(c, () => {
+      use(g2, p, 'loksun:' + c.uid);
+      if (!discardN(g2, p, 1, [], () => true, `${c.def.name}: discard 1 (cost)`)) return;
+      const t = best(P(g2, p).hell.filter(redGeneral), (x) => keepValue(g2, x));
+      if (t && toDeck(g2, t, 'shuffle')) log(g2, `${c.def.name}: ${t.def.name} goes back into the Deck`);
+      draw(g2, p, 1);
+    }))],
+  },
+
 } as Record<string, Fx>);
