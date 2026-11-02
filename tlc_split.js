@@ -3,7 +3,7 @@
 // Godot loader asks for index.pck / index.wasm. The hash in the names changes every build, so the parts can be cached
 // for good. build_web.py fills in PARTS.
 (function () {
-  const PARTS = {"index.pck": {"size": 57428140, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.e26188b45f.pck.0", "parts/index.e26188b45f.pck.1", "parts/index.e26188b45f.pck.2"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.6ceb580f18.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
+  const PARTS = {"index.pck": {"size": 57428140, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.62e62a4c9c.pck.0", "parts/index.62e62a4c9c.pck.1", "parts/index.62e62a4c9c.pck.2"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.4440716a0e.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
   const orig = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
