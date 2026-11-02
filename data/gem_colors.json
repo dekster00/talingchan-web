@@ -6032,11 +6032,11 @@
   "req": null
  },
  "BT12-046": {
-  "gemColor": "green",
+  "gemColor": "colorless",
   "req": null
  },
  "BT12-047": {
-  "gemColor": "colorless",
+  "gemColor": "green",
   "req": null
  },
  "BT12-051": {

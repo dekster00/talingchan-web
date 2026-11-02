@@ -957,7 +957,15 @@ Object.assign(FX, {
   'นางตานีด่าง': {
     keep: 3,
     staticPower: (g: Game, c: Card) => { const v = 2 * ghostsOn(g, c.ctrl); return c.f.taniHalf === g.turn ? Math.floor(v / 2) : v; },
-    // approx: "choose 2 attack targets instead of 1" is not modeled yet (waiting on the user's ruling); the halving is
+    // user 2026-11-02: "2 attack targets" = after its first attack this turn it stands up again (one more attack);
+    // if it attacked at all this turn it rests at the end of the turn
+    afterFight: (g: Game, self: Card, att: Card) => {
+      if (att !== self || self.f.taniHalf !== g.turn || self.f.taniWoke === g.turn || !P(g, self.ctrl).avatars.includes(self)) return;
+      self.f.taniWoke = g.turn; self.asleep = false;
+      log(g, `${self.def.name} stands up again (2 attacks this turn)`);
+    },
+    onAttack: (g: Game, self: Card) => { self.f.taniAtk = g.turn; },
+    endPhase: (g: Game, self: Card) => { if (self.f.taniAtk === g.turn && P(g, self.ctrl).avatars.includes(self)) { self.asleep = true; log(g, `${self.def.name} rests (it attacked this turn)`); } },
     fieldActs: (g, p, c) => [act('นางตานีด่าง: halve its POWER, attack 2 targets this turn', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'tani:' + c.uid) && ghostsOn(g2, p) >= 3 && humanSeat(g2, p),
     (g2) => { use(g2, p, 'tani:' + c.uid); c.f.taniHalf = g2.turn; log(g2, `${c.def.name}: base POWER halved this turn`); })],
   },
@@ -1094,12 +1102,13 @@ Object.assign(FX, {
       log(g, `มาโกะชิลด์ is destroyed instead of ${w.def.name}`);
       return true;
     },
-    // approx (picture unclear): "start of our Main Phase: discard 1 card from our hand or send this card to Hell"
+    // user 2026-11-02: "start of our Main Phase: flip 1 of our LIFE cards, or send this card to Hell"
     mainStart: (g: Game, self: Card) => {
       if (g.active !== self.ctrl || self.wearer < 0) return;
       const p = self.ctrl;
-      const pay = P(g, p).hand.length > 0 && decide(g, p, () => chooseMode(g, self, ['Discard 1 card from your hand', 'Send มาโกะชิลด์ to Hell'], P(g, p).hand.length >= 3 ? 0 : 1)) === 0;
-      if (pay && discardN(g, p, 1, [], () => true, 'มาโกะชิลด์: discard 1 card')) return;
+      const down = P(g, p).life.filter((l) => !l.faceUp).length;
+      const pay = down > 0 && decide(g, p, () => chooseMode(g, self, ['Flip 1 of your LIFE cards', 'Send มาโกะชิลด์ to Hell'], down >= 3 ? 0 : 1)) === 0;
+      if (pay && flipLifeCard(g, p)) return;
       const w = findCard(g, self.wearer);
       detach(g, self); self.wearer = -1; P(g, self.owner).hell.push(self);
       log(g, `มาโกะชิลด์ goes to Hell${w ? ' from ' + w.def.name : ''}`);

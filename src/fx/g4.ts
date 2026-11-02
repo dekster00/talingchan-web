@@ -1218,10 +1218,10 @@ Object.assign(FX, {
   'ร่างอวตารพระนารายณ์ - พระราม': {
     keep: 4,
     react: narayWatch(),
-    // approx: the red keyword on the picture is unreadable (asked the user); POWER +1 stays while they are on the field
+    // user 2026-11-02: the red keyword is โล่มนุษย์; POWER +1 and the keyword stay while they are on the field
     handActs: narayAct('ร่างอวตารพระนารายณ์ - พระราม', (g, p, c) => {
-      for (const a of onZone(g, p, 'พระนารายณ์')) addPowerB8(g, a, 1, 'perm', c);
-      log(g, `${c.def.name}: every พระนารายณ์ gets POWER +1`);
+      for (const a of onZone(g, p, 'พระนารายณ์')) { addPowerB8(g, a, 1, 'perm', c); grantKw(g, a, 'shield', 99999); }
+      log(g, `${c.def.name}: every พระนารายณ์ gets POWER +1 and โล่มนุษย์`);
       if (P(g, p).avatars.includes(c)) c.f.narayEnd = g.turn;
     }),
     endPhase: narayEnd,
