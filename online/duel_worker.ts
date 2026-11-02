@@ -206,6 +206,7 @@ function groupPiles(g: Game, me: PID, acts: Act[]): Act[] {
   return out;
 }
 function pickPileAct(g: Game, me: PID, k: 'hell' | 'exile', askQ: (q: any) => number): Act | null {
+  VIEW = me; // bugfix7: seat 1 saw its own cards as "opponent's" (zone labels of this pick)
   const list = quiet(() => pileActs(g, me, k));
   const cards: Card[] = [];
   for (const a of list) { const c = findCard(g, a.uid); if (c && !cards.includes(c)) cards.push(c); }
@@ -255,6 +256,7 @@ const brief = (g: Game, c: Card) => ({ uid: c.uid, print: c.def.print, name: c.d
 function makeHuman(seat: PID): Brain { return {
   main(g, me) {
     for (let guard = 0; guard < 120 && g.winner === null; guard++) {
+      VIEW = me; // bugfix7: labels / zones are built for the seat that is asked
       const acts = groupPiles(g, me, quiet(() => mainActs(g, me))); // bugs7 item 6
       const opts = acts.map((a) => { const c = findCard(g, a.uid); return a.k === 'link' ? { label: actLabel(a, c), uid: a.uid, kind: 'link', partner: a.opt, ak: a.k } : a.k === 'deck' && c ? { label: actLabel(a, c), uid: a.uid, ak: a.k, print: c.def.print, name: c.def.name } : { label: actLabel(a, c), uid: a.uid, ak: a.k }; }); // bugfix3: a Deck ability (จอมมาร): the screen shows that card // ak: the action's kind, so the screen can write ACTIVE / CAST // v14 features: Link (kind 'link', partner uid)
       // The first player can't attack on turn 1, so there is no Battle Phase to go to.
@@ -284,6 +286,7 @@ function makeHuman(seat: PID): Brain { return {
   battle(g, me) {
     if (skipBattle === g.turn) return;
     for (let guard = 0; guard < 40 && g.winner === null && !g.stopBattle; guard++) {
+      VIEW = me; // bugfix7
       type O = { label: string; uid: number; target?: number | null; kind?: string; ak?: string; helper?: number; helpers?: number[]; attacker?: number; preview?: any; run: () => void };
       const opts: O[] = [];
       const pl = P(g, me);
@@ -534,6 +537,6 @@ postEv(G, { ev: 'dice', rolls: G.dice, first: G.first });
   MULL = false;
   sleep(300 + 750 + 2000 + 2600);
 }
-const w = playGame(G);
+const w = playGame(G, 400); // bugfix7 (user): no 80-turn draw between players; the game ends by LIFE or deck out
 postEv(G, { ev: 'gameover', winner: w });
 post({ t: 'end', winner: w, states: states(G) });

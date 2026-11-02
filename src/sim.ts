@@ -104,6 +104,9 @@ export function loadDefs(): Map<string, Def> {
 // Deck formats: a file in decks/ ({archetype, cards:[{print,qty}], life?:[{print,qty}]}) or an inline deck object
 // ({name, main:[{print,qty}], life:[{print,qty}], side:[{print,qty}]}). side is not used in play.
 // life is null when the deck has none (newGame then uses the default LIFE deck).
+// Old codes of test cards that later got their real print (saved decks may still use them).
+export const RENAMED: Record<string, string> = { 'BT12-T01': 'BT12-012' };
+
 export function loadDeck(src: string | any, defs: Map<string, Def>) {
   const d = typeof src === 'string' ? JSON.parse(fs.readFileSync(src, 'utf8')) : src;
   const label = typeof src === 'string' ? src : d.name || 'deck';
@@ -112,7 +115,7 @@ export function loadDeck(src: string | any, defs: Map<string, Def>) {
   const expand = (xs: any[]) => {
     const out: Def[] = [];
     for (const c of xs || []) {
-      const def = defs.get(c.print);
+      const def = defs.get(c.print) || defs.get(RENAMED[c.print]);
       if (!def) throw new Error('unknown card ' + c.print);
       for (let i = 0; i < Number(c.qty || 0); i++) out.push(def);
     }
@@ -138,7 +141,7 @@ export function validateDeck(d: any, defs: Map<string, Def>): string[] {
     if (!Array.isArray(xs)) { errs.push(`${k} must be a list of {print, qty}.`); return [] as Def[]; }
     const out: Def[] = [];
     for (const c of xs) {
-      const def = c && defs.get(c.print);
+      const def = c && (defs.get(c.print) || defs.get(RENAMED[c.print]));
       const q = Number(c && c.qty);
       if (!def) { errs.push(`${k}: unknown card ${c && c.print}`); continue; }
       if (!Number.isInteger(q) || q < 0) { errs.push(`${k}: bad qty for ${c.print}`); continue; }

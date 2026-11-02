@@ -845,7 +845,7 @@ Object.assign(FX, {
     mustAttack: (g: Game, self: Card, a: Card) => a.f.mustAtk === g.turn && a.ctrl !== self.ctrl,
   },
 
-  // bugfix6 (2026-11-01): ลกซุน, the user's test card (temporary code BT12-T01 until the real number and picture come out).
+  // bugfix6 (2026-11-01): ลกซุน BT12-012 (was the test code BT12-T01 until the real card came out, 2026-11-02).
   // "ในกองเรา" = our Hell (user confirmed 2026-11-01).
   'ลกซุน ขุนพลวัยเยาว์แห่งง่อก๊ก': {
     keep: 3,
@@ -855,7 +855,7 @@ Object.assign(FX, {
       use(g2, p, 'loksun:' + c.uid);
       if (!discardN(g2, p, 1, [], () => true, `${c.def.name}: discard 1 (cost)`)) return;
       const t = best(P(g2, p).hell.filter(redGeneral), (x) => keepValue(g2, x));
-      if (t && toDeck(g2, t, 'shuffle')) log(g2, `${c.def.name}: ${t.def.name} goes back into the Deck`);
+      if (t && toDeck(g2, t, 'bottom')) log(g2, `${c.def.name}: ${t.def.name} goes to the bottom of the Deck`); // user 2026-11-01: bottom, no shuffle
       draw(g2, p, 1);
     }))],
   },
