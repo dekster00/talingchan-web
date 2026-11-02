@@ -796,9 +796,17 @@ http.createServer(async (req, res) => {
         if (Date.now() - last < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3 || pr.bot.games >= Eco.BOT.maxGames) return send(res, 200, { xpGain: 0, coins: 0, ...levelOf(a.xp), leveledUp: false, note: 'No rewards for this game. · ไม่ได้รางวัลเกมนี้' });
         BOT_LAST.set(a.id, Date.now());
         const c = b.deck ? cleanDeck(b.deck) : { deck: null as any };
-        const r: any = Eco.gameReward(a, { pvp: false, won: !!(b.win ?? b.won), bot: level, color: c.deck ? deckColor(c.deck) : '', coinsOk: !!c.deck && Eco.missingCards(pr, CAT, c.deck).length === 0 });
+        // a Bo3 match sends its games together: {games:[true,false,true]} (up to 3), each paid like one game
+        const games: boolean[] = Array.isArray(b.games) && b.games.length ? b.games.slice(0, 3).map((g: any) => !!g) : [!!(b.win ?? b.won)];
+        const color = c.deck ? deckColor(c.deck) : '', coinsOk = !!c.deck && Eco.missingCards(pr, CAT, c.deck).length === 0;
+        let r: any = null; const sum = { xp: 0, coins: 0, firstWin: false, levelUps: [] as any[], missionsDone: [] as any[] };
+        for (const won of games) {
+          if (pr.bot.games >= Eco.BOT.maxGames) break;
+          r = Eco.gameReward(a, { pvp: false, won, bot: level, color, coinsOk });
+          sum.xp += r.xp; sum.coins += r.coins; sum.firstWin ||= r.firstWin; sum.levelUps.push(...(r.levelUps || [])); sum.missionsDone.push(...(r.missionsDone || []));
+        }
         await STORE.save(a);
-        return send(res, 200, { ...r, xpGain: r.xp, ...levelOf(a.xp), leveledUp: levelOf(a.xp).level > lvBefore });
+        return send(res, 200, { ...r, ...sum, xpGain: sum.xp, games: games.length, ...levelOf(a.xp), leveledUp: levelOf(a.xp).level > lvBefore });
       }
       if (p === '/me/craft' && req.method === 'POST') return done({ ...Eco.craft(pr, CAT, String(b.code || '')), dust: pr.dust });
       if (p === '/me/starter' && req.method === 'POST') return done(Eco.claimStarter(a, CAT, RAW, String(b.set || '')));
