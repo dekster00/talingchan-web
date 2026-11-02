@@ -19,7 +19,8 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { Worker, MessageChannel } from 'node:worker_threads';
 import { CARDS, loadDefs, loadDeck, validateDeck, banlistErrors } from '../src/sim.ts';
-import { Store, levelOf, usingSupabase, XP_WIN, XP_LOSS, XP_DRAW, type Account, type DeckMap } from './accounts.ts';
+import { Store, levelOf, usingSupabase, type Account, type DeckMap } from './accounts.ts';
+import * as Eco from './economy.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -45,6 +46,7 @@ for (const c of RAW) if (!INFO.has(c.code)) INFO.set(c.code, {
 });
 for (const c of RAW) { const i = INFO.get(c.code); if (i && c.rarity && !i.rarities.includes(c.rarity)) i.rarities.push(c.rarity); }
 const DEFS = loadDefs();
+const CAT = Eco.catalog(RAW); // owned cards, packs (online/economy.ts)
 const DEFAULT_LIFE = ['SD01-021', 'SD01-022', 'SD01-023', 'SD01-024', 'SD01-025'];
 function metaDecks() {
   return fs.readdirSync(DECKS).filter((f) => f.endsWith('.json') && !['ninja.json', 'vanara.json'].includes(f)).sort().map((f) => {
@@ -175,6 +177,7 @@ type Seat = { user: string; deck: any | null; deckName: string; ready: boolean; 
 type Room = {
   code: string; name: string; host: string; password: string; priv: boolean; bo3: boolean;
   seats: (Seat | null)[]; chat: Msg[]; score: [number, number]; duel: Duel | null; last: any; created: number; games: number;
+  ranked?: boolean; // made by the Ranked queue: one duel, owned cards only, rank points
 };
 const ROOMS = new Map<string, Room>();
 const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I
@@ -196,7 +199,7 @@ function roomDetail(r: Room, me: User) {
     code: r.code, name: r.name, host: r.host, hostName: BY_ID.get(r.host)?.name || '', locked: !!r.password, priv: r.priv, bo3: r.bo3,
     seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: acctOf(BY_ID.get(s.user))?.showcase || [], ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
     score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games,
-    chat: r.chat.slice(-50), last: r.last ? { ...r.last, youWon: r.last.winnerId === me.id } : null,
+    chat: r.chat.slice(-50), last: r.last ? { ...r.last, rewards: undefined, myRewards: r.last.rewards?.[mine] || null, youWon: r.last.winnerId === me.id } : null, ranked: !!r.ranked,
     duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine] } : null,
   };
 }
@@ -230,6 +233,7 @@ type Duel = {
   log: any[]; logM: any[]; ended: boolean; winner: number | null; reason: string; error?: string;
   cards: [Record<string, any>, Record<string, any>]; emotes: any[]; seen: [number, number]; started: number; timeouts: [number, number];
   waiters: (() => void)[]; deckNames?: [string, string];
+  coinsOk?: [boolean, boolean]; colors?: [string, string]; rewards?: [any, any]; // economy: deck all owned cards, main colour, rewards given
 };
 const DUELS = new Map<string, Duel>();
 // seat 1's view: players swapped and every side number flipped, so its screen always sees itself as player 0
@@ -269,6 +273,7 @@ function startDuel(r: Room) {
     worker, port: ch.port1, flag: new Int32Array(shared, 0, 1), version: 0, states: [null, null], asks: [null, null], log: [], logM: [],
     ended: false, winner: null, reason: '', cards: [cardsFor(s0.deck), cardsFor(s1.deck)], emotes: [], seen: [Date.now(), Date.now()], started: Date.now(),
     timeouts: [0, 0], waiters: [], deckNames: [s0.deckName, s1.deckName],
+    coinsOk: [ownedDeck(u0, s0.deck), ownedDeck(u1, s1.deck)], colors: [deckColor(s0.deck), deckColor(s1.deck)], rewards: [null, null],
   };
   DUELS.set(d.id, d);
   r.duel = d;
@@ -313,6 +318,84 @@ function finish(d: Duel, winner: number | null, reason: string) {
   setTimeout(() => DUELS.delete(d.id), 10 * 60000).unref(); // a late screen can still read the final state for a while
   bump();
 }
+// ---------------------------------------------------------------- economy (online/economy.ts)
+// Off until the Supabase tables have the economy columns (README SQL step 2); local file storage always has it.
+const economyOn = () => !STORE.legacy;
+// every time an account is used: a new Thai day (missions, caps), a new season (rewards + soft reset), the start gift
+function ecoTouch(a: Account) { const p = Eco.prog(a); Eco.rollDay(p); const season = Eco.seasonCheck(a); const gift = Eco.startGift(p); return { season, gift }; }
+function ownedDeck(u: User | undefined, deck: any): boolean { const a = acctOf(u); return !!a && economyOn() && Eco.missingCards(Eco.prog(a), CAT, deck).length === 0; }
+function deckColor(deck: any): string {
+  const n = new Map<string, number>();
+  for (const c of deck?.main || []) { const col = INFO.get(c.print)?.color; if (col) n.set(col, (n.get(col) || 0) + Number(c.qty || 0)); }
+  return [...n.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+}
+function homeView(a: Account, extra: any = {}) {
+  const p = Eco.prog(a), lv = levelOf(a.xp), t = Eco.tierOf(a.rank_pts);
+  const missions = Eco.missionsView(p), login = Eco.loginState(p);
+  const starterSlots = 1 + (lv.level >= 5 ? 1 : 0) + (lv.level >= 10 ? 1 : 0);
+  return {
+    id: a.id.replace(/^g:/, '').slice(-6), name: a.name, avatar: a.avatar, showcase: a.showcase, ...lv,
+    wallet: { coins: p.coins, tickets: p.tickets, dust: p.dust },
+    login, missions, rerollLeft: !p.daily.rerolled, firstWinAvailable: !p.daily.firstWin, freePack: !p.daily.freePack,
+    bot: { xpLeft: Math.max(0, Eco.BOT.capXp - p.bot.xp), coinsLeft: Math.max(0, Eco.BOT.capCoins - p.bot.coins) },
+    rank: { ...t, div: t.step, pts: a.rank_pts, season: a.season, games: p.rank.games, wins: p.rank.wins, best: Eco.tierOf(p.rank.best).name, last: p.rank.last || null },
+    stats: { wins: a.wins, losses: a.losses, draws: a.draws },
+    cards: { kinds: Object.keys(p.cards).length, total: Object.values(p.cards).reduce((x, y) => x + y, 0) }, packsOpened: p.packs,
+    starters: p.starters, starterSlots, icons: p.icons,
+    badges: { login: login.canClaim, missions: missions.filter((m) => m.got >= m.n && !m.claimed).length, freePack: !p.daily.freePack, shop: !p.daily.freePack, starter: p.starters.length < starterSlots, newCards: 0 },
+    // flat fields for the Godot hub (Game modes thread): same values as above
+    coins: p.coins, tickets: p.tickets, dust: p.dust, giftPacks: p.tickets, firstTime: p.starters.length === 0,
+    rankBadge: a.rank_pts > 0 || p.rank.games > 0 ? { tier: t.tier, div: t.step, pts: a.rank_pts } : null,
+    ...extra,
+  };
+}
+// bot games: the game asks for a ticket when the duel starts and turns it in at the end (one use, 60 s minimum)
+const BOT_LAST = new Map<string, number>(); // account -> time of the last /me/botgame
+const BOT_TICKETS = new Map<string, { acct: string; level: string; at: number; coinsOk: boolean; color: string }>();
+setInterval(() => { const now = Date.now(); for (const [k, v] of BOT_TICKETS) if (now - v.at > 3 * 3600e3) BOT_TICKETS.delete(k); }, 600000).unref();
+
+// ---------------------------------------------------------------- ranked queue
+// Players wait with a deck of owned cards; every 2 s the two closest by hidden MMR are paired (the allowed gap grows
+// with the wait: 100 + 20 per second, anyone after 60 s) into a private one-duel room that starts at once.
+const QUEUE = new Map<string, { deck: any; deckName: string; mmr: number; since: number; char: string }>();
+setInterval(() => {
+  const now = Date.now();
+  const xs = [...QUEUE.entries()].filter(([id]) => { const u = BY_ID.get(id); if (!u || now - u.seen > 45000 || u.room) { QUEUE.delete(id); return false; } return true; })
+    .sort((a, b) => a[1].since - b[1].since);
+  const used = new Set<string>();
+  for (const [ida, qa] of xs) {
+    if (used.has(ida)) continue;
+    const gapA = (now - qa.since) / 1000 >= 60 ? Infinity : 100 + 20 * (now - qa.since) / 1000;
+    let best: [string, any] | null = null;
+    for (const [idb, qb] of xs) {
+      if (idb === ida || used.has(idb)) continue;
+      const gap = Math.abs(qa.mmr - qb.mmr), gapB = (now - qb.since) / 1000 >= 60 ? Infinity : 100 + 20 * (now - qb.since) / 1000;
+      if (gap <= Math.max(gapA, gapB) && (!best || gap < Math.abs(qa.mmr - best[1].mmr))) best = [idb, qb];
+    }
+    if (!best) continue;
+    used.add(ida); used.add(best[0]);
+    QUEUE.delete(ida); QUEUE.delete(best[0]);
+    const ua = BY_ID.get(ida)!, ub = BY_ID.get(best[0])!, qb = best[1];
+    const r: Room = {
+      code: newCode(), name: 'Ranked', host: ua.id, password: '', priv: true, bo3: false, ranked: true,
+      seats: [{ user: ua.id, deck: qa.deck, deckName: qa.deckName, ready: true, char: qa.char, warnings: [] }, { user: ub.id, deck: qb.deck, deckName: qb.deckName, ready: true, char: qb.char, warnings: [] }],
+      chat: [], score: [0, 0], duel: null, last: null, created: now, games: 0,
+    };
+    ROOMS.set(r.code, r); ua.room = r.code; ub.room = r.code;
+    pushMsg(r.chat, null, `Ranked match: ${ua.name} vs ${ub.name} · แรงก์`, true, 50);
+    startDuel(r);
+  }
+}, 2000).unref();
+let LB: { at: number; season: string; top: any[] } = { at: 0, season: '', top: [] };
+async function leaderboard() {
+  const s = Eco.seasonOf();
+  if (Date.now() - LB.at > 30000 || LB.season !== s) {
+    const rows = await STORE.leaderboard(s, 100);
+    LB = { at: Date.now(), season: s, top: rows.map((r, i) => ({ place: i + 1, name: r.name, avatar: r.avatar, pts: r.rank_pts, tier: Eco.tierOf(r.rank_pts).name, level: levelOf(r.xp).level, key: r.id.slice(-8) })) };
+  }
+  return LB;
+}
+
 // Accounts: wins/losses/draws, XP and the match history. A duel that ends before turn 3 (an instant surrender or
 // leave) and an engine error count for nothing, so two accounts can't farm levels.
 async function recordResult(d: Duel, winner: number | null, reason: string) {
@@ -321,17 +404,27 @@ async function recordResult(d: Duel, winner: number | null, reason: string) {
   const us = d.users.map((id) => BY_ID.get(id));
   const accts = us.map((u) => (u?.acct ? STORE.cached(u.acct) : undefined));
   if (!accts[0] && !accts[1]) return;
+  const ranked = !!d.room.ranked && !!accts[0] && !!accts[1];
+  const mmr = accts.map((a) => a?.mmr || 1000);
   for (const i of [0, 1]) {
     const a = accts[i];
     if (!a) continue;
-    if (winner === null) { a.draws++; a.xp += XP_DRAW; } else if (winner === i) { a.wins++; a.xp += XP_WIN; } else { a.losses++; a.xp += XP_LOSS; }
+    if (winner === null) a.draws++; else if (winner === i) a.wins++; else a.losses++;
+    const won = winner === null ? null : winner === i;
+    if (economyOn()) {
+      ecoTouch(a);
+      const r: any = Eco.gameReward(a, { pvp: true, ranked, won, color: d.colors?.[i], coinsOk: ranked || !!d.coinsOk?.[i] });
+      if (ranked) r.rank = Eco.rankedResult(a, mmr[1 - i], won);
+      d.rewards![i] = r;
+    } else a.xp += won === null ? 50 : won ? 100 : 40;
     await STORE.save(a);
   }
+  if (d.room.last) { d.room.last.rewards = d.rewards; bump(); duelBump(d); }
   const side = (i: number) => accts[i]?.id || 'guest:' + d.users[i];
   await STORE.addMatch({
     at: new Date().toISOString(), a: side(0), b: side(1), a_name: d.names[0], b_name: d.names[1], a_avatar: d.chars[0] || us[0]?.avatar || '', b_avatar: d.chars[1] || us[1]?.avatar || '',
     a_deck: d.deckNames?.[0] || '', b_deck: d.deckNames?.[1] || '',
-    winner, reason, turns, secs: Math.round((Date.now() - d.started) / 1000),
+    winner, reason, turns, secs: Math.round((Date.now() - d.started) / 1000), ranked,
   });
 }
 function duelOf(u: User): { d: Duel; seat: number } | null {
@@ -348,7 +441,7 @@ function duelView(d: Duel, seat: number, from: number) {
     version: d.version, state: d.states[seat], ask: d.asks[seat], log: log.slice(from), logFrom: from, logLen: log.length,
     ended: d.ended, winner: d.winner === null ? null : seat === 1 ? 1 - d.winner : d.winner, error: d.error, uncoded: [],
     online: {
-      seat, names: [d.names[seat], d.names[opp]], reason: d.reason, emotes: d.emotes.slice(-10).map((e) => ({ ...e, side: e.seat === seat ? 0 : 1 })),
+      seat, names: [d.names[seat], d.names[opp]], reason: d.reason, rewards: d.rewards?.[seat] || null, ranked: !!d.room.ranked, emotes: d.emotes.slice(-10).map((e) => ({ ...e, side: e.seat === seat ? 0 : 1 })),
       oppAway: Date.now() - d.seen[opp] > 15000 ? Math.round((Date.now() - d.seen[opp]) / 1000) : 0, forfeitAfter: AWAY_FORFEIT / 1000,
       waitingFor: d.asks[opp] && !d.asks[seat] ? 'opponent' : '',
     },
@@ -456,7 +549,8 @@ async function profileOf(u: User) {
       result: m.winner === null || m.winner === undefined ? 'draw' : m.winner === me ? 'win' : 'loss', reason: m.reason, turns: m.turns, secs: m.secs,
     };
   });
-  return { ...base, ...levelOf(a.xp), wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
+  const rank = economyOn() ? { ...Eco.tierOf(a.rank_pts), pts: a.rank_pts } : null;
+  return { ...base, ...levelOf(a.xp), rank, wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
 }
 const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
 <body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">
@@ -533,6 +627,7 @@ function lobbyView(u: User, chatFrom: number) {
     online: online().length, rooms: [...ROOMS.values()].filter((x) => !x.priv || x === r).map(roomBrief).slice(0, 200),
     chat: WORLD.filter((m) => m.id > chatFrom).slice(-100), room: r ? roomDetail(r, u) : null,
     turnSec: TIMER ? TURN_SEC : 0, reactSec: TIMER ? REACT_SEC : 0, timer: TIMER, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), googleLogin: GOOGLE,
+    queue: QUEUE.has(u.id) ? { waited: Math.round((Date.now() - QUEUE.get(u.id)!.since) / 1000), size: QUEUE.size } : null,
   };
 }
 
@@ -544,7 +639,9 @@ http.createServer(async (req, res) => {
   p = p.slice('/online'.length) || '/';
   const ip = ipOf(req);
   try {
-    if (p === '/ping' || p === '/') return send(res, 200, { ok: true, game: 'Battle of Talingchan', version: VERSION, online: online().length, rooms: ROOMS.size, googleLogin: GOOGLE, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), accounts: usingSupabase ? 'cloud' : 'local' });
+    if (p === '/ping' || p === '/') return send(res, 200, { ok: true, game: 'Battle of Talingchan', version: VERSION, online: online().length, rooms: ROOMS.size, googleLogin: GOOGLE, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), accounts: usingSupabase ? 'cloud' : 'local', economy: economyOn() });
+    if (p === '/shop/packs') return send(res, 200, { packs: Eco.packInfo(CAT), price: Eco.PRICE });
+    if (p === '/ranked/leaderboard') { const lb = await leaderboard(); return send(res, 200, { season: lb.season, top: lb.top, tiers: Eco.TIERS }); }
     if (p === '/privacy') return send(res, 200, PRIVACY, 'text/html; charset=utf-8');
     if (p === '/test/account' && req.method === 'POST' && process.env.TEST_ACCOUNTS === '1') { // tests only: an account without Google
       const b = await readBody(req);
@@ -648,6 +745,87 @@ http.createServer(async (req, res) => {
       return send(res, 200, lobbyView(u, chatFrom));
     }
     if (p === '/logout' && req.method === 'POST') { leaveRoom(u); return send(res, 200, { ok: true }); }
+    // ---- game economy (online/economy.ts): accounts only; every change is saved before answering
+    if (p.startsWith('/me/') && !['/me/profile', '/me/decks'].includes(p) || p === '/ranked/queue' || p === '/ranked/leave') {
+      const a = acctOf(u);
+      if (!a) return send(res, 403, { error: 'Log in with Google to collect rewards, cards and rank. · เข้าสู่ระบบด้วย Google ก่อน', guest: true });
+      if (!economyOn()) return send(res, 503, { error: 'The server needs a database update first (README SQL step 2).' });
+      const { season, gift } = ecoTouch(a);
+      const pr = Eco.prog(a);
+      const b = req.method === 'POST' ? await readBody(req) : {};
+      const done = async (out: any, code = 200) => { if (!out.error) await STORE.save(a); return send(res, out.error ? 400 : code, out); };
+      if (p === '/me/home') { await STORE.save(a); return send(res, 200, homeView(a, { seasonReward: season, gift })); }
+      if (p === '/me/login-reward' && req.method === 'POST') return done({ ...Eco.claimLogin(pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
+      if (p === '/me/missions/claim' && req.method === 'POST') return done({ ...Eco.claimMission(pr, Number(b.i)), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
+      if (p === '/me/missions/reroll' && req.method === 'POST') return done({ ...Eco.rerollMission(pr, Number(b.i)), missions: Eco.missionsView(pr) });
+      if (p === '/me/bot/start' && req.method === 'POST') {
+        const level = ['easy', 'normal', 'hard'].includes(String(b.level)) ? String(b.level) : 'normal';
+        if (pr.bot.games >= Eco.BOT.maxGames) return send(res, 200, { ticket: '', note: 'Daily bot rewards are used up. · รางวัลบอทวันนี้หมดแล้ว' });
+        const c = b.deck ? cleanDeck(b.deck) : { deck: null };
+        const t = crypto.randomBytes(12).toString('hex');
+        BOT_TICKETS.set(t, { acct: a.id, level, at: Date.now(), coinsOk: !!c.deck && Eco.missingCards(pr, CAT, c.deck).length === 0, color: c.deck ? deckColor(c.deck) : '' });
+        return send(res, 200, { ticket: t, coinsOk: BOT_TICKETS.get(t)!.coinsOk, xpLeft: Math.max(0, Eco.BOT.capXp - pr.bot.xp), coinsLeft: Math.max(0, Eco.BOT.capCoins - pr.bot.coins) });
+      }
+      if (p === '/me/bot/finish' && req.method === 'POST') {
+        const t = BOT_TICKETS.get(String(b.ticket || ''));
+        if (!t || t.acct !== a.id) return send(res, 400, { error: 'This game was not started for rewards.' });
+        BOT_TICKETS.delete(String(b.ticket));
+        if (Date.now() - t.at < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3) return send(res, 200, { xp: 0, coins: 0, note: 'Too short for rewards. · เกมสั้นเกินไป' });
+        return done(Eco.gameReward(a, { pvp: false, won: !!b.won, bot: t.level, color: t.color, coinsOk: t.coinsOk }));
+      }
+      if (p === '/me/packs/open' && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : 'coins'), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
+      if (p === '/me/packs' ) return send(res, 200, { packs: Eco.packInfo(CAT, pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, freePack: !pr.daily.freePack });
+      if (p === '/me/cards' || p === '/me/collection') return send(res, 200, { ok: true, cards: pr.cards, dust: pr.dust });
+      // first-time flow (Game modes hub): name + picture + first starter deck in one call -> same as /me/home
+      if (p === '/me/setup' && req.method === 'POST') {
+        if (b.name !== undefined) {
+          const nm = cleanLine(b.name, 16);
+          if ([...nm].length < 2) return send(res, 400, { error: 'Pick a name of 2 to 16 characters. · ตั้งชื่อ 2-16 ตัวอักษร' });
+          if (filterText(nm) !== nm) return send(res, 400, { error: 'Pick another name. · กรุณาเปลี่ยนชื่อ' });
+          a.name = nm; u.name = uniqueName(nm, u);
+        }
+        if (b.avatar !== undefined && cleanAvatar(b.avatar)) { a.avatar = cleanAvatar(b.avatar); u.avatar = a.avatar; }
+        if (b.starter && !pr.starters.includes(String(b.starter))) { const r = Eco.claimStarter(a, CAT, RAW, String(b.starter)); if (r.error) return send(res, 400, r); }
+        await STORE.save(a); usersDirty = true; bump();
+        return send(res, 200, homeView(a, { gift }));
+      }
+      // one-call bot result (no ticket): EXP + coins (owned deck only) within the daily caps; one per BOT_MIN_SECS
+      if (p === '/me/botgame' && req.method === 'POST') {
+        const level = ['easy', 'normal', 'hard'].includes(String(b.level)) ? String(b.level) : 'normal';
+        const last = BOT_LAST.get(a.id) || 0, lvBefore = levelOf(a.xp).level;
+        if (Date.now() - last < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3 || pr.bot.games >= Eco.BOT.maxGames) return send(res, 200, { xpGain: 0, coins: 0, ...levelOf(a.xp), leveledUp: false, note: 'No rewards for this game. · ไม่ได้รางวัลเกมนี้' });
+        BOT_LAST.set(a.id, Date.now());
+        const c = b.deck ? cleanDeck(b.deck) : { deck: null as any };
+        const r: any = Eco.gameReward(a, { pvp: false, won: !!(b.win ?? b.won), bot: level, color: c.deck ? deckColor(c.deck) : '', coinsOk: !!c.deck && Eco.missingCards(pr, CAT, c.deck).length === 0 });
+        await STORE.save(a);
+        return send(res, 200, { ...r, xpGain: r.xp, ...levelOf(a.xp), leveledUp: levelOf(a.xp).level > lvBefore });
+      }
+      if (p === '/me/craft' && req.method === 'POST') return done({ ...Eco.craft(pr, CAT, String(b.code || '')), dust: pr.dust });
+      if (p === '/me/starter' && req.method === 'POST') return done(Eco.claimStarter(a, CAT, RAW, String(b.set || '')));
+      if (p === '/me/deck/check' && req.method === 'POST') {
+        const c = cleanDeck(b.deck);
+        if (c.error) return send(res, 200, { legal: false, error: c.error, missing: b.deck && typeof b.deck === 'object' ? Eco.missingCards(pr, CAT, b.deck) : [] });
+        const miss = Eco.missingCards(pr, CAT, c.deck);
+        return send(res, 200, { legal: miss.length === 0, missing: miss });
+      }
+      if (p === '/ranked/queue' && req.method === 'POST') {
+        const c = cleanDeck(b.deck);
+        if (c.error) return send(res, 400, { error: c.error });
+        const miss = Eco.missingCards(pr, CAT, c.deck);
+        if (miss.length) return send(res, 400, { error: `Ranked needs cards you own. Missing: ${miss.slice(0, 5).map((m) => `${m.name} ${m.have}/${m.need}`).join(', ')}${miss.length > 5 ? '…' : ''} · แรงก์ใช้ได้เฉพาะการ์ดที่มี`, missing: miss });
+        if (u.room) leaveRoom(u);
+        QUEUE.set(u.id, { deck: c.deck, deckName: c.deck.name, mmr: a.mmr, since: Date.now(), char: cleanAvatar(b.char) || u.avatar || '' });
+        bump();
+        return send(res, 200, { ok: true, queued: QUEUE.size });
+      }
+      if (p === '/ranked/leave' && req.method === 'POST') { QUEUE.delete(u.id); bump(); return send(res, 200, { ok: true }); }
+      if (p === '/me/ranked') {
+        const lb = await leaderboard();
+        const place = lb.top.find((x) => x.key === a.id.slice(-8))?.place || null;
+        return send(res, 200, { ...Eco.tierOf(a.rank_pts), pts: a.rank_pts, season: a.season, games: pr.rank.games, wins: pr.rank.wins, place });
+      }
+      return send(res, 404, { error: 'Not found' });
+    }
     // ---- profiles and cloud decks (accounts)
     if (p === '/me/profile' && req.method === 'GET') return send(res, 200, await profileOf(u));
     if (p === '/profile' && req.method === 'GET') {
@@ -714,6 +892,7 @@ http.createServer(async (req, res) => {
       const b = await readBody(req);
       const r = ROOMS.get(cleanLine(b.code, 8).toUpperCase());
       if (!r) return send(res, 404, { error: 'No room with that code. · ไม่พบห้อง' });
+      if (r.ranked && seatOf(r, u) < 0) return send(res, 403, { error: 'That is a Ranked match. · ห้องแรงก์' });
       if (seatOf(r, u) >= 0) { u.room = r.code; return send(res, 200, { ok: true, code: r.code }); }
       if (r.password && cleanLine(b.password, 20) !== r.password) {
         if (limited('pw:' + u.id, 8)) return send(res, 429, { error: 'Too many tries.' });
@@ -733,6 +912,7 @@ http.createServer(async (req, res) => {
     if (p === '/room/deck' && req.method === 'POST') {
       if (!room || mySeat < 0) return send(res, 400, { error: 'You are not in a room.' });
       if (room.duel && !room.duel.ended) return send(res, 409, { error: 'The duel is running.' });
+      if (room.ranked) return send(res, 409, { error: 'Ranked: queue again for the next match. · เข้าคิวใหม่' });
       const b = await readBody(req);
       const c = cleanDeck(b.deck);
       if (c.error) return send(res, 400, { error: c.error });
@@ -746,6 +926,7 @@ http.createServer(async (req, res) => {
       const b = await readBody(req);
       const s = room.seats[mySeat]!;
       if (b.ready && !s.deck) return send(res, 400, { error: 'Pick a deck first. · เลือกเด็คก่อน' });
+      if (room.ranked) return send(res, 409, { error: 'Ranked: queue again for the next match. · เข้าคิวใหม่' });
       s.ready = !!b.ready;
       bump();
       maybeStart(room);

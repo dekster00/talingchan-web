@@ -93,6 +93,29 @@ Calls: `GET /online/google/start?state=` (opens Google), `/online/google/callbac
 `GET|POST /online/me/profile {name, avatar, showcase}`, `GET /online/profile?id=<player id>`,
 `GET|POST /online/me/decks {decks: {slug: {d, t}}}`. Results are recorded by the server itself.
 
+## Game economy: rewards, packs, cards, Ranked (online/economy.ts)
+Needs the accounts above plus **SQL step 2** (Supabase SQL Editor, run once). Until then the server runs without it
+(`/online/ping` says `economy:false`) and the calls below answer 503.
+```sql
+alter table accounts add column prog jsonb default '{}', add column rank_pts int default 0,
+  add column mmr int default 1000, add column season text default '';
+alter table matches add column ranked boolean default false;
+create index accounts_rank on accounts (season, rank_pts desc);
+```
+All values are decided by the server (no real money). Guests get 403 `{guest:true}`. Errors are 400 `{error}`.
+- `GET /me/home`: profile, level, wallet (also flat `coins tickets dust`), login calendar, 3 missions, bot caps,
+  `rank {tier, div, pts, name, season}`, `badges {login, missions (count), shop, starter}`, `firstTime`, `gift` (start gift, once).
+- `POST /me/setup {name, avatar, starter:"SD01"}` first-time flow, answers like /me/home.
+- `POST /me/login-reward`, `POST /me/missions/claim {i}`, `POST /me/missions/reroll {i}` (one reroll a day).
+- Bot games (EXP always, coins only with an all-owned deck; daily cap 400 EXP / 200 coins; never in match history):
+  `POST /me/botgame {level, win, turns, deck?}` -> `{xpGain, coins, level, xpIn, xpNext, leveledUp, firstWin}`,
+  or the stricter pair `POST /me/bot/start {level, deck}` -> `{ticket}` then `POST /me/bot/finish {ticket, won, turns}`.
+- Cards: `GET /shop/packs` (sets, odds, pity 40), `POST /me/packs/open {set, count 1-10, pay: coins|ticket|free}`,
+  `GET /me/collection` -> `{cards: {code: copies}, dust}`, `POST /me/craft {code}`, `POST /me/starter {set}`,
+  `POST /me/deck/check {deck}` -> `{legal, missing}` (Ranked = owned cards only; same card name counts across prints).
+- Ranked: `POST /ranked/queue {deck, char}` (refuses unowned decks), `POST /ranked/leave`, `GET /me/ranked`,
+  `GET /ranked/leaderboard`. A match appears as a private ranked room in `/poll`; its `last.myRewards` shows rewards.
+
 ## How it works (for programmers)
 
 - `online/server.ts`: lobby (login, rooms, room list, world + room chat, long-poll `/online/poll`) and duels.
