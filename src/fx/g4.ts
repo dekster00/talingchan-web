@@ -1211,3 +1211,32 @@ costFirst('เอาแค่การ์ด !!!', (g, p, c) => {
   if (!d) return false;
   discard(g, p, d); return true;
 }, (g, p) => { const t = best(P(g, opp(p)).avatars.filter((a) => magicOk(g, p, a)), (a) => value(g, a)); if (t) removeOpp(g, p, t, 'hand', true); });
+
+// ===== bugfix8 (2026-11-02): new BT12 cards =====
+import { addPower as addPowerB8 } from '../engine.ts';
+Object.assign(FX, {
+  'ร่างอวตารพระนารายณ์ - พระราม': {
+    keep: 4,
+    react: narayWatch(),
+    // approx: the red keyword on the picture is unreadable (asked the user); POWER +1 stays while they are on the field
+    handActs: narayAct('ร่างอวตารพระนารายณ์ - พระราม', (g, p, c) => {
+      for (const a of onZone(g, p, 'พระนารายณ์')) addPowerB8(g, a, 1, 'perm', c);
+      log(g, `${c.def.name}: every พระนารายณ์ gets POWER +1`);
+      if (P(g, p).avatars.includes(c)) c.f.narayEnd = g.turn;
+    }),
+    endPhase: narayEnd,
+  },
+  'มาร์โก้ มนุษย์ดาว R18': {
+    keep: 3,
+    jutsu: (g: Game, c: Card) => {
+      const hs = hellAvatars(g, opp(c.ctrl));
+      if (!hs.length) return;
+      const low = Math.min(...hs.map((x) => x.def.cost));
+      const t = pickN(hs.filter((x) => x.def.cost === low), 1, (x) => x.def.power, { title: `${c.def.name}: the lowest-Cost Avatar becomes your servant` })[0];
+      if (!t) return;
+      makeServant(g, c.ctrl, t);
+      log(g, `${(t.def as any).orig?.name || t.def.name} becomes a servant in P${c.ctrl}'s Magic Zone`);
+    },
+    aura: (g: Game, s: Card, t: Card) => (t !== s && t.ctrl === s.ctrl && P(g, s.ctrl).avatars.includes(s) && P(g, s.ctrl).avatars.includes(t) && named(t, 'มนุษย์ดาว R18') && !isServant(t) ? 1 : 0),
+  },
+} as Record<string, Fx>);

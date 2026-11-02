@@ -52,7 +52,8 @@ export interface Fx {
   assistBonus?(g: Game, helper: Card, to: Card, kind: 'unity' | 'backstab'): number; // POWER the helper gains just before it helps (counts in the buff)
   onAssistUsed?(g: Game, src: Card, helper: Card, attacker: Card, kind: 'unity' | 'backstab'): void; // any helper used สามัคคี / แทงหลัง
   onAnyMill?(g: Game, src: Card, p: PID, cards: Card[]): void; // any ธรณีสูบ happened (src = a card in play)
-  lockCtrl?: boolean; // Magic Zone card: our Avatars' control can't change (รูปประจำบ้าน)
+  onScoutHell?(g: Game, c: Card, src: Card | null): void; // bugfix8: c was sent to Hell by a สอดแนม of src (มารินะ)
+  lockCtrl?: boolean | ((g: Game, s: Card) => boolean); // Magic Zone card: our Avatars' control can't change (รูปประจำบ้าน)
   magicImmune?(g: Game, c: Card): boolean; // continuous "unaffected by opponent Magic" (เล่าปี่)
   kwIf?(g: Game, c: Card, kw: string): boolean; // conditional own keyword
   kickIf?(g: Game, c: Card): boolean; // conditional เตะไข่

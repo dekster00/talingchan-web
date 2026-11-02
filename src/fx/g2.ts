@@ -478,7 +478,7 @@ Object.assign(FX, {
   },
   'รถถัง B66 - เอ็กซ์เซลเซอร์': {
     keep: 3,
-    staticPower: (g, c) => { noAttackIf(g, c, !c.mods.some(isA), 'tank'); return 0; },
+    staticPower: (g, c) => { noAttackIf(g, c, !c.mods.some((m) => isA(m) || m.def.name === 'ชิป Tank Ranger A.I.'), 'tank'); return 0; },
   },
   'ช่วยโลกใบนี้ไว้': turnMagic({
     // v14 ruling: it stays in the Magic Zone until the End Phase of this turn. While it does, every {เปรต} Avatar on our

@@ -96,6 +96,7 @@ const isHellSym = (c: Card) => isA(c) && symIs(c, 'นรก');
 const isTank = (c: Card) => isA(c) && named(c, 'รถถัง');
 const isRanger = (c: Card) => isA(c) && c.def.name.includes('Tank Ranger') && !c.def.name.includes('รถถัง');
 const TANK_NOGEAR = 'รถถัง "Tank Ranger"';
+const wornAv = (m: Card) => isA(m) || m.def.name === 'ชิป Tank Ranger A.I.'; // bugfix8: a worn ชิป Tank Ranger A.I. counts as an Avatar
 const isBT = (c: Card) => isA(c) && named(c, 'บึงทมิฬ') && named(c, 'People');
 const isFish = (c: Card) => isA(c) && (symIs(c, 'ปลา') || c.def.name === 'วอเตอร์แมน');
 const BT_LAND = 'บึงทมิฬ';
@@ -115,12 +116,12 @@ const NURSE_KEY = 'lg:บึงทมิฬ  People - คุณพยาบา�
 const GEN_BY = new Map<number, boolean>(); // แฮหัวตุ้น: uid -> its summon was made by a ขุนพล ชาวต่างชาติ ability
 
 function refreshTank(g: Game, t: Card) {
-  if (t.def.name === TANK_NOGEAR) t.f.noAttack = t.mods.some(isA) ? 0 : g.turn; // can't attack with no Avatar worn
+  if (t.def.name === TANK_NOGEAR) t.f.noAttack = t.mods.some(wornAv) ? 0 : g.turn; // can't attack with no Avatar worn
 }
 function tankFor(g: Game, p: PID, x: Card, prefer?: Card | null) {
   const ok = P(g, p).avatars.filter((t) => t !== x && isTank(t) && !t.mods.some((m) => m.def.name === x.def.name));
   if (prefer && ok.includes(prefer)) return prefer;
-  return best(ok, (t) => value(g, t) + (t.mods.some(isA) ? 0 : 3));
+  return best(ok, (t) => value(g, t) + (t.mods.some(wornAv) ? 0 : 3));
 }
 const anyTank = (g: Game, p: PID, x: Card) => P(g, p).avatars.some((t) => t !== x && isTank(t) && !t.mods.some((m) => m.def.name === x.def.name));
 function rangerAttachAct(name: string): (g: Game, p: PID, c: Card) => HandAct[] {
@@ -375,7 +376,7 @@ const NEW: Record<string, any> = {
     modPower: (g: Game, m: Card, w: Card) => (isTank(w) ? 1 : 0),
     onWearerKill: (g: Game, m: Card, w: Card) => {
       if (g.active !== w.ctrl || !w.asleep) return;
-      if (w.def.name === TANK_NOGEAR && !w.mods.some((x) => x !== m && isA(x))) return; // it would lose the ability to attack
+      if (w.def.name === TANK_NOGEAR && !w.mods.some((x) => x !== m && wornAv(x))) return; // it would lose the ability to attack
       detach(g, m); P(g, m.owner).hell.push(m); w.asleep = false; refreshTank(g, w);
       log(g, 'จ่าแดงเดือด is destroyed: ' + w.def.name + ' wakes up');
     },
@@ -1133,3 +1134,16 @@ costFirst('หนุมานถวายแหวน', (g, p) => discardWorst(g
   const t = best(oppTargets(g, p, true), (a) => value(g, a));
   if (t) destroy(g, t, p, true);
 });
+
+// ===== bugfix8 (2026-11-02): BT12-069 =====
+const robotTank = (w: Card) => isA(w) && named(w, 'รถถัง') && symIs(w, 'หุ่นยนต์');
+Object.assign(FX, {
+  'ชิป Tank Ranger A.I.': {
+    keep: 2.5,
+    wearIf: (g: Game, self: Card, w: Card) => robotTank(w),
+    modTarget: (g: Game, p: PID) => best(P(g, p).avatars.filter(robotTank), (a) => value(g, a) + (a.mods.some(wornAv) ? 0 : 3)),
+    modPower: () => 2,
+    costOnlyFor: (forCard: Card) => robotTank(forCard) || forCard.def.name.includes('Tank Ranger'),
+    onAttach: (g: Game, m: Card, w: Card) => refreshTank(g, w),
+  },
+} as Record<string, any>);

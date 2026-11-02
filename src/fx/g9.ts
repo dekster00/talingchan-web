@@ -861,3 +861,271 @@ Object.assign(FX, {
   },
 
 } as Record<string, Fx>);
+
+// ===== bugfix8 (2026-11-02): the rest of BT12 from the real card pictures (user upload). Approximations are marked "approx:". =====
+import { addToHand } from '../engine.ts';
+import { addSymbols, setSymbols } from '../view.ts';
+import { addRule as addRule2, RULES as RULES2 } from '../engine.ts';
+const XVI = (c: Card) => named(c, 'หน่วยรบ XVI');
+const xviOrOp = (c: Card) => named(c, 'หน่วยรบ XVI') || named(c, 'โอเปอเรชั่น');
+/** มารินะ: "ถูกทิ้งจากความสามารถ สอดแนม ของ หน่วยรบ XVI / โอเปอเรชั่น" (engine scoutDeck rest 'hell' + สกายฟอลล์ call this) */
+export function marinaCheck(g: Game, c: Card, src: Card | null) {
+  const f = FX[c.def.name];
+  if (f && (f as any).onScoutHell && g.winner === null) decide(g, c.owner, () => withSource(c, () => (f as any).onScoutHell(g, c, src)));
+}
+const ghost = (c: Card) => isA(c) && symIs(c, 'ผี');
+const ghostsOn = (g: Game, p: PID) => P(g, p).avatars.filter(ghost).length;
+const linkedNow = (g: Game, c: Card) => P(g, c.ctrl).avatars.some((a) => a.uid !== c.uid && a.f.linkWith === c.uid && c.f.linkWith === a.uid);
+const ONE_FOR_ALL = 'หนึ่งเดียวเพื่อทุกอย่าง';
+const wearsOne = (c: Card) => c.mods.some((m) => m.def.name === ONE_FOR_ALL);
+const knightCount = (g: Game, p: PID) => P(g, p).avatars.filter((a) => named(a, 'อัศวินโต๊ะกลม') || named(a, 'เมอลิน')).length;
+RULES2['อัดคาบ้าน'] = { cast: (g, r, c) => c.def.subtype !== 'React', label: "can't use React Magic (คาถาอัดคาบ้าน)" };
+
+Object.assign(FX, {
+  'มารินะ หน่วยรบ XVI': {
+    keep: 2.5,
+    onScoutHell: (g: Game, c: Card, src: Card | null) => {
+      const p = c.owner;
+      if (!src || !xviOrOp(src) || !P(g, p).hell.includes(c) || !once(g, p, 'marina')) return;
+      use(g, p, 'marina');
+      if (!addToHand(g, c, p, { from: 'hell' })) return;
+      log(g, `${c.def.name} returns from Hell to the hand`);
+      const t = pickN(P(g, p).avatars.filter(XVI), 1, (a) => power(g, a), { optional: true, title: `${c.def.name}: a หน่วยรบ XVI gets POWER +1` })[0];
+      if (t) addPower(g, t, 1, 'perm', c); // approx: no duration printed = it stays while the card is on the field
+    },
+  },
+  'รัททาทุยต่างโลก': {
+    keep: 1.5,
+    hellActs: (g, p, c) => [act('รัททาทุยต่างโลก: exile from Hell, a รัททาทุย gets POWER +1', (g2) => (g2.phase === 'Main' || g2.phase === 'Battle') && g2.active === p
+      && P(g2, p).hell.includes(c) && P(g2, p).avatars.some((a) => symIs(a, 'รัททาทุย')),
+    (g2) => withSource(c, () => {
+      if (!toExile(g2, c)) return;
+      const t = pickN(P(g2, p).avatars.filter((a) => symIs(a, 'รัททาทุย')), 1, (a) => power(g2, a) + (a.asleep ? 0 : 3), { title: 'รัททาทุยต่างโลก: POWER +1 until the end of the turn' })[0];
+      if (t) boost(t, 1);
+    }))],
+  },
+  'บึงทมิฬ People - คุณบ๊วบ': {
+    keep: 2.5,
+    fieldActs: (g, p, c) => [act('คุณบ๊วบ: a ปลา Avatar from Hell to the top of the Deck', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'buab:' + c.uid)
+      && P(g2, p).hell.some((x) => isA(x) && symIs(x, 'ปลา')),
+    (g2) => withSource(c, () => {
+      use(g2, p, 'buab:' + c.uid);
+      const t = pickN(P(g2, p).hell.filter((x) => isA(x) && symIs(x, 'ปลา')), 1, (x) => keepValue(g2, x), { title: 'คุณบ๊วบ: put on top of your Deck' })[0];
+      if (t && toDeck(g2, t, 'top')) log(g2, `${c.def.name}: ${t.def.name} goes on top of the Deck`);
+    }))],
+  },
+  'ไดโนกาฬสินธุ์ - สยามแรปเตอร์': {
+    keep: 3,
+    onScouted: (g: Game, self: Card, p: PID, by: PID | null, src: Card | null) => {
+      if (!src || !isA(src) || !symIs(src, 'กะปอม') || src.ctrl !== self.owner) return;
+      const q = self.owner;
+      if (!canPlaceAvatar(P(g, q), false, self) || uniqueBlocked(g, q, self) || !summonAllowed(g, q, self, 'effect')) return;
+      if (!mayDo(g, self, `${self.def.name}: summon it (it was revealed by สอดแนม)?`, true)) return;
+      if (summon(g, q, self, 'effect')) log(g, `${self.def.name} is summoned from the สอดแนม`);
+    },
+    staticPower: (g: Game, c: Card) => (g.active === c.ctrl ? 2 : 0),
+  },
+  'อีสานสลิงเกอร์ ปัณณ์': {
+    keep: 3,
+    jutsu: (g: Game, c: Card) => {
+      const p = c.ctrl;
+      if (!lands(g).some((l) => l.def.name === 'โคกอีสานนูน')) return;
+      mill(g, p, 3);
+      const t = pickN(P(g, p).hell.filter((x) => isA(x) && named(x, 'อีสานสลิงเกอร์')), 1, (x) => keepValue(g, x), { optional: true, title: `${c.def.name}: an อีสานสลิงเกอร์ from Hell back into the Deck (shuffle)` })[0];
+      if (t && toDeck(g, t, 'shuffle')) log(g, `${c.def.name}: ${t.def.name} goes back into the Deck`);
+    },
+    // approx: "the attack target of an อีสานสลิงเกอร์ was changed" = its attack went to LIFE through ปิ่น's redirect (เตะไข่); needs the [Link]
+    afterFight: (g: Game, self: Card, att: Card, target: Card | null) => {
+      if (target !== null || !att.kick || att.ctrl !== self.ctrl || !named(att, 'อีสานสลิงเกอร์') || !P(g, self.ctrl).avatars.includes(self) || !linkedNow(g, self)) return;
+      const p = self.ctrl;
+      const t = decide(g, p, () => withSource(self, () => pickN([...P(g, opp(p)).avatars, ...P(g, opp(p)).mz], 1, (x) => value(g, x), { title: `${self.def.name}: destroy 1 card on the opponent's field` })[0]));
+      if (t) destroy(g, t, p);
+    },
+  },
+  'ตะเคียนทอง': {
+    keep: 3,
+    fieldActs: (g, p, c) => [act('ตะเคียนทอง: wear a {mod} from Hell, an opponent Avatar becomes ผี', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'takhian:' + c.uid)
+      && P(g2, p).avatars.some((a) => a !== c && ghost(a)) && P(g2, p).hell.some((m) => m.def.subtype === 'Modification' && !m.def.only && canWearE(g2, m, c)),
+    (g2) => withSource(c, () => {
+      use(g2, p, 'takhian:' + c.uid);
+      const m = pickN(P(g2, p).hell.filter((x) => x.def.subtype === 'Modification' && !x.def.only && canWearE(g2, x, c)), 1, (x) => keepValue(g2, x), { title: 'ตะเคียนทอง: the {mod} to wear' })[0];
+      if (m) { detach(g2, m); attach(g2, m, c); }
+      const t = pickN(P(g2, opp(p)).avatars, 1, (a) => power(g2, a), { optional: true, title: 'ตะเคียนทอง: an opponent Avatar becomes {ผี} until the end of their turn' })[0];
+      if (t) { setSymbols(g2, t, ['ผี'], g2.turn + 1); log(g2, `${t.def.name} is {ผี} until the end of the next turn`); }
+    }))],
+  },
+  'นางตานีด่าง': {
+    keep: 3,
+    staticPower: (g: Game, c: Card) => { const v = 2 * ghostsOn(g, c.ctrl); return c.f.taniHalf === g.turn ? Math.floor(v / 2) : v; },
+    // approx: "choose 2 attack targets instead of 1" is not modeled yet (waiting on the user's ruling); the halving is
+    fieldActs: (g, p, c) => [act('นางตานีด่าง: halve its POWER, attack 2 targets this turn', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'tani:' + c.uid) && ghostsOn(g2, p) >= 3 && humanSeat(g2, p),
+    (g2) => { use(g2, p, 'tani:' + c.uid); c.f.taniHalf = g2.turn; log(g2, `${c.def.name}: base POWER halved this turn`); })],
+  },
+  'ผีตายาย': {
+    keep: 2.5,
+    battle: (g: Game, c: Card, other: Card) => { if (symIs(other, 'ผี')) { boost(c, 8 - c.def.power, 'battle'); log(g, `${c.def.name}: base POWER 8 (fights a {ผี} Avatar)`); } },
+  },
+  'หัวหน้าเผ่าสายตาดี': {
+    keep: 3,
+    jutsu: (g: Game, c: Card) => {
+      const p = c.ctrl;
+      let took: Card | null = null;
+      peek(g, p, 4, (top) => { took = takeHand(g, p, top, (x) => isA(x) && (named(x, 'ผู้รู้ความจริง') || named(x, 'ชนเผ่าสายตาดี'))); }, 'either');
+      if (!took) return;
+      const t = pickN(P(g, p).avatars, 1, (a) => power(g, a) + (a.asleep ? 0 : 3), { title: `${c.def.name}: POWER +1 until the end of the turn` })[0];
+      if (t) boost(t, 1);
+    },
+  },
+  'โอ้หนึ่ง เซลล์แมนกิตติมศักดิ์รุ่นแรก': {
+    keep: 2.5, alias: ['ผู้รู้ความจริง'],
+    fieldActs: (g, p, c) => [act('โอ้หนึ่ง: สอดแนม 1, top or bottom', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'ohnueng:' + c.uid) && P(g2, p).deck.length > 0,
+    (g2) => withSource(c, () => { use(g2, p, 'ohnueng:' + c.uid); peek(g2, p, 1, () => {}, 'either'); }))],
+  },
+  'เกตุ ฮีโร่วัยเยาว์': {
+    keep: 4,
+    jutsu: (g: Game, c: Card) => {
+      const p = c.ctrl;
+      peek(g, p, 7, (top) => {
+        const m = top.find((x) => x.def.name === ONE_FOR_ALL);
+        if (!m || !P(g, p).avatars.includes(c)) return;
+        top.splice(top.indexOf(m), 1);
+        if (!attach(g, m, c)) P(g, p).hell.push(m);
+      }, 'shuffle');
+    },
+    onKill: (g: Game, c: Card) => {
+      const m = c.mods.find((x) => x.def.name === ONE_FOR_ALL);
+      if (!m) return;
+      const p = c.ctrl;
+      if (!mayDo(g, c, `${c.def.name}: exile หนึ่งเดียวเพื่อทุกอย่าง to hit the opponent's LIFE 3 times?`, true)) return;
+      detach(g, m); P(g, m.owner).exile.push(m); m.wearer = -1;
+      log(g, `${c.def.name}: หนึ่งเดียวเพื่อทุกอย่าง is exiled, 3 LIFE hits`);
+      for (let i = 0; i < 3 && g.winner === null; i++) hitLife(g, opp(p), c);
+    },
+    staticPower: (g: Game, c: Card) => { if (!wearsOne(c)) c.f.noAttack = g.turn; else if (c.f.noAttack === g.turn) c.f.noAttack = 0; return 0; },
+    // approx: "can't get POWER from other cards except หนึ่งเดียวเพื่อทุกอย่าง" is not modeled
+  },
+  'อุยเอี๋ยน ขุนพลคนเถื่อนแห่งจ๊กก๊ก': {
+    keep: 3,
+    gemAs: (g: Game, c: Card, forCard: Card | null) => {
+      if (!forCard || !isA(forCard) || !named(forCard, 'ขุนพล') || !symIs(forCard, 'ต่างชาติ')) return c.def.gem;
+      const x = best(P(g, c.owner).hell.filter((y) => isA(y) && named(y, 'ขุนพล') && colorIs(y, 'เขียว') && symIs(y, 'ต่างชาติ')), (y) => y.def.gem);
+      return c.def.gem + (x ? x.def.gem : 0);
+    },
+    usedAsCost: (g: Game, p: PID, c: Card, summoned: Card) => {
+      if (!isA(summoned) || !named(summoned, 'ขุนพล') || !symIs(summoned, 'ต่างชาติ')) return;
+      const x = best(P(g, p).hell.filter((y) => y !== c && isA(y) && named(y, 'ขุนพล') && colorIs(y, 'เขียว') && symIs(y, 'ต่างชาติ')), (y) => y.def.gem);
+      if (x && toExile(g, x)) log(g, `${c.def.name}: ${x.def.name} is exiled from Hell, its GEM is added`);
+    },
+  },
+  'หมบ': { keep: 1.5, alias: ['หมา', 'กบ'], vanilla: true } as any,
+  'ฉันทิ้งชื่อตัวเองไปแล้ว': {
+    keep: 1.5,
+    canCast: (g: Game, p: PID) => P(g, p).hell.some(isA) && P(g, p).avatars.length > 0,
+    resolve: (g: Game, p: PID, c: Card) => {
+      const src = pickN(P(g, p).hell.filter(isA), 1, (x) => symbolsOf(x, g).length, { title: 'ฉันทิ้งชื่อตัวเองไปแล้ว: name an Avatar in your Hell' })[0];
+      if (!src) return;
+      const t = pickN(P(g, p).avatars, 1, (a) => power(g, a), { title: `ฉันทิ้งชื่อตัวเองไปแล้ว: this Avatar gets the Symbols of ${src.def.name}` })[0];
+      if (!t) return;
+      addSymbols(g, t, symbolsOf(src, g), g.turn);
+      log(g, `${t.def.name} gets the Symbols of ${src.def.name} (${symbolsOf(src, g).join(', ')}) until the end of the turn`);
+    },
+  },
+  'คาถาอัดคาบ้าน': {
+    keep: 2,
+    canCast: (g: Game, p: PID) => P(g, p).avatars.filter((a) => named(a, 'จอมเวทย์')).length >= 3,
+    resolve: (g: Game, p: PID) => { addRule2(g, { p: opp(p), key: 'อัดคาบ้าน', until: g.turn }); },
+  },
+  'ความสบายตาที่แท้จริง': {
+    keep: 2,
+    canCast: (g: Game, p: PID) => P(g, p).avatars.length > 0,
+    resolve: (g: Game, p: PID) => {
+      const t = pickN(P(g, p).avatars, 1, (a) => power(g, a) + (a.asleep ? 0 : 3), { title: 'ความสบายตาที่แท้จริง: POWER +2 this turn' })[0];
+      if (t) boost(t, 2); // approx: "the opponent chooses its attack target" is not modeled (as 40ดีกรีแมน)
+    },
+  },
+  'สายเลือดมังกร': {
+    keep: 2,
+    canCast: (g: Game, p: PID) => P(g, p).avatars.some(beast),
+    resolve: (g: Game, p: PID) => {
+      const t = pickN(P(g, p).avatars.filter(beast), 1, (a) => power(g, a), { title: 'สายเลือดมังกร: POWER +2 until your next Draw Phase' })[0];
+      if (t) t.temp.push({ power: 2, until: g.turn + 1 });
+    },
+  },
+  'โอเปอเรชั่น : สกายฟอลล์': {
+    keep: 3,
+    react: {
+      on: ['fight'],
+      can: (g, p, c, ev) => g.active !== p && !!ev.target && ev.target.ctrl === p && XVI(ev.target) && !!ev.source && P(g, p).deck.length > 0,
+      want: () => true,
+      resolve: (g, p, c, ev) => {
+        let gone: Card | null = null;
+        peek(g, p, 3, (top) => {
+          const x = pickN(top.filter(xviOrOp), 1, (y) => -keepValue(g, y) + (y.def.name === 'มารินะ หน่วยรบ XVI' ? 10 : 0), { optional: true, title: 'สกายฟอลล์: discard a หน่วยรบ XVI / โอเปอเรชั่น' })[0];
+          if (x) { top.splice(top.indexOf(x), 1); P(g, p).hell.push(x); gone = x; log(g, `สกายฟอลล์: ${x.def.name} is discarded`); }
+        }, 'bottom');
+        if (!gone) return;
+        marinaCheck(g, gone, c);
+        if (ev.source && P(g, ev.source.ctrl).avatars.includes(ev.source)) destroy(g, ev.source, p, true);
+      },
+    },
+  },
+  'มือเปรี้ยะ': {
+    keep: 2.5,
+    react: {
+      on: ['toHand' as any],
+      can: (g, p, c, ev) => ev.actor !== p && P(g, ev.actor).hand.length > 0,
+      want: () => true,
+      resolve: (g, p, c, ev) => {
+        const h = P(g, ev.actor).hand;
+        if (!h.length) return;
+        const t = h[Math.floor(rand(g) * h.length)];
+        if (toExile(g, t)) log(g, `มือเปรี้ยะ: ${t.def.name} is exiled from the opponent's hand`);
+      },
+    },
+  },
+  'อาวุธของเพมมุ มาโกะชิลด์': {
+    keep: 2.5,
+    wearIf: (g: Game, self: Card, w: Card) => named(w, 'เพมมุ'),
+    modTarget: (g: Game, p: PID) => best(P(g, p).avatars.filter((a) => named(a, 'เพมมุ')), (a) => value(g, a)),
+    protectWearer: (g: Game, m: Card, w: Card, by: PID | null) => {
+      if (g.winner !== null) return false;
+      if (!mayDo(g, m, `มาโกะชิลด์: destroy it instead of ${w.def.name}?`, true)) return false;
+      detach(g, m); m.wearer = -1; P(g, m.owner).hell.push(m);
+      log(g, `มาโกะชิลด์ is destroyed instead of ${w.def.name}`);
+      return true;
+    },
+    // approx (picture unclear): "start of our Main Phase: discard 1 card from our hand or send this card to Hell"
+    mainStart: (g: Game, self: Card) => {
+      if (g.active !== self.ctrl || self.wearer < 0) return;
+      const p = self.ctrl;
+      const pay = P(g, p).hand.length > 0 && decide(g, p, () => chooseMode(g, self, ['Discard 1 card from your hand', 'Send มาโกะชิลด์ to Hell'], P(g, p).hand.length >= 3 ? 0 : 1)) === 0;
+      if (pay && discardN(g, p, 1, [], () => true, 'มาโกะชิลด์: discard 1 card')) return;
+      const w = findCard(g, self.wearer);
+      detach(g, self); self.wearer = -1; P(g, self.owner).hell.push(self);
+      log(g, `มาโกะชิลด์ goes to Hell${w ? ' from ' + w.def.name : ''}`);
+    },
+  },
+  'โลกระหว่างความเป็นและความตาย': {
+    keep: 2,
+    landPower: (g: Game, l: Card, a: Card) => (symIs(a, 'ผี') ? 1 : 0) - (symIs(a, 'คน') ? 1 : 0),
+  },
+  'อาณาจักรแห่งเกียรติภูมิ อวาลอน': {
+    keep: 2.5,
+    fieldActs: (g, p, c) => [act('อวาลอน: สอดแนม 1, summon a อัศวินโต๊ะกลม (Cost 5 or less) / เมอลิน', (g2) => inMain(g2, p) && once(g2, p, 'avalon') && P(g2, p).deck.length > 0,
+    (g2) => withSource(c, () => {
+      use(g2, p, 'avalon');
+      peek(g2, p, 1, (top) => {
+        const x = top[0];
+        if (!x || !isA(x) || !((named(x, 'อัศวินโต๊ะกลม') && x.def.cost <= 5) || named(x, 'เมอลิน'))) return;
+        if (!canPlaceAvatar(P(g2, p), false, x) || uniqueBlocked(g2, p, x) || !summonAllowed(g2, p, x, 'jutsu')) return;
+        top.splice(0, 1);
+        if (!summon(g2, p, x, 'jutsu')) P(g2, p).deck.push(x);
+      }, 'bottom');
+    }))],
+  },
+  'โต๊ะกลมของเหล่าอัศวิน': {
+    keep: 2.5,
+    aura: (g: Game, s: Card, t: Card) => (P(g, s.ctrl).mz.includes(s) && P(g, s.ctrl).avatars.includes(t) && knightCount(g, s.ctrl) >= 4 ? 1 : 0),
+    lockCtrl: (g: Game, s: Card) => knightCount(g, s.ctrl) >= 4,
+  },
+} as Record<string, Fx>);

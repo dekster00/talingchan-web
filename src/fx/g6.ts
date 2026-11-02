@@ -181,7 +181,7 @@ const hasJutsuOrDC = (c: Card) => { const f = fx(c); return !!(f && (f.jutsu || 
 const hasMillPeek = (c: Card) => /ธรณีสูบ|สอดแนม/.test(text(c));
 const hasShieldTie = (c: Card) => { const f = fx(c); return !!(f && (f.shield || f.tieWin)) || /โล่มนุษย์|ลูกฮึด/.test(text(c)); };
 function tankLock(g: Game, c: Card) {
-  if (c.mods.filter(isA).length < 2) c.f.noAttack = g.turn; else if (c.f.noAttack === g.turn) c.f.noAttack = 0;
+  if (c.mods.filter((m) => isA(m) || m.def.name === 'ชิป Tank Ranger A.I.').length < 2) c.f.noAttack = g.turn; else if (c.f.noAttack === g.turn) c.f.noAttack = 0;
 }
 const SWORD = 'ดาบศักดิ์สิทธิ์';
 const swords = (g: Game, p: PID) => P(g, p).avatars.flatMap((a) => a.mods).filter((m) => m.owner === p && m.def.subtype === 'Modification' && named(m, SWORD));

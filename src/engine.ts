@@ -15,7 +15,7 @@ export interface Act { k: 'summon' | 'cast' | 'hand' | 'field' | 'land' | 'hell'
 // player who caused it, or the opponent of its controller when nobody did); targeted = an effect of source (actor's card)
 // picked ev.target; a React may cancel it (the pick becomes null) or set ev.target to redirect it.
 export type EvKind = 'magic' | 'summon' | 'attack' | 'ability' | 'fight' | 'destroy' | 'battleStart'
-  | 'partner' | 'endTurn' | 'lifeHit' | 'destroyed' | 'left' | 'targeted';
+  | 'partner' | 'endTurn' | 'lifeHit' | 'destroyed' | 'left' | 'targeted' | 'toHand'; // toHand: a card went from Deck to hand outside the Draw Phase (มือเปรี้ยะ)
 export interface Ev {
   kind: EvKind; // battleStart: start of actor's Battle Phase
   actor: PID;
@@ -192,6 +192,7 @@ export function scoutDeck(g: Game, p: PID, n: number, pick: (cs: Card[]) => void
   }
   if (rest === 'hell') {
     left.forEach((c, i) => { pl.hell.push(c); emit(g, { ev: 'mill', who: p, uid: c.uid, print: c.def.print, name: c.def.name, i: i + 1, n: left.length }); });
+    for (const c of left) { const h = (FX[c.def.name] as any)?.onScoutHell; if (h && g.winner === null && pl.hell.includes(c)) decide(g, c.owner, () => withSource(c, () => h(g, c, s0scout))); } // bugfix8: มารินะ
   } else if (rest === 'either') { arrangeTopBottom(g, p, left, title, (c) => keepValue(g, c) >= 3.5);
   } else if (rest === 'top') {
     // back on top in the owner's order: result[0] is the deepest of them, the last one ends on top
@@ -531,7 +532,7 @@ export function canChangeCtrl(g: Game, c: Card, to: PID, by: Card | null = curre
   const f = fx(c) as any; // its own "can't change control" (ไอ้นัท except by อีช่า, สว นาโนแมชชีน, ไมเกรน)
   if (f?.noSteal && !contOff(g, c) && !(f.noStealExcept && by && by.def.name === f.noStealExcept)) return false;
   if (c.mods.some((m) => (fx(m) as any)?.noSteal)) return false; // attached "can't change control" (ปลอกคอซื่อสัตย์)
-  return !pl.mz.some((s) => fx(s)?.lockCtrl && !contOff(g, s));
+  return !pl.mz.some((s) => { const lc = fx(s)?.lockCtrl; return !!lc && (typeof lc !== 'function' || lc(g, s)) && !contOff(g, s); });
 }
 /** Take control of Avatar t for p (to p's Avatar Zone, or to p's Magic Zone). false when it is not allowed. */
 export function takeControl(g: Game, t: Card, p: PID, where: 'avatars' | 'mz' = 'avatars', by: Card | null = currentSource()): boolean {
@@ -2211,6 +2212,10 @@ export function addToHand(g: Game, c: Card, p: PID = c.owner, o: HandOpts = {}):
 }
 /** FX.onToHand of c, for code that moved c into a hand itself (scout picks: handWatch(g, c, 'deck')). */
 export function handWatch(g: Game, c: Card, from: HandFrom, o: HandOpts = {}) {
+  if (from === 'deck' && g.phase !== 'Draw' && g.winner === null) { // bugfix8: React window (มือเปรี้ยะ)
+    const h = g.p.findIndex((q) => q.hand.includes(c));
+    if (h >= 0) respond(g, { kind: 'toHand', actor: h as PID, source: null, cancelled: false, depth: 0 });
+  }
   const f = fx(c);
   if (!f || !f.onToHand || g.winner !== null) return;
   const holder = g.p.findIndex((q) => q.hand.includes(c));

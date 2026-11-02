@@ -1608,3 +1608,63 @@ costFirst('แยกกันไปแตก', (g, p) => {
   if (o === 0) for (const x of [...P(g, opp(p)).hand]) discard(g, opp(p), x);
   else for (const a of [...P(g, opp(p)).avatars]) destroy(g, a, p, true);
 });
+
+// ===== bugfix8 (2026-11-02): new BT12 มะม่วง / เครื่องใช้ไฟฟ้า cards =====
+import { addToHand as addToHandB8 } from '../engine.ts';
+const MANGO_GRANT = 'mangoGrant:';
+Object.assign(FX, {
+  'นักยุทธศาสตร์แห่งภาคีมะม่วง': mzOnDeath(true, {
+    keep: 3.5,
+    jutsu: (g: Game, c: Card) => {
+      const p = c.ctrl;
+      if (!canPlaceAvatar(P(g, p))) return;
+      const t = best(P(g, p).hell.filter((x) => isA(x) && x.def.name === 'ต้นมะม่วง'), (x) => x.def.power);
+      if (!t || !summon(g, p, t, 'jutsu') || !P(g, p).avatars.includes(t)) return;
+      addPower(g, t, 2, 'perm', c);
+      P(g, p).once[MANGO_GRANT + t.uid] = 1;
+      log(g, `${c.def.name}: ต้นมะม่วง is summoned from Hell with POWER +2 and its คำสั่งเสีย`);
+    },
+  }),
+  // ต้นมะม่วง has no text of its own; นักยุทธศาสตร์ gives the one it summons this คำสั่งเสีย
+  'ต้นมะม่วง': {
+    keep: 1.5,
+    protectSelf: (g: Game, c: Card, by: PID | null) => { trackBy(g, c, by); return false; },
+    deathCry: (g: Game, c: Card, owner: PID) => {
+      const pl = P(g, owner);
+      if (!pl.once[MANGO_GRANT + c.uid]) return;
+      delete pl.once[MANGO_GRANT + c.uid];
+      if (pl.hell.includes(c) && (killedByOpp(g, c, owner) || pl.once[MANGO_KILL] === g.turn)) toMz(g, c, owner);
+    },
+  },
+  'เจ้าความเร็วแห่งภาคีมะม่วง': mzOnDeath(true, {
+    keep: 3,
+    onAttack: (g: Game, c: Card) => {
+      const p = c.ctrl;
+      if (!once(g, p, 'mangoSpeed:' + c.uid) || mangoTrees(g, p) < 1 || !P(g, p).avatars.includes(c)) return;
+      use(g, p, 'mangoSpeed:' + c.uid);
+      c.asleep = false;
+      log(g, `${c.def.name} wakes up (ต้นมะม่วง on the Magic Zone)`);
+    },
+  }),
+  'ฉิบหายการช่าง': {
+    keep: 2.5, options: 2, optLabels: ['2 differently named เครื่องใช้ไฟฟ้า from Deck to Magic Zone', 'A เบเซอร์ (Cost 6+) from Deck to hand'],
+    canCast: (g: Game, p: PID, c: Card, o: number) => (o === 0
+      ? distinctNames(P(g, p).deck.filter((x) => isA(x) && named(x, APPLIANCE))) >= 1
+      : P(g, p).deck.some((x) => isA(x) && named(x, 'เบเซอร์') && x.def.cost >= 6)),
+    resolve: (g: Game, p: PID, c: Card, o: number) => {
+      const pl = P(g, p);
+      if (o === 0) {
+        const got: string[] = [];
+        for (let i = 0; i < 2; i++) {
+          const x = pickN(pl.deck.filter((y) => isA(y) && named(y, APPLIANCE) && !got.includes(y.def.name)), 1, (y) => keepValue(g, y), { title: `ฉิบหายการช่าง: a เครื่องใช้ไฟฟ้า to your Magic Zone (${i + 1}/2)` })[0];
+          if (!x) break;
+          got.push(x.def.name); toMz(g, x, p);
+        }
+      } else {
+        const x = pickN(pl.deck.filter((y) => isA(y) && named(y, 'เบเซอร์') && y.def.cost >= 6), 1, (y) => keepValue(g, y), { title: 'ฉิบหายการช่าง: a เบเซอร์ (Cost 6+) to your hand' })[0];
+        if (x) { addToHandB8(g, x, p, { from: 'deck' }); log(g, `ฉิบหายการช่าง: ${x.def.name} to the hand`); }
+      }
+      shuffle(g, pl.deck);
+    },
+  },
+} as Record<string, Fx>);

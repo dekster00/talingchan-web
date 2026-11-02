@@ -246,6 +246,7 @@ function evText(g: Game, ev: Ev): string {
     case 'destroyed': return `${s} was destroyed${ev.leave?.battle ? ' in battle' : ''}`;
     case 'left': return `${s} left the field (${ev.leave?.how || ''})`;
     case 'targeted': return `${s} chose ${ev.target ? ev.target.def.name : ''}`;
+    case 'toHand': return `${who === 'You' ? 'You' : 'The opponent'} took a card from the Deck into the hand`;
   }
   return ev.kind;
 }

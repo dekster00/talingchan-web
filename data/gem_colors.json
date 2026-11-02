@@ -5874,5 +5874,225 @@
  "BT12-012": {
   "gemColor": "red",
   "req": null
+ },
+ "PRMO-120": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-121": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-122": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-123": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-124": {
+  "gemColor": "red",
+  "req": null
+ },
+ "PRMO-125": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-126": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-127": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-128": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-129": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-130": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-131": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-132": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-133": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-134": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-135": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-136": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-137": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "PRMO-138": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-139": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-140": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-149": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "PRMO-150": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-152": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "PRMO-153": {
+  "gemColor": "green",
+  "req": null
+ },
+ "PRMO-157": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-008": {
+  "gemColor": "red",
+  "req": null
+ },
+ "BT12-018": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-021": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-022": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-023": {
+  "gemColor": "blue",
+  "req": null
+ },
+ "BT12-025": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-029": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT12-030": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-031": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-032": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-035": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT12-036": {
+  "gemColor": "purple",
+  "req": null
+ },
+ "BT12-042": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-046": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-047": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-051": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-054": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-058": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-059": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-060": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-061": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-062": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-066": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-067": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-069": {
+  "gemColor": "green",
+  "req": null
+ },
+ "BT12-070": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-071": {
+  "gemColor": "colorless",
+  "req": null
+ },
+ "BT12-073": {
+  "gemColor": "red/purple",
+  "req": null
+ },
+ "BT12-075": {
+  "gemColor": "red/blue",
+  "req": null
  }
 }
