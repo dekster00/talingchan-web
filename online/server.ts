@@ -9,7 +9,9 @@
 // each seat gets only its own hand and deck list, and seat 1 gets a mirrored view (it always sees itself as player 0).
 // Settings (env): PORT, DATA_DIR (default online/data), ADMIN_KEY (enables /online/admin), TURN_SEC (120),
 // REACT_SEC (30), ORIGIN (CORS allow-origin, default *), DISCORD_CLIENT_ID / DISCORD_CLIENT_SECRET / PUBLIC_URL
-// (optional Discord login; without them players log in with a nickname).
+// (optional Discord login; without them players log in with a nickname), GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET /
+// PUBLIC_URL (Google login = a player account: profile, level, stats, history, cloud decks; online/accounts.ts),
+// SUPABASE_URL / SUPABASE_SERVICE_KEY (where accounts are kept; without them: DATA_DIR files), SESSION_SECRET.
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -17,6 +19,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { Worker, MessageChannel } from 'node:worker_threads';
 import { CARDS, loadDefs, loadDeck, validateDeck, banlistErrors } from '../src/sim.ts';
+import { Store, levelOf, usingSupabase, XP_WIN, XP_LOSS, XP_DRAW, type Account, type DeckMap } from './accounts.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -31,6 +34,7 @@ const TIMER = process.env.TIMER === '1', ONLINE_SPEED = process.env.ONLINE_SPEED
 const ORIGIN = process.env.ORIGIN || '*';
 const VERSION = '1.0-online1';
 fs.mkdirSync(DATA, { recursive: true });
+const STORE = new Store(DATA);
 
 // ---------------------------------------------------------------- cards
 const RAW: any[] = JSON.parse(fs.readFileSync(CARDS, 'utf8'));
@@ -114,7 +118,7 @@ function appendJsonl(file: string, o: any) { try { fs.appendFileSync(path.join(D
 
 // ---------------------------------------------------------------- users
 type User = {
-  id: string; token: string; name: string; avatar?: string; discord?: string; ip: string; seen: number; room: string | null;
+  id: string; token: string; name: string; avatar?: string; discord?: string; acct?: string; ip: string; seen: number; room: string | null;
   sent: number[]; strikes: number; muteMsg: number;
 };
 const USERS = new Map<string, User>(); // token -> user
@@ -127,11 +131,14 @@ setInterval(() => {
   if (!usersDirty) return;
   usersDirty = false;
   const keep = [...USERS.values()].filter((u) => u.seen === 0 || Date.now() - u.seen < 30 * 864e5).slice(-5000);
-  try { fs.writeFileSync(path.join(DATA, 'users.json'), JSON.stringify(keep.map(({ id, token, name, avatar, discord }) => ({ id, token, name, avatar, discord })))); } catch (e) { console.error(e); }
+  try { fs.writeFileSync(path.join(DATA, 'users.json'), JSON.stringify(keep.map(({ id, token, name, avatar, discord, acct }) => ({ id, token, name, avatar, discord, acct })))); } catch (e) { console.error(e); }
 }, 5000).unref();
 const online = () => [...USERS.values()].filter((u) => Date.now() - u.seen < 60000);
 const mutedUntil = (u: User) => Number(MOD.muted[u.id] || 0);
-const pub = (u: User | undefined | null) => (u ? { id: u.id, name: u.name, avatar: u.avatar || '' } : null);
+const acctOf = (u: User | undefined | null): Account | undefined => (u && u.acct ? STORE.cached(u.acct) : undefined);
+const levelFor = (u: User | undefined | null) => { const a = acctOf(u); return a ? levelOf(a.xp).level : 0; };
+// lv: the player's level (0 = guest, no account)
+const pub = (u: User | undefined | null) => (u ? { id: u.id, name: u.name, avatar: u.avatar || '', lv: levelFor(u) } : null);
 // profile picture: a character id like "c07" (the game shows that character's face)
 const cleanAvatar = (a: any) => { const s = String(a ?? '').toLowerCase(); return /^[a-z0-9_]{1,12}$/.test(s) ? s : ''; };
 function uniqueName(want: string, self?: User): string {
@@ -177,7 +184,7 @@ function newCode(): string {
 const seatOf = (r: Room, u: User) => r.seats.findIndex((s) => s && s.user === u.id);
 function roomBrief(r: Room) {
   return {
-    code: r.priv ? '' : r.code, name: r.name, host: BY_ID.get(r.host)?.name || '', hostAvatar: BY_ID.get(r.host)?.avatar || '', locked: !!r.password, bo3: r.bo3,
+    code: r.priv ? '' : r.code, name: r.name, host: BY_ID.get(r.host)?.name || '', hostAvatar: BY_ID.get(r.host)?.avatar || '', hostLv: levelFor(BY_ID.get(r.host)), locked: !!r.password, bo3: r.bo3,
     players: r.seats.filter(Boolean).map((s) => BY_ID.get(s!.user)?.name || '?'), status: r.duel && !r.duel.ended ? 'playing' : 'waiting',
     full: r.seats.every(Boolean),
   };
@@ -187,7 +194,7 @@ function roomDetail(r: Room, me: User) {
   const d = r.duel;
   return {
     code: r.code, name: r.name, host: r.host, hostName: BY_ID.get(r.host)?.name || '', locked: !!r.password, priv: r.priv, bo3: r.bo3,
-    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
+    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: acctOf(BY_ID.get(s.user))?.showcase || [], ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
     score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games,
     chat: r.chat.slice(-50), last: r.last ? { ...r.last, youWon: r.last.winnerId === me.id } : null,
     duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine] } : null,
@@ -222,7 +229,7 @@ type Duel = {
   worker: Worker; port: any; flag: Int32Array; version: number; states: [any, any]; asks: [any, any];
   log: any[]; logM: any[]; ended: boolean; winner: number | null; reason: string; error?: string;
   cards: [Record<string, any>, Record<string, any>]; emotes: any[]; seen: [number, number]; started: number; timeouts: [number, number];
-  waiters: (() => void)[];
+  waiters: (() => void)[]; deckNames?: [string, string];
 };
 const DUELS = new Map<string, Duel>();
 // seat 1's view: players swapped and every side number flipped, so its screen always sees itself as player 0
@@ -261,7 +268,7 @@ function startDuel(r: Room) {
     id: crypto.randomBytes(6).toString('hex'), room: r, users: [u0.id, u1.id], names: [u0.name, u1.name], chars: [s0.char, s1.char],
     worker, port: ch.port1, flag: new Int32Array(shared, 0, 1), version: 0, states: [null, null], asks: [null, null], log: [], logM: [],
     ended: false, winner: null, reason: '', cards: [cardsFor(s0.deck), cardsFor(s1.deck)], emotes: [], seen: [Date.now(), Date.now()], started: Date.now(),
-    timeouts: [0, 0], waiters: [],
+    timeouts: [0, 0], waiters: [], deckNames: [s0.deckName, s1.deckName],
   };
   DUELS.set(d.id, d);
   r.duel = d;
@@ -301,9 +308,31 @@ function finish(d: Duel, winner: number | null, reason: string) {
   r.last = { winnerId: winner === 0 || winner === 1 ? d.users[winner] : '', winner: wName, reason, at: Date.now(), matchOver: !r.bo3 || r.score.some((x) => x >= 2) };
   pushMsg(r.chat, null, wName ? `${wName} wins duel ${r.games} (${reason}) · ชนะ` : `Duel ${r.games} ended: ${reason}`, true, 50);
   appendJsonl('results.jsonl', { at: Date.now(), room: r.code, players: d.names, ids: d.users, winner, reason, turns: d.states[0]?.turn, secs: Math.round((Date.now() - d.started) / 1000) });
+  recordResult(d, winner, reason).catch((e) => console.error(e));
   duelBump(d);
   setTimeout(() => DUELS.delete(d.id), 10 * 60000).unref(); // a late screen can still read the final state for a while
   bump();
+}
+// Accounts: wins/losses/draws, XP and the match history. A duel that ends before turn 3 (an instant surrender or
+// leave) and an engine error count for nothing, so two accounts can't farm levels.
+async function recordResult(d: Duel, winner: number | null, reason: string) {
+  const turns = Number(d.states[0]?.turn) || 0;
+  if (turns < 3 || reason === 'engine error' || reason === 'engine stopped') return;
+  const us = d.users.map((id) => BY_ID.get(id));
+  const accts = us.map((u) => (u?.acct ? STORE.cached(u.acct) : undefined));
+  if (!accts[0] && !accts[1]) return;
+  for (const i of [0, 1]) {
+    const a = accts[i];
+    if (!a) continue;
+    if (winner === null) { a.draws++; a.xp += XP_DRAW; } else if (winner === i) { a.wins++; a.xp += XP_WIN; } else { a.losses++; a.xp += XP_LOSS; }
+    await STORE.save(a);
+  }
+  const side = (i: number) => accts[i]?.id || 'guest:' + d.users[i];
+  await STORE.addMatch({
+    at: new Date().toISOString(), a: side(0), b: side(1), a_name: d.names[0], b_name: d.names[1], a_avatar: d.chars[0] || us[0]?.avatar || '', b_avatar: d.chars[1] || us[1]?.avatar || '',
+    a_deck: d.deckNames?.[0] || '', b_deck: d.deckNames?.[1] || '',
+    winner, reason, turns, secs: Math.round((Date.now() - d.started) / 1000),
+  });
 }
 function duelOf(u: User): { d: Duel; seat: number } | null {
   const r = u.room ? ROOMS.get(u.room) : null;
@@ -344,7 +373,8 @@ setInterval(() => {
 
 // ---------------------------------------------------------------- Discord login (optional)
 const DC_ID = process.env.DISCORD_CLIENT_ID || '', DC_SECRET = process.env.DISCORD_CLIENT_SECRET || '', PUBLIC_URL = (process.env.PUBLIC_URL || '').replace(/\/$/, '');
-const DC_PENDING = new Map<string, { at: number; token?: string; error?: string }>();
+const DC_PENDING = new Map<string, { at: number; token?: string; error?: string; avatar?: string }>(); // Discord and Google logins in progress
+setInterval(() => { for (const [k, v] of DC_PENDING) if (Date.now() - v.at > 15 * 60000) DC_PENDING.delete(k); }, 60000).unref();
 async function discordCallback(code: string, state: string, ip: string): Promise<string> {
   const p = DC_PENDING.get(state);
   if (!p) return 'This login link has expired. Try again from the game.';
@@ -365,6 +395,77 @@ async function discordCallback(code: string, state: string, ip: string): Promise
   } catch (e) { p.error = 'failed'; return 'Discord login failed. Try again.'; }
 }
 
+// ---------------------------------------------------------------- Google login = a player account (online/accounts.ts)
+const G_ID = process.env.GOOGLE_CLIENT_ID || '', G_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
+const GOOGLE = !!(G_ID && G_SECRET && PUBLIC_URL);
+// account sessions are signed, so they survive a server restart (the free server forgets its files when it sleeps)
+const SECRET = process.env.SESSION_SECRET || G_SECRET || process.env.SUPABASE_SERVICE_KEY || crypto.randomBytes(32).toString('hex');
+const sign = (s: string) => crypto.createHmac('sha256', SECRET).update(s).digest('base64url').slice(0, 32);
+function acctToken(acct: string): string {
+  const body = Buffer.from(acct).toString('base64url') + '.' + crypto.randomBytes(9).toString('base64url');
+  return 'a1.' + body + '.' + sign(body);
+}
+function acctFromToken(t: string): string | null {
+  const m = /^a1\.([A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)\.([A-Za-z0-9_-]{32})$/.exec(t);
+  if (!m || !crypto.timingSafeEqual(Buffer.from(sign(m[1])), Buffer.from(m[2]))) return null;
+  return Buffer.from(m[1].split('.')[0], 'base64url').toString();
+}
+// the session of an account: the one already online (another tab, a reconnect), else a new one
+function loginAccount(a: Account, ip: string, token?: string): User {
+  let u = (token && USERS.get(token)) || [...USERS.values()].find((x) => x.acct === a.id);
+  if (!u) {
+    u = { id: crypto.randomBytes(6).toString('hex'), token: token || acctToken(a.id), name: uniqueName(a.name), acct: a.id, ip, seen: Date.now(), room: null, sent: [], strikes: 0, muteMsg: 0 };
+    addUser(u);
+  }
+  u.name = uniqueName(a.name, u); u.avatar = a.avatar || u.avatar; u.ip = ip; u.seen = Date.now(); usersDirty = true;
+  return u;
+}
+async function googleCallback(code: string, state: string, ip: string): Promise<string> {
+  const p = DC_PENDING.get(state);
+  if (!p) return 'This login link has expired. Try again from the game.';
+  try {
+    const tok: any = await (await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ client_id: G_ID, client_secret: G_SECRET, grant_type: 'authorization_code', code, redirect_uri: PUBLIC_URL + '/online/google/callback' }),
+    })).json();
+    if (!tok.access_token) throw new Error('no token: ' + JSON.stringify(tok).slice(0, 200));
+    const me: any = await (await fetch('https://openidconnect.googleapis.com/v1/userinfo', { headers: { authorization: `Bearer ${tok.access_token}` } })).json();
+    if (!me.sub) throw new Error('no user');
+    const id = 'g:' + me.sub;
+    let a = await STORE.get(id);
+    if (a?.banned) { p.error = 'banned'; return 'This account is banned from online play.'; }
+    if (!a) {
+      let nm = filterText(cleanLine(me.given_name || me.name, 16));
+      if ([...nm].length < 2 || nm.includes('*')) nm = 'Player' + crypto.randomInt(1000, 9999);
+      a = await STORE.create(id, nm, p.avatar || '');
+    }
+    p.token = loginAccount(a, ip).token;
+    return 'Logged in. You can close this tab and go back to the game. · เข้าสู่ระบบแล้ว ปิดแท็บนี้แล้วกลับไปที่เกมได้เลย';
+  } catch (e) { console.error(e); p.error = 'failed'; return 'Google login failed. Try again.'; }
+}
+// a player's profile; full (own) adds nothing private today, but keeps the door open for settings
+async function profileOf(u: User) {
+  const a = acctOf(u);
+  const base = { id: u.id, name: u.name, avatar: u.avatar || '', guest: !a };
+  if (!a) return base;
+  const games = a.wins + a.losses + a.draws;
+  const hist = (await STORE.history(a.id, 20)).map((m) => {
+    const me = m.a === a.id ? 0 : 1;
+    return {
+      at: m.at, opp: me ? m.a_name : m.b_name, oppAvatar: me ? m.a_avatar : m.b_avatar, deck: me ? m.b_deck : m.a_deck, oppDeck: me ? m.a_deck : m.b_deck,
+      result: m.winner === null || m.winner === undefined ? 'draw' : m.winner === me ? 'win' : 'loss', reason: m.reason, turns: m.turns, secs: m.secs,
+    };
+  });
+  return { ...base, ...levelOf(a.xp), wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
+}
+const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
+<body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">
+<h1>Battle of Talingchan online: privacy</h1>
+<p>When you log in with Google we receive your Google account id and your first name. We do not receive your email, contacts or anything else.</p>
+<p>We keep: your display name, profile picture choice, the 3 cards you show on your profile, your level, wins and losses, your match history (opponent name, decks, result, date) and the decks you save. They are used only to run the game.</p>
+<p>Chat messages are kept for moderation. We never sell or share your data.</p>
+<p>To delete your account and data, ask the game's admin in the world chat or on the game's page, and it will be removed.</p></body>`;
+
 // ---------------------------------------------------------------- http
 function send(res: http.ServerResponse, code: number, body: any, type = 'application/json; charset=utf-8') {
   res.writeHead(code, {
@@ -374,10 +475,10 @@ function send(res: http.ServerResponse, code: number, body: any, type = 'applica
   });
   res.end(typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 }
-function readBody(req: http.IncomingMessage): Promise<any> {
+function readBody(req: http.IncomingMessage, max = 200000): Promise<any> {
   return new Promise((ok) => {
     let s = '', big = false;
-    req.on('data', (d) => { if (s.length > 200000) { big = true; return; } s += d; });
+    req.on('data', (d) => { if (s.length > max) { big = true; return; } s += d; });
     req.on('end', () => { if (big) return ok({}); try { ok(JSON.parse(s || '{}')); } catch { ok({}); } });
   });
 }
@@ -428,10 +529,10 @@ function report(u: User, msgId: number, reason: string) {
 function lobbyView(u: User, chatFrom: number) {
   const r = u.room ? ROOMS.get(u.room) : null;
   return {
-    v: LV, version: VERSION, me: { id: u.id, name: u.name, avatar: u.avatar || '', muted: Math.max(0, mutedUntil(u) - Date.now()), discord: !!u.discord },
+    v: LV, version: VERSION, me: { id: u.id, name: u.name, avatar: u.avatar || '', muted: Math.max(0, mutedUntil(u) - Date.now()), discord: !!u.discord, acct: !!u.acct, lv: levelFor(u) },
     online: online().length, rooms: [...ROOMS.values()].filter((x) => !x.priv || x === r).map(roomBrief).slice(0, 200),
     chat: WORLD.filter((m) => m.id > chatFrom).slice(-100), room: r ? roomDetail(r, u) : null,
-    turnSec: TIMER ? TURN_SEC : 0, reactSec: TIMER ? REACT_SEC : 0, timer: TIMER, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL),
+    turnSec: TIMER ? TURN_SEC : 0, reactSec: TIMER ? REACT_SEC : 0, timer: TIMER, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), googleLogin: GOOGLE,
   };
 }
 
@@ -443,7 +544,28 @@ http.createServer(async (req, res) => {
   p = p.slice('/online'.length) || '/';
   const ip = ipOf(req);
   try {
-    if (p === '/ping' || p === '/') return send(res, 200, { ok: true, game: 'Battle of Talingchan', version: VERSION, online: online().length, rooms: ROOMS.size });
+    if (p === '/ping' || p === '/') return send(res, 200, { ok: true, game: 'Battle of Talingchan', version: VERSION, online: online().length, rooms: ROOMS.size, googleLogin: GOOGLE, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), accounts: usingSupabase ? 'cloud' : 'local' });
+    if (p === '/privacy') return send(res, 200, PRIVACY, 'text/html; charset=utf-8');
+    if (p === '/test/account' && req.method === 'POST' && process.env.TEST_ACCOUNTS === '1') { // tests only: an account without Google
+      const b = await readBody(req);
+      const id = 'test:' + cleanLine(b.name, 16);
+      const a = (await STORE.get(id)) || (await STORE.create(id, cleanLine(b.name, 16), cleanAvatar(b.avatar)));
+      const u = loginAccount(a, ip);
+      return send(res, 200, { ok: true, token: u.token, id: u.id, name: u.name, avatar: u.avatar || '', acct: true });
+    }
+    if (p === '/google/start') {
+      if (!GOOGLE) return send(res, 400, 'Google login is not set up on this server.', 'text/plain; charset=utf-8');
+      const state = String(url.searchParams.get('state') || '').slice(0, 64);
+      if (!/^[a-f0-9]{16,64}$/.test(state)) return send(res, 400, 'bad state', 'text/plain');
+      if (limited('gstart:' + ip, 20)) return send(res, 429, 'Too many tries, wait a minute.', 'text/plain');
+      DC_PENDING.set(state, { at: Date.now(), avatar: cleanAvatar(url.searchParams.get('avatar')) });
+      const q = new URLSearchParams({ client_id: G_ID, response_type: 'code', scope: 'openid profile', redirect_uri: PUBLIC_URL + '/online/google/callback', state, prompt: 'select_account' });
+      res.writeHead(302, { location: 'https://accounts.google.com/o/oauth2/v2/auth?' + q }); return res.end();
+    }
+    if (p === '/google/callback') {
+      const msg = await googleCallback(String(url.searchParams.get('code') || ''), String(url.searchParams.get('state') || ''), ip);
+      return send(res, 200, `<!doctype html><meta charset="utf-8"><title>Battle of Talingchan</title><body style="font:20px sans-serif;background:#111;color:#eee;text-align:center;padding:60px">${msg}<script>setTimeout(()=>{try{window.close()}catch(e){}},1500)</script></body>`, 'text/html; charset=utf-8');
+    }
     if (p === '/decks') return send(res, 200, metaDecks());
     if (p === '/allcards') return send(res, 200, [...INFO.values()]);
     if (p === '/discord/start') {
@@ -458,21 +580,31 @@ http.createServer(async (req, res) => {
       const msg = await discordCallback(String(url.searchParams.get('code') || ''), String(url.searchParams.get('state') || ''), ip);
       return send(res, 200, `<!doctype html><meta charset="utf-8"><title>Battle of Talingchan</title><body style="font:20px sans-serif;background:#111;color:#eee;text-align:center;padding:60px">${msg}</body>`, 'text/html; charset=utf-8');
     }
-    if (p === '/discord/poll') {
+    if (p === '/discord/poll' || p === '/oauth/poll') {
       const st = DC_PENDING.get(String(url.searchParams.get('state') || ''));
       if (!st) return send(res, 404, { error: 'expired' });
-      if (st.token) { DC_PENDING.delete(String(url.searchParams.get('state'))); const u = USERS.get(st.token)!; return send(res, 200, { ok: true, token: u.token, id: u.id, name: u.name }); }
+      if (st.token) { DC_PENDING.delete(String(url.searchParams.get('state'))); const u = USERS.get(st.token)!; return send(res, 200, { ok: true, token: u.token, id: u.id, name: u.name, avatar: u.avatar || '', acct: !!u.acct }); }
       return send(res, 200, { ok: false, error: st.error || '' });
     }
     if (p === '/login' && req.method === 'POST') {
       const b = await readBody(req);
-      const old = b.token ? USERS.get(String(b.token)) : undefined;
+      let old = b.token ? USERS.get(String(b.token)) : undefined;
+      if (!old && b.token) { // an account session from before a server restart
+        const acc = acctFromToken(String(b.token));
+        const a = acc ? await STORE.get(acc) : null;
+        if (a?.banned) return send(res, 403, { error: 'This account is banned from online play.' });
+        if (a) old = loginAccount(a, ip, String(b.token));
+      } else if (old?.acct) { // a saved session (users.json): reload its account (name, level) into the cache
+        const a = await STORE.get(old.acct);
+        if (a?.banned) return send(res, 403, { error: 'This account is banned from online play.' });
+        if (a) loginAccount(a, ip, old.token);
+      }
       if (old) {
         if (MOD.banned[old.id]) return send(res, 403, { error: 'This account is banned from online play.' });
         old.seen = Date.now(); old.ip = ip;
-        if (cleanAvatar(b.avatar)) { old.avatar = cleanAvatar(b.avatar); usersDirty = true; }
-        if (b.name && !old.discord) { const nm = filterText(cleanLine(b.name, 16)); if (nm.length >= 2 && !nm.includes('*')) old.name = uniqueName(nm, old); usersDirty = true; }
-        return send(res, 200, { ok: true, token: old.token, id: old.id, name: old.name });
+        if (cleanAvatar(b.avatar) && !old.acct) { old.avatar = cleanAvatar(b.avatar); usersDirty = true; }
+        if (b.name && !old.discord && !old.acct) { const nm = filterText(cleanLine(b.name, 16)); if (nm.length >= 2 && !nm.includes('*')) old.name = uniqueName(nm, old); usersDirty = true; }
+        return send(res, 200, { ok: true, token: old.token, id: old.id, name: old.name, avatar: old.avatar || '', acct: !!old.acct, aid: old.acct ? sign('aid:' + old.acct).slice(0, 12) : '', lv: levelFor(old) });
       }
       if (limited('login:' + ip, 10)) return send(res, 429, { error: 'Too many logins, wait a minute.' });
       const nm = cleanLine(b.name, 16);
@@ -493,8 +625,8 @@ http.createServer(async (req, res) => {
       if (!t) return send(res, 404, { error: 'no such player' });
       if (b.op === 'mute') MOD.muted[t.id] = Date.now() + (Number(b.minutes) || 60) * 60000;
       else if (b.op === 'unmute') delete MOD.muted[t.id];
-      else if (b.op === 'ban') { MOD.banned[t.id] = cleanLine(b.reason || 'ban', 100); if (t.discord) MOD.banned['dc:' + t.discord] = MOD.banned[t.id]; leaveRoom(t); USERS.delete(t.token); }
-      else if (b.op === 'unban') delete MOD.banned[t.id];
+      else if (b.op === 'ban') { MOD.banned[t.id] = cleanLine(b.reason || 'ban', 100); if (t.discord) MOD.banned['dc:' + t.discord] = MOD.banned[t.id]; const a = acctOf(t); if (a) { a.banned = MOD.banned[t.id]; await STORE.save(a); } leaveRoom(t); USERS.delete(t.token); }
+      else if (b.op === 'unban') { delete MOD.banned[t.id]; const a = acctOf(t); if (a) { a.banned = undefined; await STORE.save(a); } }
       else if (b.op === 'clear') { for (const l of [WORLD, ...[...ROOMS.values()].map((r) => r.chat)]) for (let i = l.length - 1; i >= 0; i--) if (l[i].from?.id === t.id) l.splice(i, 1); bump(); }
       else return send(res, 400, { error: 'op: mute | unmute | ban | unban | clear | reports | reloadwords | announce' });
       saveMod();
@@ -516,6 +648,48 @@ http.createServer(async (req, res) => {
       return send(res, 200, lobbyView(u, chatFrom));
     }
     if (p === '/logout' && req.method === 'POST') { leaveRoom(u); return send(res, 200, { ok: true }); }
+    // ---- profiles and cloud decks (accounts)
+    if (p === '/me/profile' && req.method === 'GET') return send(res, 200, await profileOf(u));
+    if (p === '/profile' && req.method === 'GET') {
+      const t = BY_ID.get(String(url.searchParams.get('id') || ''));
+      return t ? send(res, 200, await profileOf(t)) : send(res, 404, { error: 'That player is offline. · ผู้เล่นออฟไลน์' });
+    }
+    if (p === '/me/profile' && req.method === 'POST') {
+      const a = acctOf(u);
+      if (!a) return send(res, 403, { error: 'Log in with Google to keep a profile. · เข้าสู่ระบบด้วย Google ก่อน' });
+      if (limited('prof:' + a.id, 30)) return send(res, 429, { error: 'Wait a minute.' });
+      const b = await readBody(req);
+      if (b.name !== undefined) {
+        const nm = cleanLine(b.name, 16);
+        if ([...nm].length < 2) return send(res, 400, { error: 'Pick a name of 2 to 16 characters. · ตั้งชื่อ 2-16 ตัวอักษร' });
+        if (filterText(nm) !== nm) return send(res, 400, { error: 'Pick another name. · กรุณาเปลี่ยนชื่อ' });
+        a.name = nm; u.name = uniqueName(nm, u);
+      }
+      if (b.avatar !== undefined && cleanAvatar(b.avatar)) { a.avatar = cleanAvatar(b.avatar); u.avatar = a.avatar; }
+      if (Array.isArray(b.showcase)) a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c)).slice(0, 3);
+      await STORE.save(a);
+      usersDirty = true; bump();
+      return send(res, 200, await profileOf(u));
+    }
+    if (p === '/me/decks') {
+      const a = acctOf(u);
+      if (!a) return send(res, 403, { error: 'Log in with Google to save decks online. · เข้าสู่ระบบด้วย Google ก่อน' });
+      if (req.method === 'GET') return send(res, 200, { decks: await STORE.decks(a.id) });
+      if (limited('decks:' + a.id, 30)) return send(res, 429, { error: 'Wait a minute.' });
+      const b = await readBody(req, 1500000);
+      if (!b.decks || typeof b.decks !== 'object' || Array.isArray(b.decks)) return send(res, 400, { error: 'decks: {slug: {d, t}}' });
+      const out: DeckMap = {};
+      for (const [k, v] of Object.entries(b.decks).slice(0, 200)) {
+        const slug = String(k).slice(0, 80);
+        if (!slug || /[\\/\u0000-\u001f]/.test(slug) || slug.startsWith('.')) continue;
+        const dv: any = (v as any)?.d;
+        if (!dv || typeof dv !== 'object') continue;
+        out[slug] = { d: dv, t: Math.floor(Number((v as any).t) || 0) };
+      }
+      if (JSON.stringify(out).length > 1200000) return send(res, 413, { error: 'Too many decks to save online.' });
+      await STORE.saveDecks(a.id, out);
+      return send(res, 200, { ok: true, count: Object.keys(out).length });
+    }
     if (p === '/chat' && req.method === 'POST') {
       const b = await readBody(req);
       const r = u.room ? ROOMS.get(u.room) : null;
