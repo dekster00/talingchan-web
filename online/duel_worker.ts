@@ -26,6 +26,8 @@ const { decks, seed, shared, port } = workerData as { decks: [any, any]; seed: n
 const ACES: string[] = Array.isArray(workerData.aces) ? workerData.aces : ['', ''];
 const TURN_SEC = Number(workerData.turnSec) || 120, REACT_SEC = Number(workerData.reactSec) || 30;
 const FAST = !!process.env.FAST || !!workerData.fast;
+// user 2026-11-02: no turn timer for now (TIMER=1 on the server turns it back on); engine pauses at 2x speed
+const TIMER = !!workerData.timer, SPEED = workerData.speed === undefined ? 0.5 : Number(workerData.speed);
 const flag = new Int32Array(shared, 0, 1);
 const nap = new Int32Array(new SharedArrayBuffer(4));
 let G: Game;
@@ -36,7 +38,7 @@ const NO_MARKS: Marks = { hand: new Set(), field: new Set() };
 const CURS: Marks[] = [NO_MARKS, NO_MARKS];
 let VIEW: PID = 0; // the seat the data being built is for ("your" / "opponent's", hand cards, act marks)
 const REFRESH = -99;
-const sleep = (ms: number) => { if (FAST) return; const t = scaledMs(ms, 1); if (t > 0) Atomics.wait(nap, 0, 0, t); };
+const sleep = (ms: number) => { if (FAST) return; const t = scaledMs(ms, SPEED); if (t > 0) Atomics.wait(nap, 0, 0, t); };
 
 // ---------- state snapshot for the screen ----------
 function cv(g: Game, c: Card): any {
@@ -165,11 +167,11 @@ function drain(onAnswer: (seat: number, id: number, choice: number) => boolean |
 function askAll(items: { seat: PID; q: any; marks: Marks }[]): number[] {
   const out: (number | undefined)[] = items.map(() => undefined);
   const ids = items.map(() => ++askId);
-  const until = items.map((it) => Date.now() + limitFor(it.seat) * 1000);
+  const until = items.map((it) => (TIMER ? Date.now() + limitFor(it.seat) * 1000 : Infinity));
   const t0 = Date.now();
   items.forEach((it, i) => { CURS[it.seat] = it.marks; });
   const st = states(G);
-  items.forEach((it, i) => post({ t: 'ask', seat: it.seat, q: { ...it.q, id: ids[i], timeLeft: Math.round((until[i] - Date.now()) / 1000) }, states: st }));
+  items.forEach((it, i) => post({ t: 'ask', seat: it.seat, q: TIMER ? { ...it.q, id: ids[i], timeLeft: Math.round((until[i] - Date.now()) / 1000) } : { ...it.q, id: ids[i] }, states: st }));
   while (out.some((x) => x === undefined)) {
     Atomics.wait(flag, 0, 0, 500);
     Atomics.store(flag, 0, 0);

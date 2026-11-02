@@ -26,6 +26,8 @@ const PORT = Number(argPort > 0 ? process.argv[argPort + 1] : process.env.PORT |
 const DATA = path.resolve(process.env.DATA_DIR || path.join(HERE, 'data'));
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const TURN_SEC = Number(process.env.TURN_SEC) || 120, REACT_SEC = Number(process.env.REACT_SEC) || 30;
+// user 2026-11-02: online duels have no turn timer for now (TIMER=1 turns it on) and run at 2x speed (ONLINE_SPEED, 0.5 = 2x)
+const TIMER = process.env.TIMER === '1', ONLINE_SPEED = process.env.ONLINE_SPEED === undefined ? 0.5 : Number(process.env.ONLINE_SPEED);
 const ORIGIN = process.env.ORIGIN || '*';
 const VERSION = '1.0-online1';
 fs.mkdirSync(DATA, { recursive: true });
@@ -251,7 +253,7 @@ function startDuel(r: Room) {
   const shared = new SharedArrayBuffer(8);
   const ch = new MessageChannel();
   const worker = new Worker(new URL('./duel_worker.ts', import.meta.url), {
-    workerData: { decks: [s0.deck, s1.deck], seed: crypto.randomInt(1, 0x7fffffff), shared, port: ch.port2, aces: ['', ''], turnSec: TURN_SEC, reactSec: REACT_SEC, fast: !!process.env.FAST },
+    workerData: { decks: [s0.deck, s1.deck], seed: crypto.randomInt(1, 0x7fffffff), shared, port: ch.port2, aces: ['', ''], turnSec: TURN_SEC, reactSec: REACT_SEC, timer: TIMER, speed: ONLINE_SPEED, fast: !!process.env.FAST },
     transferList: [ch.port2],
   });
   const cardsFor = (deck: any) => { const m: Record<string, any> = {}; for (const p of [...deckPrints(deck), ...DEFAULT_LIFE]) if (INFO.has(p)) m[p] = INFO.get(p); return m; };
@@ -429,7 +431,7 @@ function lobbyView(u: User, chatFrom: number) {
     v: LV, version: VERSION, me: { id: u.id, name: u.name, avatar: u.avatar || '', muted: Math.max(0, mutedUntil(u) - Date.now()), discord: !!u.discord },
     online: online().length, rooms: [...ROOMS.values()].filter((x) => !x.priv || x === r).map(roomBrief).slice(0, 200),
     chat: WORLD.filter((m) => m.id > chatFrom).slice(-100), room: r ? roomDetail(r, u) : null,
-    turnSec: TURN_SEC, reactSec: REACT_SEC, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL),
+    turnSec: TIMER ? TURN_SEC : 0, reactSec: TIMER ? REACT_SEC : 0, timer: TIMER, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL),
   };
 }
 
