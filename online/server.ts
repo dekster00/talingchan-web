@@ -57,7 +57,11 @@ function cleanDeck(d: any): { deck?: any; error?: string; warnings?: string[] } 
   const part = (xs: any) => (Array.isArray(xs) ? xs.slice(0, 80).map((c: any) => ({ print: String(c && c.print || ''), qty: Math.max(0, Math.min(50, Math.floor(Number(c && c.qty) || 0))) })).filter((c: any) => c.qty > 0) : []);
   const deck: any = { name: String(d.name || 'deck').slice(0, 40), main: part(d.main || d.cards), life: part(d.life), side: part(d.side) };
   if (d.art && typeof d.art === 'object') { deck.art = {}; for (const k of Object.keys(d.art).slice(0, 80)) deck.art[String(k)] = String(d.art[k]).slice(0, 8); }
-  try { loadDeck(deck, DEFS); } catch (e) { return { error: (e as Error).message }; }
+  try { loadDeck(deck, DEFS); } catch (e) {
+    const m = (e as Error).message;
+    // a card the game has but this server doesn't: the server runs an older card list (qa/sync_online.py updates it)
+    return { error: /^unknown card /.test(m) ? `${m} (this server's card list is older than your game, ask the host to update it · เซิร์ฟเวอร์ยังไม่มีการ์ดใบนี้)` : m };
+  }
   // 2026-10-25 (user): PvP follows the official ban list; a deck that breaks it can't be used
   const ban = banlistErrors([...deck.main, ...deck.side].flatMap((c: any) => Array(c.qty).fill(DEFS.get(c.print)).filter(Boolean)));
   if (ban.length) return { error: 'Ban list: ' + ban.join(' ') };
