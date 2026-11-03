@@ -3,6 +3,14 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Profiles everywhere · โปรไฟล์ทุกโหมด",
+      "lines": [
+        "Click a name in a duel to see that player's profile · คลิกชื่อในการดวลเพื่อดูโปรไฟล์",
+        "Your name banner in TOURNAMENT opens your profile · แบนเนอร์ชื่อในทัวร์นาเมนต์เปิดโปรไฟล์ได้"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Card pictures and BATTLE menu fixes · แก้ภาพการ์ดและเมนูต่อสู้",
       "lines": [
         "A replaced card picture now updates without clearing the browser. · ภาพการ์ดที่เปลี่ยนใหม่อัปเดตทันทีโดยไม่ต้องล้างเบราว์เซอร์",
