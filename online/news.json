@@ -3,6 +3,15 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Bug fixes (3 Nov) · แก้บั๊ก (3 พ.ย.)",
+      "lines": [
+        "เมอลิน พ่อมดแห่งอวาลอน now reads \"เลือกปฏิบัติ\" (choose one) instead of \"เนรเทศ\". · แก้ข้อความเป็น \"เลือกปฏิบัติ\" แทน \"เนรเทศ\"",
+        "BT12-046 and BT12-047 show the right pictures on the website. · รูปการ์ด BT12-046 และ BT12-047 บนเว็บแสดงถูกต้องแล้ว",
+        "The ban list works in Edit Deck on the website. · Ban list ใช้งานได้ในโหมดแก้ไขเด็คบนเว็บแล้ว"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Ban list now works on the website · แบนลิสต์ใช้งานได้บนเว็บแล้ว",
       "lines": [
         "The web deck editor shows banned and limited cards and checks your deck against the official ban list (Aug 69), like the PC version. · หน้าจัดเด็คบนเว็บแสดงการ์ดต้องห้าม/จำกัดจำนวน และตรวจเด็คตามแบนลิสต์ทางการ (ส.ค. 69) เหมือนเวอร์ชัน PC",
