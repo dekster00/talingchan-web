@@ -574,9 +574,15 @@ async function profileAcct(a: Account, u?: User) {
     title: bn?.title || '', titleName: bn?.titleName || '', banner: bn?.banner || 'plain', frame: bn?.frame || 'none',
     wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0,
     pvp: { games, wins: a.wins, losses: a.losses, draws: a.draws, winRate: games ? Math.round((a.wins / games) * 100) : 0 },
-    collection: pr ? { kinds: Object.keys(pr.cards).length, total: Object.values(pr.cards).reduce((x: number, y: any) => x + Number(y), 0) } : null,
+    collection: pr ? { kinds: Object.keys(pr.cards).length, total: Object.values(pr.cards).reduce((x: number, y: any) => x + Number(y), 0), sets: setProgress(pr) } : null, packsOpened: pr?.packs || 0,
     showcase: a.showcase, since: a.created, history: hist,
   };
+}
+// collection progress per pack set: distinct codes owned / codes in the set
+function setProgress(pr: any) {
+  const out: Record<string, { have: number; total: number }> = {};
+  for (const [set, rows] of CAT.sets) { const codes = new Set(rows.map((r) => r.code)); let have = 0; for (const c of codes) if (pr.cards[c]) have++; out[set] = { have, total: codes.size }; }
+  return out;
 }
 // online players for the COMMUNITY panel (accounts show level, title and banner)
 function communityList(me: User) {
@@ -601,7 +607,7 @@ function newsFeed() {
     if (m[1]) { if (!m[3] || m[3] >= Eco.today()) events.push({ from: m[2] || '', to: m[3] || '', text: m[4] }); }
     else news.push({ at: m[2] || '', text: m[4] });
   }
-  return { news: news.slice(0, 30), events, weekly: { odds: Eco.WEEKLY.map((x) => ({ chance: x.w + '%', reward: x.g })) } };
+  return { items: [...events.map((e) => ({ text: e.text, kind: 'event' })), ...news.slice(0, 30).map((n) => ({ text: n.text, kind: 'news', at: n.at }))], news: news.slice(0, 30), events, weekly: { odds: Eco.WEEKLY.map((x) => ({ chance: x.w + '%', reward: x.g })) } };
 }
 const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
 <body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">
@@ -702,10 +708,10 @@ http.createServer(async (req, res) => {
       const b = await readBody(req, 3000000);
       const text = String(b.text || '').slice(0, 4000).trim();
       if (!text) return send(res, 400, { error: 'Write what happened. · กรุณาเล่าว่าเกิดอะไรขึ้น' });
-      let shot = String(b.screenshot || '').replace(/^data:image\/\w+;base64,/, '');
+      let shot = String(b.screenshot || b.shot || '').replace(/^data:image\/\w+;base64,/, '');
       if (shot.length > 2800000 || !/^[A-Za-z0-9+/=]*$/.test(shot)) shot = '';
       const who = USERS.get(String(req.headers['x-session'] || ''));
-      await STORE.addReport({ at: new Date().toISOString(), acct: who?.acct ? keyOf(who.acct) : '', name: who?.name || cleanLine(b.name, 16) || '', text, log: String(b.log || '').slice(-60000), shot, version: cleanLine(b.version, 40) });
+      await STORE.addReport({ at: new Date().toISOString(), acct: who?.acct ? keyOf(who.acct) : '', name: who?.name || cleanLine(b.name, 16) || '', text, log: String(b.log || '').slice(-60000), shot, version: (cleanLine(b.version, 40) + (b.platform ? ' ' + cleanLine(b.platform, 20) : '')).trim() });
       return send(res, 200, { ok: true });
     }
     if (p === '/reports' && ADMIN_KEY && url.searchParams.get('key') === ADMIN_KEY) return send(res, 200, { reports: await STORE.reports(100) });
@@ -839,7 +845,7 @@ http.createServer(async (req, res) => {
         if (Date.now() - t.at < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3) return send(res, 200, { xp: 0, coins: 0, note: 'Too short for rewards. · เกมสั้นเกินไป' });
         return done(Eco.gameReward(a, { pvp: false, won: !!b.won, bot: t.level, color: t.color, coinsOk: t.coinsOk }));
       }
-      if (p === '/me/packs/open' && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : b.pay === 'inv' ? 'inv' : 'coins'), inv: (pr as any).inv || {}, wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
+      if ((p === '/me/packs/open' || p === '/me/packs/open_owned') && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, p === '/me/packs/open_owned' || b.pay === 'inv' || b.pay === 'inventory' ? 'inv' : b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : 'coins'), inventory: (pr as any).inv || {}, inv: (pr as any).inv || {}, wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
       if (p === '/me/packs' ) return send(res, 200, { packs: Eco.packInfo(CAT, pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, freePack: !pr.daily.freePack });
       if (p === '/me/cards' || p === '/me/collection') return send(res, 200, { ok: true, cards: pr.cards, dust: pr.dust, inv: (pr as any).inv || {}, starters: pr.starters });
       // first-time flow (Game modes hub): name + picture + first starter deck in one call -> same as /me/home
@@ -901,10 +907,15 @@ http.createServer(async (req, res) => {
       // ---- shop: packs to the inventory (BT01-BT12, KD01-KD04, PROMO), starter decks SD01-SD09 (once each)
       const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
       if (p === '/me/shop') return send(res, 200, {
-        packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, freePack: !pr.daily.freePack,
+        packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, inventory: (pr as any).inv || {}, freePack: !pr.daily.freePack,
         starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.SHOP.starterPrice, owned: pr.starters.includes(set) })), wallet: wallet(),
       });
       if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
+      if (p === '/me/shop/buy' && req.method === 'POST') { // one-call form (Game modes client)
+        const out: any = b.kind === 'starter' ? Eco.buyStarter(a, CAT, RAW, String(b.set || '')) : b.kind === 'pack' ? Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins') : { error: 'kind: pack or starter' };
+        return done({ ...out, wallet: wallet(), inventory: (pr as any).inv || {} });
+      }
+      if (p === '/me/packs/owned') return send(res, 200, { ok: true, packs: (pr as any).inv || {} });
       if (p === '/me/shop/starter' && req.method === 'POST') return done({ ...Eco.buyStarter(a, CAT, RAW, String(b.set || '')), wallet: wallet() });
       if (p === '/me/weekly-draw' && req.method === 'POST') return done({ ...Eco.weeklyDraw(pr), wallet: wallet() });
       // ---- friends: add an online player (or a key from a profile), accept, remove/decline, invite to my room
