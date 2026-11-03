@@ -3,6 +3,31 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Home news shows game updates · ข่าวหน้าแรกแสดงอัปเดตเกม",
+      "lines": [
+        "Tap the news bar to see every update · แตะแถบข่าวเพื่อดูอัปเดตทั้งหมด"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "title": "Fixes · แก้บัค",
+      "lines": [
+        "STORY MODE entry shows again in BATTLE on PC · ปุ่มโหมดเนื้อเรื่องกลับมาแล้ว (PC)",
+        "Tournament no longer crashes when picking a deck · ทัวร์นาเมนต์ไม่เด้งตอนเลือกเด็ค"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "title": "New HOME · หน้าแรกใหม่",
+      "lines": [
+        "Profile pop-up with 3 showcase cards, history and replays · โปรไฟล์ โชว์การ์ด 3 ใบ ประวัติ รีเพลย์",
+        "SHOP: packs BT01-12, KD, PROMO, starter decks, characters · ร้านค้า ซอง เด็คเริ่มต้น ตัวละคร",
+        "COMMUNITY: online players, world chat, friends · ผู้เล่นออนไลน์ แชท เพื่อน",
+        "Bug report, mailbox and weekly draw · แจ้งบัค จดหมาย จับรางวัลรายสัปดาห์"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Bug fixes (3 Nov) · แก้บั๊ก (3 พ.ย.)",
       "lines": [
         "เมอลิน พ่อมดแห่งอวาลอน now reads \"เลือกปฏิบัติ\" (choose one) instead of \"เนรเทศ\". · แก้ข้อความเป็น \"เลือกปฏิบัติ\" แทน \"เนรเทศ\"",
