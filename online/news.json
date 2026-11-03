@@ -3,6 +3,14 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Card pictures and BATTLE menu fixes · แก้ภาพการ์ดและเมนูต่อสู้",
+      "lines": [
+        "A replaced card picture now updates without clearing the browser. · ภาพการ์ดที่เปลี่ยนใหม่อัปเดตทันทีโดยไม่ต้องล้างเบราว์เซอร์",
+        "The Tournament screen opens with your saved deck. · หน้าทัวร์นาเมนต์ใช้เด็คที่บันทึกไว้ได้แล้ว"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Home news shows game updates · ข่าวหน้าแรกแสดงอัปเดตเกม",
       "lines": [
         "Tap the news bar to see every update · แตะแถบข่าวเพื่อดูอัปเดตทั้งหมด"
