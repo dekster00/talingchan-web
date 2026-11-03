@@ -338,3 +338,42 @@ export function startGift(p: Prog) {
   give(p, g);
   return g;
 }
+
+// ---------------------------------------------------------------- name banner (user pick P2, 2026-11-03)
+// Slanted nameplate: icon, name, earned title, rank badge. Banner colour and frame unlock with level; titles are
+// earned by level, best rank and online wins. Chosen ones live in prog.title / prog.banner / prog.frame.
+export const BANNERS = [
+  { id: 'plain', level: 1 }, { id: 'red', level: 3 }, { id: 'blue', level: 5 }, { id: 'green', level: 7 }, { id: 'purple', level: 10 },
+  { id: 'gold', level: 15 }, { id: 'black', level: 20 }, { id: 'rainbow', level: 30 },
+];
+export const FRAMES = [{ id: 'none', level: 1 }, { id: 'bronze', level: 5 }, { id: 'silver', level: 10 }, { id: 'gold', level: 20 }, { id: 'diamond', level: 40 }];
+export const TITLES: { id: string; name: string; level?: number; rank?: number; wins?: number }[] = [
+  { id: 'rookie', name: 'Rookie · มือใหม่', level: 1 }, { id: 'duelist', name: 'Duelist · นักดวล', level: 5 },
+  { id: 'veteran', name: 'Veteran · ทหารผ่านศึก', level: 10 }, { id: 'champion', name: 'Champion · แชมป์', level: 20 },
+  { id: 'legend', name: 'Legend · ตำนาน', level: 40 },
+  { id: 'gold', name: 'Gold Duelist · นักดวลทองคำ', rank: 2 }, { id: 'diamond', name: 'Diamond Mind · จิตเพชร', rank: 4 },
+  { id: 'master', name: 'Master of Talingchan · เจ้าแห่งตลิ่งชัน', rank: 5 },
+  { id: 'win10', name: 'Winner · ผู้ชนะ', wins: 10 }, { id: 'win100', name: 'Hundred Wins · ร้อยชัย', wins: 100 },
+];
+export function bannerView(a: { xp: number; wins: number; prog: any }) {
+  const p = prog(a) as any, lv = levelOf(a.xp).level, best = tierOf(p.rank.best || 0).index;
+  const titles = TITLES.filter((t) => (t.level ? lv >= t.level : true) && (t.rank !== undefined ? best >= t.rank : true) && (t.wins ? a.wins >= t.wins : true));
+  const banners = BANNERS.filter((b) => lv >= b.level), frames = FRAMES.filter((f) => lv >= f.level);
+  const pick = (id: string, list: { id: string }[]) => (list.some((x) => x.id === id) ? id : list[0].id);
+  const title = titles.find((t) => t.id === pick(p.title, titles))!;
+  return {
+    title: title.id, titleName: title.name, banner: pick(p.banner, banners), frame: pick(p.frame, frames),
+    unlocked: { titles: titles.map((t) => ({ id: t.id, name: t.name })), banners: banners.map((b) => b.id), frames: frames.map((f) => f.id) },
+    locked: { banners: BANNERS.filter((b) => lv < b.level), frames: FRAMES.filter((f) => lv < f.level), titles: TITLES.filter((t) => !titles.includes(t)) },
+  };
+}
+// set any of title/banner/frame; refuses ones not unlocked yet
+export function setBanner(a: { xp: number; wins: number; prog: any }, b: { title?: any; banner?: any; frame?: any }) {
+  const p = prog(a) as any, v = bannerView(a);
+  for (const [k, list] of [['title', v.unlocked.titles.map((t) => t.id)], ['banner', v.unlocked.banners], ['frame', v.unlocked.frames]] as const) {
+    if (b[k] === undefined) continue;
+    if (!list.includes(String(b[k]))) return { error: `That ${k} is not unlocked yet. · ยังไม่ปลดล็อก` };
+    p[k] = String(b[k]);
+  }
+  return { ok: true };
+}

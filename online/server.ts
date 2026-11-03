@@ -341,7 +341,7 @@ function homeView(a: Account, extra: any = {}) {
     rank: { ...t, div: t.step, pts: a.rank_pts, season: a.season, games: p.rank.games, wins: p.rank.wins, best: Eco.tierOf(p.rank.best).name, last: p.rank.last || null },
     stats: { wins: a.wins, losses: a.losses, draws: a.draws },
     cards: { kinds: Object.keys(p.cards).length, total: Object.values(p.cards).reduce((x, y) => x + y, 0) }, packsOpened: p.packs,
-    starters: p.starters, starterSlots, icons: p.icons,
+    starters: p.starters, starterSlots, icons: p.icons, nameplate: Eco.bannerView(a),
     badges: { login: login.canClaim, missions: missions.filter((m) => m.got >= m.n && !m.claimed).length, freePack: !p.daily.freePack, shop: !p.daily.freePack, starter: p.starters.length < starterSlots, newCards: 0 },
     // flat fields for the Godot hub (Game modes thread): same values as above
     coins: p.coins, tickets: p.tickets, dust: p.dust, giftPacks: p.tickets, firstTime: p.starters.length === 0,
@@ -549,8 +549,9 @@ async function profileOf(u: User) {
       result: m.winner === null || m.winner === undefined ? 'draw' : m.winner === me ? 'win' : 'loss', reason: m.reason, turns: m.turns, secs: m.secs,
     };
   });
-  const rank = economyOn() ? { ...Eco.tierOf(a.rank_pts), pts: a.rank_pts } : null;
-  return { ...base, ...levelOf(a.xp), rank, wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
+  const rank = economyOn() ? { ...Eco.tierOf(a.rank_pts), div: Eco.tierOf(a.rank_pts).step, pts: a.rank_pts } : null;
+  const bn = economyOn() ? Eco.bannerView(a) : null;
+  return { ...base, ...levelOf(a.xp), rank, title: bn?.title || '', titleName: bn?.titleName || '', banner: bn?.banner || 'plain', frame: bn?.frame || 'none', wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
 }
 const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
 <body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">
@@ -852,6 +853,7 @@ http.createServer(async (req, res) => {
         a.name = nm; u.name = uniqueName(nm, u);
       }
       if (b.avatar !== undefined && cleanAvatar(b.avatar)) { a.avatar = cleanAvatar(b.avatar); u.avatar = a.avatar; }
+      if ((b.title !== undefined || b.banner !== undefined || b.frame !== undefined) && economyOn()) { const r = Eco.setBanner(a, b); if (r.error) return send(res, 400, r); }
       if (Array.isArray(b.showcase)) a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c)).slice(0, 3);
       await STORE.save(a);
       usersDirty = true; bump();

@@ -105,6 +105,8 @@ create index accounts_rank on accounts (season, rank_pts desc);
 All values are decided by the server (no real money). Guests get 403 `{guest:true}`. Errors are 400 `{error}`.
 - `GET /me/home`: profile, level, wallet (also flat `coins tickets dust`), login calendar, 3 missions, bot caps,
   `rank {tier, div, pts, name, season}`, `badges {login, missions (count), shop, starter}`, `firstTime`, `gift` (start gift, once).
+- Name banner: `/me/home` `nameplate {title, titleName, banner, frame, unlocked, locked}`; set with
+  `POST /me/profile {title, banner, frame}` (400 if not unlocked). Profiles show title, titleName, banner, frame.
 - `POST /me/setup {name, avatar, starter:"SD01"}` first-time flow, answers like /me/home.
 - `POST /me/login-reward`, `POST /me/missions/claim {i}`, `POST /me/missions/reroll {i}` (one reroll a day).
 - Bot games (EXP always, coins only with an all-owned deck; daily cap 400 EXP / 200 coins; never in match history):
