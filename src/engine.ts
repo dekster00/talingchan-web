@@ -518,9 +518,20 @@ export function shieldOptions(g: Game, p: PID, ev: Ev): Card[] {
 }
 /** a uses โล่มนุษย์: it rests and becomes the attack target. Fires onShieldUsed of every card in play. */
 export function useShield(g: Game, ev: Ev, a: Card) {
+  const prev = ev.target === undefined ? null : ev.target;
   a.asleep = true; ev.target = a;
   emit(g, { ev: 'shield', who: a.ctrl, uid: a.uid, from: ev.source ? ev.source.uid : -1, s: `${a.def.name} โล่มนุษย์: takes the attack` } as any); // vd4: the screen turns the attack to it
   log(g, `${a.def.name} โล่มนุษย์: takes the attack of ${ev.source ? ev.source.def.name : '?'} instead`);
+  // bugfix11 (user 2026-11-03): โล่มนุษย์ is an Avatar ability, so the attacker gets a React window (เชาว์ปัญญาลิง).
+  // Negated: the shield stays rested (its cost) and the attack goes on to its first target.
+  const ab: Ev = { kind: 'ability', actor: a.ctrl, source: a, cancelled: false, depth: ev.depth + 1 };
+  respond(g, ab);
+  if ((ab.cancelled || silenced(g, a)) && ev.target === a && g.winner === null) {
+    ev.target = prev;
+    log(g, `${a.def.name}: โล่มนุษย์ is negated, the attack goes on to ${prev ? prev.def.name : 'LIFE'}`);
+    if (ev.source) emit(g, { ev: 'attack', who: ev.source.ctrl, from: ev.source.uid, to: prev ? prev.uid : 'life' });
+    return;
+  }
   for (const s of kwSources(g)) { const sf = fx(s); if (sf && sf.onShieldUsed && !silenced(g, s)) decide(g, s.ctrl, () => sf.onShieldUsed!(g, s, a, ev.source!)); }
 }
 // ---------- control changes (v13) ----------

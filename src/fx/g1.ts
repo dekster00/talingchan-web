@@ -729,7 +729,7 @@ const NEW: Record<string, any> = {
     noTarget: (g: Game, self: Card, t: Card, by: Card) => P(g, self.ctrl).avatars.includes(self) && t !== self && t.ctrl === self.ctrl
       && P(g, t.ctrl).avatars.includes(t) && isGen(t) && !t.def.name.includes('กวนอู') && by.ctrl !== self.ctrl,
   },
-  'เตียวหุย ขุนพลจอมบุกแห่งจ๊กก๊ก': { keep: 4, onAttack: (g: Game, c: Card) => boost(c, 1) },
+  'เตียวหุย ขุนพลจอมบุกแห่งจ๊กก๊ก': { keep: 4, onAttack: (g: Game, c: Card) => { c.temp.push({ power: 1, until: 'battle' }); } }, // bugfix11 (user 2026-11-03): only for this attack, gone after the fight
   'แฮหัวตุ้น ขุนพลตาเดียวแห่งวุยก๊ก': {
     keep: 4,
     // v14 ruling: works when summoned by the ability of any "ขุนพล" {ชาวต่างชาติ} Avatar (อ้วนเสี้ยว's จุติ, โจโฉ's จุติ /

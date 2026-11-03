@@ -3,6 +3,16 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Shop prices and online fixes · ราคาร้านค้าและแก้ออนไลน์",
+      "lines": [
+        "Casual online games pay coins and EXP whether you win or lose. · เล่นออนไลน์ทั่วไป แพ้หรือชนะก็ได้เหรียญและ EXP",
+        "Starter decks 600 coins (SD09 1000), KD and BT11-BT12 packs 200. · สตาร์ทเตอร์ 600 (SD09 1000) ซอง KD, BT11-12 ราคา 200",
+        "PROMO packs are now rewards: every level up and day 7 of the login calendar. · ซองโปรโมได้จากเลเวลอัปและล็อกอินวันที่ 7",
+        "An online answer that failed to send is retried, so an attack no longer gets stuck after a long React. · แก้การโจมตีค้างหลังอีกฝ่ายคิดนาน"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Profiles everywhere · โปรไฟล์ทุกโหมด",
       "lines": [
         "Click a name in a duel to see that player's profile · คลิกชื่อในการดวลเพื่อดูโปรไฟล์",

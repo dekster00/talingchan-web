@@ -415,7 +415,7 @@ async function recordResult(d: Duel, winner: number | null, reason: string) {
     const won = winner === null ? null : winner === i;
     if (economyOn()) {
       ecoTouch(a);
-      const r: any = Eco.gameReward(a, { pvp: true, ranked, won, color: d.colors?.[i], coinsOk: ranked || !!d.coinsOk?.[i] });
+      const r: any = Eco.gameReward(a, { pvp: true, ranked, won, color: d.colors?.[i], coinsOk: true }); // user 2026-11-03: casual (friend room) games pay coins + EXP win or lose, any deck
       if (ranked) r.rank = Eco.rankedResult(a, mmr[1 - i], won);
       d.rewards![i] = r;
     } else a.xp += won === null ? 50 : won ? 100 : 40;
@@ -949,7 +949,7 @@ http.createServer(async (req, res) => {
       const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
       if (p === '/me/shop') return send(res, 200, {
         packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, inventory: (pr as any).inv || {}, freePack: !pr.daily.freePack,
-        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.SHOP.starterPrice, owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), wallet: wallet(),
+        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.starterPrice(set), owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), wallet: wallet(),
       });
       if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
       if (p === '/me/shop/buy' && req.method === 'POST') { // one-call form (Game modes client)

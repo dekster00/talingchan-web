@@ -19,7 +19,7 @@ export const seasonOf = (now = Date.now()) => today(now).slice(0, 7); // "2026-1
 // ---------------------------------------------------------------- numbers (all in one place)
 export const PRICE = { pack: 100 }; // coins per pack (or 1 ticket)
 export const LOGIN_DAYS = [
-  { coins: 100 }, { coins: 150 }, { tickets: 1 }, { coins: 200 }, { dust: 50 }, { coins: 250 }, { tickets: 2, icon: 'login7' },
+  { coins: 100 }, { coins: 150 }, { tickets: 1 }, { coins: 200 }, { dust: 50 }, { coins: 250 }, { tickets: 2, icon: 'login7', packs: { PRMO: 1 } },
 ];
 export const PVP = { win: { xp: 100, coins: 60 }, loss: { xp: 40, coins: 20 }, draw: { xp: 50, coins: 30 } };
 export const BOT = {
@@ -27,7 +27,12 @@ export const BOT = {
   loss: { xp: 10, coins: 5 },
   capXp: 400, capCoins: 200, maxGames: 40, minSecs: Number(process.env.BOT_MIN_SECS ?? 60), // BOT_MIN_SECS: tests only
 };
-export const LEVEL_REWARD = (lv: number) => ({ coins: 100, tickets: 1 + (lv % 5 === 0 ? 2 : 0) });
+export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (lv % 5 === 0 ? 2 : 0), packs: { PRMO: 1 } });
+// prices (user 2026-11-03): packs 100 coins, KD and BT11-BT12 200; the PROMO pack is not sold, it is a reward
+// (every level up, day 7 of the login calendar, tournaments). Starter decks 600, SD09 1000.
+export const packPrice = (set: string) => (/^KD/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack);
+export const SHOP_CLOSED = new Set(['PRMO']);
+export const starterPrice = (set: string) => (set === 'SD09' ? 1000 : 600);
 // duplicates beyond the copy limit become dust; crafting a card costs dust by its lowest rarity
 const DUST_GET: Record<string, number> = { C: 5, R: 15, SR: 40, UR: 80, SCR: 150 };
 const DUST_COST: Record<string, number> = { C: 20, R: 60, SR: 200, UR: 400, SCR: 600 };
@@ -112,10 +117,11 @@ export function rollDay(p: Prog, now = Date.now()) {
   if (p.bot.date !== d) p.bot = { date: d, xp: 0, coins: 0, games: 0 };
 }
 
-type Gain = { coins?: number; tickets?: number; dust?: number; icon?: string };
+type Gain = { coins?: number; tickets?: number; dust?: number; icon?: string; packs?: Record<string, number> };
 function give(p: Prog, g: Gain) {
   p.coins += g.coins || 0; p.tickets += g.tickets || 0; p.dust += g.dust || 0;
   if (g.icon && !p.icons.includes(g.icon)) p.icons.push(g.icon);
+  if (g.packs) { const inv = ((p as any).inv ??= {}); for (const [k, n] of Object.entries(g.packs)) inv[k] = (inv[k] || 0) + n; }
 }
 // XP in: level-up rewards for every level passed (paid once each, levelPaid remembers)
 export function addXp(a: { xp: number; prog: any }, xp: number) {
@@ -218,7 +224,7 @@ export const packName = (set: string) => (set === 'PRMO' ? 'PROMO' : set);
 export function packInfo(cat: Catalog, p?: Prog) {
   return [...cat.sets.keys()].sort().map((set) => ({
     set, name: packName(set), kind: set.startsWith('BT') ? 'booster' : set.startsWith('KD') ? 'kd' : 'promo',
-    cards: cat.sets.get(set)!.length, perPack: ODDS.cards, price: PRICE.pack, pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0, best: bestOf(cat.sets.get(set)!),
+    cards: cat.sets.get(set)!.length, perPack: ODDS.cards, price: packPrice(set), forSale: !SHOP_CLOSED.has(set), pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0, best: bestOf(cat.sets.get(set)!),
     odds: { common: '4 cards', rare: '1 card R or better', top: 'SCR 2.5% · UR 7.5% · SR 20% · R 70% (a rarity the set lacks drops to the next one)', scrPity: `${bestOf(cat.sets.get(set)!)} guaranteed by pack ${ODDS.pity}` },
   }));
 }
@@ -231,6 +237,7 @@ export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay
   const rows = cat.sets.get(set);
   if (!rows) return { error: 'No such pack. · ไม่มีซองนี้' };
   count = Math.max(1, Math.min(10, Math.floor(count) || 1));
+  if (pay !== 'inv' && SHOP_CLOSED.has(set)) return { error: 'This pack is a reward only. · ซองนี้ได้จากรางวัลเท่านั้น' };
   if (pay === 'free') {
     if (p.daily.freePack) return { error: 'Today\'s free pack is opened. · รับซองฟรีวันนี้แล้ว' };
     count = 1; p.daily.freePack = true;
@@ -242,8 +249,8 @@ export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay
     if (p.tickets < count) return { error: 'Not enough pack tickets. · ตั๋วไม่พอ' };
     p.tickets -= count;
   } else {
-    if (p.coins < PRICE.pack * count) return { error: 'Not enough coins. · เหรียญไม่พอ' };
-    p.coins -= PRICE.pack * count;
+    if (p.coins < packPrice(set) * count) return { error: 'Not enough coins. · เหรียญไม่พอ' };
+    p.coins -= packPrice(set) * count;
   }
   const packs: any[] = [];
   for (let k = 0; k < count; k++) {
@@ -390,12 +397,13 @@ export function setBanner(a: { xp: number; wins: number; prog: any }, b: { title
 // ---------------------------------------------------------------- shop (user, 2026-11-03)
 // Packs bought in the shop go to the pack inventory (prog.inv {set: n}) and are opened later in the Collection room
 // (openPacks pay 'inv'). Starter decks SD01-SD09: each bought once (the first one is free in the welcome flow).
-export const SHOP = { starterPrice: 300, starterSets: ['SD01', 'SD02', 'SD03', 'SD04', 'SD05', 'SD06', 'SD07', 'SD08', 'SD09'] };
+export const SHOP = { starterPrice: 600, starterSets: ['SD01', 'SD02', 'SD03', 'SD04', 'SD05', 'SD06', 'SD07', 'SD08', 'SD09'] };
 export function buyPacks(p: Prog, cat: Catalog, set: string, count: number, pay: 'coins' | 'ticket') {
   if (!cat.sets.has(set)) return { error: 'No such pack. · ไม่มีซองนี้' };
+  if (SHOP_CLOSED.has(set)) return { error: 'This pack is a reward only. · ซองนี้ได้จากรางวัลเท่านั้น' };
   count = Math.max(1, Math.min(10, Math.floor(count) || 1));
   if (pay === 'ticket') { if (p.tickets < count) return { error: 'Not enough pack tickets. · ตั๋วไม่พอ' }; p.tickets -= count; }
-  else { if (p.coins < PRICE.pack * count) return { error: 'Not enough coins. · เหรียญไม่พอ' }; p.coins -= PRICE.pack * count; }
+  else { if (p.coins < packPrice(set) * count) return { error: 'Not enough coins. · เหรียญไม่พอ' }; p.coins -= packPrice(set) * count; }
   const inv = (p as any).inv ??= {};
   inv[set] = (inv[set] || 0) + count;
   return { ok: true, set, count, inv };
@@ -404,8 +412,8 @@ export function buyStarter(a: { xp: number; prog: any }, cat: Catalog, raw: any[
   const p = prog(a);
   if (!SHOP.starterSets.includes(set)) return { error: 'This starter deck is not for sale yet. · ยังไม่เปิดขาย' };
   if (p.starters.includes(set)) return { error: 'You already have this starter deck. · มีแล้ว' };
-  if (p.coins < SHOP.starterPrice) return { error: 'Not enough coins. · เหรียญไม่พอ' };
-  p.coins -= SHOP.starterPrice;
+  if (p.coins < starterPrice(set)) return { error: 'Not enough coins. · เหรียญไม่พอ' };
+  p.coins -= starterPrice(set);
   const codes = [...new Set(raw.filter((c) => c.series === set && c.type !== 'Life' && c.type !== 'Token').map((c) => String(c.code)))];
   for (const c of codes) p.cards[c] = Math.max(p.cards[c] || 0, Math.min(4, cat.byCode.get(c)?.limit || 4));
   p.starters.push(set);
