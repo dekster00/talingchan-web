@@ -431,3 +431,83 @@ export function weeklyDraw(p: Prog) {
 // ---------------------------------------------------------------- friends (prog.friends {list, in, out}: account ids)
 export function friendsOf(p: Prog) { const f = ((p as any).friends ??= { list: [], in: [], out: [] }); return f as { list: string[]; in: string[]; out: string[] }; }
 export const FRIEND_MAX = 100;
+
+// ---------------------------------------------------------------- playable characters (user, 2026-11-03)
+// Every account starts with only c51 แก๊ง SUPER CARD; the others are bought once in the shop. Price by deck strength
+// (character number = strength, c01 strongest): c01-c10 3000, c11-c20 2500, c21-c30 2000, c31-c40 1500, c41-c50 1000,
+// c52-c54 2000. Profile pictures stay free; the character you play as in online rooms and Ranked must be owned.
+// (Same ids as godot/characters/characters.json.)
+export const FREE_CHAR = 'c51';
+export const CHARACTERS: { id: string; name: string; price: number }[] = [
+  { id: 'c51', name: "แก๊งSUPER CARD", price: 0 },
+  { id: 'c01', name: "สุครีพ", price: 3000 },
+  { id: 'c02', name: "มณโฑ", price: 3000 },
+  { id: 'c03', name: "ชิโยเมะ", price: 3000 },
+  { id: 'c04', name: "นัท", price: 3000 },
+  { id: 'c05', name: "เมฟิสโต้", price: 3000 },
+  { id: 'c06', name: "รัททาทุย", price: 3000 },
+  { id: 'c07', name: "เป้อ", price: 3000 },
+  { id: 'c08', name: "วี", price: 3000 },
+  { id: 'c09', name: "โฟเบีย", price: 3000 },
+  { id: 'c10', name: "ขวัญตา", price: 3000 },
+  { id: 'c11', name: "คลีปเปอร์", price: 2500 },
+  { id: 'c12', name: "จอมเวทย์ กาลู", price: 2500 },
+  { id: 'c13', name: "Watson", price: 2500 },
+  { id: 'c14', name: "AI", price: 2500 },
+  { id: 'c15', name: "มีมมิ", price: 2500 },
+  { id: 'c16', name: "เพมมุ", price: 2500 },
+  { id: 'c17', name: "เนฟิเรีย", price: 2500 },
+  { id: 'c18', name: "สวีนนีย์", price: 2500 },
+  { id: 'c19', name: "ซีเวีย", price: 2500 },
+  { id: 'c20', name: "ซีเกิร์ด", price: 2500 },
+  { id: 'c21', name: "ซันนี่", price: 2000 },
+  { id: 'c22', name: "วาริช", price: 2000 },
+  { id: 'c23', name: "เวหา", price: 2000 },
+  { id: 'c53', name: "กัปตัน เชิดชัย", price: 2000 },
+  { id: 'c25', name: "ปื้ด", price: 2000 },
+  { id: 'c26', name: "กุ่ย นาย ฮอล", price: 2000 },
+  { id: 'c27', name: "น้อง อานิมะ", price: 2000 },
+  { id: 'c28', name: "อินาริ", price: 2000 },
+  { id: 'c29', name: "บ่าวจุ้ย", price: 2000 },
+  { id: 'c30', name: "ไท", price: 2000 },
+  { id: 'c31', name: "อาเธอร์", price: 1500 },
+  { id: 'c32', name: "ครีเอเทีย", price: 1500 },
+  { id: 'c33', name: "ถัง จือหลิง", price: 1500 },
+  { id: 'c34', name: "เจมส์", price: 1500 },
+  { id: 'c35', name: "ภูติผลไม้ แตงกวา", price: 1500 },
+  { id: 'c36', name: "วอเตอร์แมน", price: 1500 },
+  { id: 'c37', name: "ฟรีแลนซ์", price: 1500 },
+  { id: 'c38', name: "อาจารย์", price: 1500 },
+  { id: 'c39', name: "หลิงฉี", price: 1500 },
+  { id: 'c40', name: "จีน", price: 1500 },
+  { id: 'c41', name: "โจโฉ", price: 1000 },
+  { id: 'c42', name: "เล่าปี่", price: 1000 },
+  { id: 'c43', name: "ซุนกวน", price: 1000 },
+  { id: 'c44', name: "Linux", price: 1000 },
+  { id: 'c45', name: "อลัน", price: 1000 },
+  { id: 'c46', name: "มินามิ โคทาโร่", price: 1000 },
+  { id: 'c47', name: "ลิโป้", price: 1000 },
+  { id: 'c48', name: "ตำรวจ", price: 1000 },
+  { id: 'c49', name: "แบงค์", price: 1000 },
+  { id: 'c50', name: "ซินแส", price: 1000 },
+  { id: 'c54', name: "HHKP", price: 2000 },
+  { id: 'c52', name: "agent smooth", price: 2000 },
+];
+const CHAR_BY_ID = new Map(CHARACTERS.map((c) => [c.id, c]));
+export function charsOf(p: Prog): string[] { const pp = p as any; pp.chars ??= [FREE_CHAR]; if (!pp.chars.includes(FREE_CHAR)) pp.chars.unshift(FREE_CHAR); return pp.chars; }
+export function charShop(p: Prog) { const own = charsOf(p); return CHARACTERS.map((c) => ({ ...c, owned: own.includes(c.id) })); }
+export function buyCharacter(p: Prog, id: string) {
+  const c = CHAR_BY_ID.get(id);
+  if (!c) return { error: 'No such character.' };
+  const own = charsOf(p);
+  if (own.includes(id)) return { error: 'You already have this character. · มีแล้ว' };
+  if (p.coins < c.price) return { error: 'Not enough coins. · เหรียญไม่พอ' };
+  p.coins -= c.price; own.push(id);
+  return { ok: true, id, chars: own };
+}
+// the character a player may use: owned (or the free one); unknown/unowned -> c51
+export function usableChar(p: Prog | null, want: string): string {
+  if (!CHAR_BY_ID.has(want)) return FREE_CHAR;
+  if (want === FREE_CHAR) return want;
+  return p && charsOf(p).includes(want) ? want : FREE_CHAR;
+}

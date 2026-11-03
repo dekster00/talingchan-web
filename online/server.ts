@@ -198,10 +198,10 @@ function roomDetail(r: Room, me: User) {
   const d = r.duel;
   return {
     code: r.code, name: r.name, host: r.host, hostName: BY_ID.get(r.host)?.name || '', locked: !!r.password, priv: r.priv, bo3: r.bo3,
-    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: acctOf(BY_ID.get(s.user))?.showcase || [], ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
+    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: (acctOf(BY_ID.get(s.user))?.showcase || []).slice(0, 3), profile: profileCard(BY_ID.get(s.user)), ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
     score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games,
     chat: r.chat.slice(-50), last: r.last ? { ...r.last, rewards: undefined, myRewards: r.last.rewards?.[mine] || null, youWon: r.last.winnerId === me.id } : null, ranked: !!r.ranked,
-    duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine] } : null,
+    duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine], oppProfile: profileCard(BY_ID.get(d.users[1 - mine])), myProfile: profileCard(BY_ID.get(d.users[mine])) } : null,
   };
 }
 function leaveRoom(u: User, why = 'left') {
@@ -335,14 +335,14 @@ function homeView(a: Account, extra: any = {}) {
   const missions = Eco.missionsView(p), login = Eco.loginState(p);
   const starterSlots = 1;
   return {
-    id: a.id.replace(/^g:/, '').slice(-6), name: a.name, avatar: a.avatar, showcase: a.showcase, ...lv,
+    id: a.id.replace(/^g:/, '').slice(-6), name: a.name, avatar: a.avatar, showcase: a.showcase.slice(0, 3), ...lv,
     wallet: { coins: p.coins, tickets: p.tickets, dust: p.dust },
     login, missions, rerollLeft: !p.daily.rerolled, firstWinAvailable: !p.daily.firstWin, freePack: !p.daily.freePack,
     bot: { xpLeft: Math.max(0, Eco.BOT.capXp - p.bot.xp), coinsLeft: Math.max(0, Eco.BOT.capCoins - p.bot.coins) },
     rank: { ...t, div: t.step, pts: a.rank_pts, season: a.season, games: p.rank.games, wins: p.rank.wins, best: Eco.tierOf(p.rank.best).name, last: p.rank.last || null },
     stats: { wins: a.wins, losses: a.losses, draws: a.draws },
     cards: { kinds: Object.keys(p.cards).length, total: Object.values(p.cards).reduce((x, y) => x + y, 0) }, packsOpened: p.packs,
-    starters: p.starters, starterSlots, icons: p.icons, nameplate: Eco.bannerView(a), inv: (p as any).inv || {},
+    starters: p.starters, starterSlots, icons: p.icons, nameplate: Eco.bannerView(a), inv: (p as any).inv || {}, chars: Eco.charsOf(p), profile: profileCard(undefined, a),
     weekly: { canDraw: (p as any).weekly !== Eco.weekOf() }, friendRequests: Eco.friendsOf(p).in.length,
     badges: { login: login.canClaim, missions: missions.filter((m) => m.got >= m.n && !m.claimed).length, freePack: !p.daily.freePack, shop: !p.daily.freePack, starter: p.starters.length < starterSlots, newCards: 0 },
     // flat fields for the Godot hub (Game modes thread): same values as above
@@ -541,6 +541,25 @@ async function googleCallback(code: string, state: string, ip: string): Promise<
   } catch (e) { console.error(e); p.error = 'failed'; return 'Google login failed. Try again.'; }
 }
 // a player's profile; full (own) adds nothing private today, but keeps the door open for settings
+// the character a player plays as online: accounts use owned characters, guests the free one (c51); economy off = any
+function charFor(u: User, want: string): string {
+  if (!economyOn()) return want;
+  const a = acctOf(u);
+  return Eco.usableChar(a ? Eco.prog(a) : null, want);
+}
+// ONE profile object everywhere (home, rooms, community, duels, tournament): name, icon, Lv, rank, title/banner, stats, 3 cards
+function profileCard(u: User | undefined, a?: Account) {
+  a ??= acctOf(u);
+  if (!a) return { id: u?.id || '', key: '', name: u?.name || '?', avatar: u?.avatar || '', level: 0, guest: true, rank: null, title: '', titleName: '', banner: 'plain', frame: 'none', pvp: null, showcase: [] };
+  const eco = economyOn(), t = Eco.tierOf(a.rank_pts), bn = eco ? Eco.bannerView(a) : null, games = a.wins + a.losses + a.draws;
+  return {
+    id: u?.id || '', key: keyOf(a.id), name: a.name, avatar: a.avatar || '', level: levelOf(a.xp).level, guest: false,
+    rank: eco ? { tier: t.tier, div: t.step, name: t.name, pts: a.rank_pts } : null,
+    title: bn?.title || '', titleName: bn?.titleName || '', banner: bn?.banner || 'plain', frame: bn?.frame || 'none',
+    pvp: { games, wins: a.wins, losses: a.losses, draws: a.draws, winRate: games ? Math.round((a.wins / games) * 100) : 0 },
+    showcase: a.showcase.slice(0, 3),
+  };
+}
 // public key of an account (friends, leaderboard, profile links): never the Google id itself
 const KEY_TO_ID = new Map<string, string>();
 function keyOf(id: string) { const k = crypto.createHash('sha256').update('tlc|' + id).digest('hex').slice(0, 12); KEY_TO_ID.set(k, id); return k; }
@@ -575,7 +594,7 @@ async function profileAcct(a: Account, u?: User) {
     wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0,
     pvp: { games, wins: a.wins, losses: a.losses, draws: a.draws, winRate: games ? Math.round((a.wins / games) * 100) : 0 },
     collection: pr ? { kinds: Object.keys(pr.cards).length, total: Object.values(pr.cards).reduce((x: number, y: any) => x + Number(y), 0), sets: setProgress(pr) } : null, packsOpened: pr?.packs || 0,
-    showcase: a.showcase, since: a.created, history: hist,
+    showcase: a.showcase.slice(0, 3), card: profileCard(u, a), chars: pr ? Eco.charsOf(pr) : [Eco.FREE_CHAR], since: a.created, history: hist,
   };
 }
 // collection progress per pack set: distinct codes owned / codes in the set
@@ -588,7 +607,7 @@ function setProgress(pr: any) {
 function communityList(me: User) {
   return online().filter((x) => x !== me).slice(0, 200).map((x) => {
     const a = acctOf(x), bn = a && economyOn() ? Eco.bannerView(a) : null;
-    return { id: x.id, key: a ? keyOf(a.id) : '', name: x.name, avatar: x.avatar || '', level: a ? levelOf(a.xp).level : 0, status: statusOf(x), guest: !a, title: bn?.titleName || '', banner: bn?.banner || '' };
+    return { id: x.id, key: a ? keyOf(a.id) : '', name: x.name, avatar: x.avatar || '', level: a ? levelOf(a.xp).level : 0, status: statusOf(x), guest: !a, title: bn?.titleName || '', banner: bn?.banner || '', profile: profileCard(x) };
   });
 }
 async function friendRow(id: string) {
@@ -894,7 +913,7 @@ http.createServer(async (req, res) => {
         const miss = Eco.missingCards(pr, CAT, c.deck);
         if (miss.length) return send(res, 400, { error: `Ranked needs cards you own. Missing: ${miss.slice(0, 5).map((m) => `${m.name} ${m.have}/${m.need}`).join(', ')}${miss.length > 5 ? '…' : ''} · แรงก์ใช้ได้เฉพาะการ์ดที่มี`, missing: miss });
         if (u.room) leaveRoom(u);
-        QUEUE.set(u.id, { deck: c.deck, deckName: c.deck.name, mmr: a.mmr, since: Date.now(), char: cleanAvatar(b.char) || u.avatar || '' });
+        QUEUE.set(u.id, { deck: c.deck, deckName: c.deck.name, mmr: a.mmr, since: Date.now(), char: charFor(u, cleanAvatar(b.char) || u.avatar || '') });
         bump();
         return send(res, 200, { ok: true, queued: QUEUE.size });
       }
@@ -908,13 +927,15 @@ http.createServer(async (req, res) => {
       const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
       if (p === '/me/shop') return send(res, 200, {
         packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, inventory: (pr as any).inv || {}, freePack: !pr.daily.freePack,
-        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.SHOP.starterPrice, owned: pr.starters.includes(set) })), wallet: wallet(),
+        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.SHOP.starterPrice, owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), wallet: wallet(),
       });
       if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
       if (p === '/me/shop/buy' && req.method === 'POST') { // one-call form (Game modes client)
-        const out: any = b.kind === 'starter' ? Eco.buyStarter(a, CAT, RAW, String(b.set || '')) : b.kind === 'pack' ? Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins') : { error: 'kind: pack or starter' };
+        const out: any = b.kind === 'character' ? Eco.buyCharacter(pr, String(b.id || '')) : b.kind === 'starter' ? Eco.buyStarter(a, CAT, RAW, String(b.set || '')) : b.kind === 'pack' ? Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins') : { error: 'kind: pack, starter or character' };
         return done({ ...out, wallet: wallet(), inventory: (pr as any).inv || {} });
       }
+      if (p === '/me/shop/character' && req.method === 'POST') return done({ ...Eco.buyCharacter(pr, String(b.id || '')), wallet: wallet() });
+      if (p === '/me/chars') return send(res, 200, { ok: true, chars: Eco.charsOf(pr), all: Eco.charShop(pr) });
       if (p === '/me/packs/owned') return send(res, 200, { ok: true, packs: (pr as any).inv || {} });
       if (p === '/me/shop/starter' && req.method === 'POST') return done({ ...Eco.buyStarter(a, CAT, RAW, String(b.set || '')), wallet: wallet() });
       if (p === '/me/weekly-draw' && req.method === 'POST') return done({ ...Eco.weeklyDraw(pr), wallet: wallet() });
@@ -998,7 +1019,7 @@ http.createServer(async (req, res) => {
       if ((b.title !== undefined || b.banner !== undefined || b.frame !== undefined) && economyOn()) { const r = Eco.setBanner(a, b); if (r.error) return send(res, 400, r); }
       if (Array.isArray(b.showcase)) {
         const own = economyOn() ? Eco.ownedByName(Eco.prog(a), CAT) : null;
-        a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c) && (!own || (own.get(CAT.nameOf.get(c) || '') || 0) > 0)).slice(0, 5);
+        a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c) && (!own || (own.get(CAT.nameOf.get(c) || '') || 0) > 0)).slice(0, 3);
       }
       await STORE.save(a);
       usersDirty = true; bump();
@@ -1072,7 +1093,7 @@ http.createServer(async (req, res) => {
       const c = cleanDeck(b.deck);
       if (c.error) return send(res, 400, { error: c.error });
       const s = room.seats[mySeat]!;
-      s.deck = c.deck; s.deckName = c.deck.name; s.warnings = c.warnings || []; s.ready = false; s.char = cleanAvatar(b.char) || u.avatar || '';
+      s.deck = c.deck; s.deckName = c.deck.name; s.warnings = c.warnings || []; s.ready = false; s.char = charFor(u, cleanAvatar(b.char) || u.avatar || '');
       bump();
       return send(res, 200, { ok: true, warnings: s.warnings });
     }
