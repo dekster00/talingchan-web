@@ -615,7 +615,21 @@ async function friendRow(id: string) {
   return a ? { key: keyOf(id), id: u?.id || '', name: a.name, avatar: a.avatar || '', level: levelOf(a.xp).level, online: !!u, status: statusOf(u) } : null;
 }
 const INVITES = new Map<string, { from: string; key: string; avatar: string; code: string; room: string; at: number }[]>(); // user id -> invites
-// news + events for the home ticker: online/news.txt lines "YYYY-MM-DD | text" (newest first), "event: ..." lines are events
+// NEWS (user 2026-11-03: "news should repost every bug fix"): online/news.json {updates:[{date, title, lines}], events}
+// read from GitHub (NEWS_URL, the online-server branch) every 5 minutes, so a pushed entry shows without a redeploy;
+// the copy in this folder is the fallback. Old online/news.txt lines still work.
+const NEWS_URL = process.env.NEWS_URL ?? 'https://raw.githubusercontent.com/dekster00/talingchan-web/online-server/online/news.json';
+let NEWS_JSON: any = null, NEWS_AT = 0;
+function loadNewsLocal() { try { return JSON.parse(fs.readFileSync(path.join(HERE, 'news.json'), 'utf8')); } catch { return null; } }
+async function refreshNews() {
+  NEWS_AT = Date.now();
+  if (!NEWS_URL || process.env.FAST) { NEWS_JSON = loadNewsLocal(); return; }
+  try { const r = await fetch(NEWS_URL + '?t=' + Date.now(), { signal: AbortSignal.timeout(8000) }); if (r.ok) { NEWS_JSON = await r.json(); return; } } catch {}
+  NEWS_JSON ??= loadNewsLocal();
+}
+NEWS_JSON = loadNewsLocal();
+setInterval(() => { refreshNews().catch(() => {}); }, 300000).unref();
+refreshNews().catch(() => {});
 function newsFeed() {
   let lines: string[] = [];
   try { lines = fs.readFileSync(path.join(HERE, 'news.txt'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#')); } catch {}
@@ -626,7 +640,15 @@ function newsFeed() {
     if (m[1]) { if (!m[3] || m[3] >= Eco.today()) events.push({ from: m[2] || '', to: m[3] || '', text: m[4] }); }
     else news.push({ at: m[2] || '', text: m[4] });
   }
-  return { items: [...events.map((e) => ({ text: e.text, kind: 'event' })), ...news.slice(0, 30).map((n) => ({ text: n.text, kind: 'news', at: n.at }))], news: news.slice(0, 30), events, weekly: { odds: Eco.WEEKLY.map((x) => ({ chance: x.w + '%', reward: x.g })) } };
+  const j = NEWS_JSON || {};
+  const updates = (Array.isArray(j.updates) ? j.updates : []).slice(0, 50).map((u: any) => ({ date: String(u.date || ''), title: String(u.title || ''), lines: Array.isArray(u.lines) ? u.lines.map(String) : [] }));
+  for (const e of Array.isArray(j.events) ? j.events : []) if (!e.to || String(e.to) >= Eco.today()) events.push({ from: String(e.from || ''), to: String(e.to || ''), text: String(e.text || '') });
+  const items = [
+    ...updates.slice(0, 5).map((u: any) => ({ text: u.title, kind: 'update', at: u.date })),
+    ...events.map((e) => ({ text: e.text, kind: 'event' })),
+    ...news.slice(0, 30).map((n) => ({ text: n.text, kind: 'news', at: n.at })),
+  ];
+  return { latest: updates[0] || null, updates, items, news: news.slice(0, 30), events, weekly: { odds: Eco.WEEKLY.map((x) => ({ chance: x.w + '%', reward: x.g })) } };
 }
 const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
 <body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">

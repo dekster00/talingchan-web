@@ -1,0 +1,27 @@
+{
+  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
+  "updates": [
+    {
+      "date": "2026-11-03",
+      "title": "Online: straight into the lobby · เข้าออนไลน์ได้ทันที",
+      "lines": [
+        "ONLINE uses your home profile and connects by itself (no more name / picture form). · ใช้โปรไฟล์จากหน้าหลักอัตโนมัติ",
+        "A Connecting... sign while the server wakes up, with TRY AGAIN. · แสดงกำลังเชื่อมต่อ และปุ่มลองใหม่",
+        "An expired Google login asks you to log in again. · ถ้า Google หมดอายุ ระบบจะให้เข้าสู่ระบบใหม่"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "title": "Shop, collection and Ranked · ร้านค้า คอลเลกชัน และแรงก์",
+      "lines": [
+        "Packs BT01-BT12, KD01-KD04 and PROMO (6 cards each); starter decks SD01-SD09. · ซองการ์ดและสตาร์ทเตอร์เด็ค",
+        "Daily login stamps, missions, weekly draw. · ล็อกอินรายวัน ภารกิจ จับรางวัลรายสัปดาห์",
+        "Ranked from Bronze to Master with a leaderboard. · แรงก์ บรอนซ์ถึงมาสเตอร์",
+        "Friends, community list and one profile with 3 showcase cards. · เพื่อน รายชื่อผู้เล่น โปรไฟล์เดียว"
+      ]
+    }
+  ],
+  "events": [
+    { "from": "2026-11-03", "to": "2026-11-30", "text": "Season 1 of Ranked: climb from Bronze to Master! · แรงก์ซีซั่น 1" }
+  ]
+}

@@ -2,4 +2,3 @@
 # Edit this file, push the online-server branch, then Render: Manual Deploy > Deploy latest commit.
 2026-11-03 | Shop open: BT01-BT12, KD01-KD04 and PROMO packs, starter decks SD01-SD09 · ร้านเปิดแล้ว
 2026-11-03 | Log in with Google to collect cards, climb Ranked and add friends · เข้าสู่ระบบด้วย Google
-event: 2026-11-03 to 2026-11-30 | Season 1 of Ranked: climb from Bronze to Master! · แรงก์ซีซั่น 1
