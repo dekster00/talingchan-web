@@ -178,6 +178,7 @@ type Room = {
   code: string; name: string; host: string; password: string; priv: boolean; bo3: boolean;
   seats: (Seat | null)[]; chat: Msg[]; score: [number, number]; duel: Duel | null; last: any; created: number; games: number;
   ranked?: boolean; // made by the Ranked queue: one duel, owned cards only, rank points
+  invited?: Set<string>; // user ids a friend invited: they skip the password
 };
 const ROOMS = new Map<string, Room>();
 const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I
@@ -332,7 +333,7 @@ function deckColor(deck: any): string {
 function homeView(a: Account, extra: any = {}) {
   const p = Eco.prog(a), lv = levelOf(a.xp), t = Eco.tierOf(a.rank_pts);
   const missions = Eco.missionsView(p), login = Eco.loginState(p);
-  const starterSlots = 1 + (lv.level >= 5 ? 1 : 0) + (lv.level >= 10 ? 1 : 0);
+  const starterSlots = 1;
   return {
     id: a.id.replace(/^g:/, '').slice(-6), name: a.name, avatar: a.avatar, showcase: a.showcase, ...lv,
     wallet: { coins: p.coins, tickets: p.tickets, dust: p.dust },
@@ -341,7 +342,8 @@ function homeView(a: Account, extra: any = {}) {
     rank: { ...t, div: t.step, pts: a.rank_pts, season: a.season, games: p.rank.games, wins: p.rank.wins, best: Eco.tierOf(p.rank.best).name, last: p.rank.last || null },
     stats: { wins: a.wins, losses: a.losses, draws: a.draws },
     cards: { kinds: Object.keys(p.cards).length, total: Object.values(p.cards).reduce((x, y) => x + y, 0) }, packsOpened: p.packs,
-    starters: p.starters, starterSlots, icons: p.icons, nameplate: Eco.bannerView(a),
+    starters: p.starters, starterSlots, icons: p.icons, nameplate: Eco.bannerView(a), inv: (p as any).inv || {},
+    weekly: { canDraw: (p as any).weekly !== Eco.weekOf() }, friendRequests: Eco.friendsOf(p).in.length,
     badges: { login: login.canClaim, missions: missions.filter((m) => m.got >= m.n && !m.claimed).length, freePack: !p.daily.freePack, shop: !p.daily.freePack, starter: p.starters.length < starterSlots, newCards: 0 },
     // flat fields for the Godot hub (Game modes thread): same values as above
     coins: p.coins, tickets: p.tickets, dust: p.dust, giftPacks: p.tickets, firstTime: p.starters.length === 0,
@@ -391,7 +393,7 @@ async function leaderboard() {
   const s = Eco.seasonOf();
   if (Date.now() - LB.at > 30000 || LB.season !== s) {
     const rows = await STORE.leaderboard(s, 100);
-    LB = { at: Date.now(), season: s, top: rows.map((r, i) => ({ place: i + 1, name: r.name, avatar: r.avatar, pts: r.rank_pts, tier: Eco.tierOf(r.rank_pts).name, level: levelOf(r.xp).level, key: r.id.slice(-8) })) };
+    LB = { at: Date.now(), season: s, top: rows.map((r, i) => ({ place: i + 1, name: r.name, avatar: r.avatar, pts: r.rank_pts, tier: Eco.tierOf(r.rank_pts).name, level: levelOf(r.xp).level, key: keyOf(r.id) })) };
   }
   return LB;
 }
@@ -421,10 +423,12 @@ async function recordResult(d: Duel, winner: number | null, reason: string) {
   }
   if (d.room.last) { d.room.last.rewards = d.rewards; bump(); duelBump(d); }
   const side = (i: number) => accts[i]?.id || 'guest:' + d.users[i];
+  const replay = crypto.randomBytes(8).toString('hex');
+  STORE.saveReplay(replay, { v: 1, at: new Date().toISOString(), names: d.names, decks: d.deckNames || ['', ''], chars: d.chars, winner, reason, turns, ranked, log: d.log.slice(-5000) }).catch((e) => console.error(e));
   await STORE.addMatch({
     at: new Date().toISOString(), a: side(0), b: side(1), a_name: d.names[0], b_name: d.names[1], a_avatar: d.chars[0] || us[0]?.avatar || '', b_avatar: d.chars[1] || us[1]?.avatar || '',
     a_deck: d.deckNames?.[0] || '', b_deck: d.deckNames?.[1] || '',
-    winner, reason, turns, secs: Math.round((Date.now() - d.started) / 1000), ranked,
+    winner, reason, turns, secs: Math.round((Date.now() - d.started) / 1000), ranked, replay,
   });
 }
 function duelOf(u: User): { d: Duel; seat: number } | null {
@@ -537,21 +541,67 @@ async function googleCallback(code: string, state: string, ip: string): Promise<
   } catch (e) { console.error(e); p.error = 'failed'; return 'Google login failed. Try again.'; }
 }
 // a player's profile; full (own) adds nothing private today, but keeps the door open for settings
+// public key of an account (friends, leaderboard, profile links): never the Google id itself
+const KEY_TO_ID = new Map<string, string>();
+function keyOf(id: string) { const k = crypto.createHash('sha256').update('tlc|' + id).digest('hex').slice(0, 12); KEY_TO_ID.set(k, id); return k; }
+const userOfAcct = (id: string) => online().find((x) => x.acct === id);
+function statusOf(u: User | undefined): string {
+  if (!u) return 'offline';
+  if (QUEUE.has(u.id)) return 'queue';
+  const r = u.room ? ROOMS.get(u.room) : null;
+  return r?.duel && !r.duel.ended ? 'duel' : r ? 'room' : 'idle';
+}
 async function profileOf(u: User) {
   const a = acctOf(u);
-  const base = { id: u.id, name: u.name, avatar: u.avatar || '', guest: !a };
-  if (!a) return base;
+  if (!a) return { id: u.id, name: u.name, avatar: u.avatar || '', guest: true, online: true, status: statusOf(u) };
+  return profileAcct(a, u);
+}
+async function profileAcct(a: Account, u?: User) {
   const games = a.wins + a.losses + a.draws;
   const hist = (await STORE.history(a.id, 20)).map((m) => {
     const me = m.a === a.id ? 0 : 1;
     return {
       at: m.at, opp: me ? m.a_name : m.b_name, oppAvatar: me ? m.a_avatar : m.b_avatar, deck: me ? m.b_deck : m.a_deck, oppDeck: me ? m.a_deck : m.b_deck,
       result: m.winner === null || m.winner === undefined ? 'draw' : m.winner === me ? 'win' : 'loss', reason: m.reason, turns: m.turns, secs: m.secs,
+      ranked: !!m.ranked, replay: m.replay || '',
     };
   });
-  const rank = economyOn() ? { ...Eco.tierOf(a.rank_pts), div: Eco.tierOf(a.rank_pts).step, pts: a.rank_pts } : null;
-  const bn = economyOn() ? Eco.bannerView(a) : null;
-  return { ...base, ...levelOf(a.xp), rank, title: bn?.title || '', titleName: bn?.titleName || '', banner: bn?.banner || 'plain', frame: bn?.frame || 'none', wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0, showcase: a.showcase, since: a.created, history: hist };
+  const eco = economyOn(), pr = eco ? Eco.prog(a) : null;
+  const rank = eco ? { ...Eco.tierOf(a.rank_pts), div: Eco.tierOf(a.rank_pts).step, pts: a.rank_pts, games: pr!.rank.games, wins: pr!.rank.wins } : null;
+  const bn = eco ? Eco.bannerView(a) : null;
+  return {
+    id: u?.id || '', key: keyOf(a.id), name: a.name, avatar: a.avatar || '', guest: false, online: !!u, status: statusOf(u), ...levelOf(a.xp), rank,
+    title: bn?.title || '', titleName: bn?.titleName || '', banner: bn?.banner || 'plain', frame: bn?.frame || 'none',
+    wins: a.wins, losses: a.losses, draws: a.draws, games, winRate: games ? Math.round((a.wins / games) * 100) : 0,
+    pvp: { games, wins: a.wins, losses: a.losses, draws: a.draws, winRate: games ? Math.round((a.wins / games) * 100) : 0 },
+    collection: pr ? { kinds: Object.keys(pr.cards).length, total: Object.values(pr.cards).reduce((x: number, y: any) => x + Number(y), 0) } : null,
+    showcase: a.showcase, since: a.created, history: hist,
+  };
+}
+// online players for the COMMUNITY panel (accounts show level, title and banner)
+function communityList(me: User) {
+  return online().filter((x) => x !== me).slice(0, 200).map((x) => {
+    const a = acctOf(x), bn = a && economyOn() ? Eco.bannerView(a) : null;
+    return { id: x.id, key: a ? keyOf(a.id) : '', name: x.name, avatar: x.avatar || '', level: a ? levelOf(a.xp).level : 0, status: statusOf(x), guest: !a, title: bn?.titleName || '', banner: bn?.banner || '' };
+  });
+}
+async function friendRow(id: string) {
+  const a = (await STORE.get(id).catch(() => null)); const u = userOfAcct(id);
+  return a ? { key: keyOf(id), id: u?.id || '', name: a.name, avatar: a.avatar || '', level: levelOf(a.xp).level, online: !!u, status: statusOf(u) } : null;
+}
+const INVITES = new Map<string, { from: string; key: string; avatar: string; code: string; room: string; at: number }[]>(); // user id -> invites
+// news + events for the home ticker: online/news.txt lines "YYYY-MM-DD | text" (newest first), "event: ..." lines are events
+function newsFeed() {
+  let lines: string[] = [];
+  try { lines = fs.readFileSync(path.join(HERE, 'news.txt'), 'utf8').split('\n').map((l) => l.trim()).filter((l) => l && !l.startsWith('#')); } catch {}
+  const news: any[] = [], events: any[] = [];
+  for (const l of lines) {
+    const m = /^(event:)?\s*(\d{4}-\d{2}-\d{2})?\s*(?:to\s*(\d{4}-\d{2}-\d{2}))?\s*\|?\s*(.+)$/i.exec(l);
+    if (!m) continue;
+    if (m[1]) { if (!m[3] || m[3] >= Eco.today()) events.push({ from: m[2] || '', to: m[3] || '', text: m[4] }); }
+    else news.push({ at: m[2] || '', text: m[4] });
+  }
+  return { news: news.slice(0, 30), events, weekly: { odds: Eco.WEEKLY.map((x) => ({ chance: x.w + '%', reward: x.g })) } };
 }
 const PRIVACY = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Battle of Talingchan: privacy</title>
 <body style="font:17px/1.5 sans-serif;background:#111;color:#eee;max-width:720px;margin:40px auto;padding:0 16px">
@@ -629,6 +679,7 @@ function lobbyView(u: User, chatFrom: number) {
     chat: WORLD.filter((m) => m.id > chatFrom).slice(-100), room: r ? roomDetail(r, u) : null,
     turnSec: TIMER ? TURN_SEC : 0, reactSec: TIMER ? REACT_SEC : 0, timer: TIMER, discordLogin: !!(DC_ID && DC_SECRET && PUBLIC_URL), googleLogin: GOOGLE,
     queue: QUEUE.has(u.id) ? { waited: Math.round((Date.now() - QUEUE.get(u.id)!.since) / 1000), size: QUEUE.size } : null,
+    invites: (INVITES.get(u.id) || []).filter((x) => Date.now() - x.at < 600000 && ROOMS.has(x.code)),
   };
 }
 
@@ -644,6 +695,20 @@ http.createServer(async (req, res) => {
     if (p === '/shop/packs') return send(res, 200, { packs: Eco.packInfo(CAT), price: Eco.PRICE });
     if (p === '/ranked/leaderboard') { const lb = await leaderboard(); return send(res, 200, { season: lb.season, top: lb.top, tiers: Eco.TIERS }); }
     if (p === '/privacy') return send(res, 200, PRIVACY, 'text/html; charset=utf-8');
+    if (p === '/news') return send(res, 200, newsFeed());
+    if (p === '/replay') { const r = await STORE.replay(String(url.searchParams.get('id') || '')); return r ? send(res, 200, r) : send(res, 404, { error: 'No such replay. · ไม่พบรีเพลย์' }); }
+    if (p === '/bugreport' && req.method === 'POST') {
+      if (limited('bug:' + ip, 5, 600000)) return send(res, 429, { error: 'Thanks! Please wait a few minutes before the next report.' });
+      const b = await readBody(req, 3000000);
+      const text = String(b.text || '').slice(0, 4000).trim();
+      if (!text) return send(res, 400, { error: 'Write what happened. · กรุณาเล่าว่าเกิดอะไรขึ้น' });
+      let shot = String(b.screenshot || '').replace(/^data:image\/\w+;base64,/, '');
+      if (shot.length > 2800000 || !/^[A-Za-z0-9+/=]*$/.test(shot)) shot = '';
+      const who = USERS.get(String(req.headers['x-session'] || ''));
+      await STORE.addReport({ at: new Date().toISOString(), acct: who?.acct ? keyOf(who.acct) : '', name: who?.name || cleanLine(b.name, 16) || '', text, log: String(b.log || '').slice(-60000), shot, version: cleanLine(b.version, 40) });
+      return send(res, 200, { ok: true });
+    }
+    if (p === '/reports' && ADMIN_KEY && url.searchParams.get('key') === ADMIN_KEY) return send(res, 200, { reports: await STORE.reports(100) });
     if (p === '/test/account' && req.method === 'POST' && process.env.TEST_ACCOUNTS === '1') { // tests only: an account without Google
       const b = await readBody(req);
       const id = 'test:' + cleanLine(b.name, 16);
@@ -774,9 +839,9 @@ http.createServer(async (req, res) => {
         if (Date.now() - t.at < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3) return send(res, 200, { xp: 0, coins: 0, note: 'Too short for rewards. · เกมสั้นเกินไป' });
         return done(Eco.gameReward(a, { pvp: false, won: !!b.won, bot: t.level, color: t.color, coinsOk: t.coinsOk }));
       }
-      if (p === '/me/packs/open' && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : 'coins'), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
+      if (p === '/me/packs/open' && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : b.pay === 'inv' ? 'inv' : 'coins'), inv: (pr as any).inv || {}, wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
       if (p === '/me/packs' ) return send(res, 200, { packs: Eco.packInfo(CAT, pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, freePack: !pr.daily.freePack });
-      if (p === '/me/cards' || p === '/me/collection') return send(res, 200, { ok: true, cards: pr.cards, dust: pr.dust });
+      if (p === '/me/cards' || p === '/me/collection') return send(res, 200, { ok: true, cards: pr.cards, dust: pr.dust, inv: (pr as any).inv || {}, starters: pr.starters });
       // first-time flow (Game modes hub): name + picture + first starter deck in one call -> same as /me/home
       if (p === '/me/setup' && req.method === 'POST') {
         if (b.name !== undefined) {
@@ -830,16 +895,82 @@ http.createServer(async (req, res) => {
       if (p === '/ranked/leave' && req.method === 'POST') { QUEUE.delete(u.id); bump(); return send(res, 200, { ok: true }); }
       if (p === '/me/ranked') {
         const lb = await leaderboard();
-        const place = lb.top.find((x) => x.key === a.id.slice(-8))?.place || null;
+        const place = lb.top.find((x) => x.key === keyOf(a.id))?.place || null;
         return send(res, 200, { ...Eco.tierOf(a.rank_pts), pts: a.rank_pts, season: a.season, games: pr.rank.games, wins: pr.rank.wins, place });
+      }
+      // ---- shop: packs to the inventory (BT01-BT12, KD01-KD04, PROMO), starter decks SD01-SD09 (once each)
+      const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
+      if (p === '/me/shop') return send(res, 200, {
+        packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, freePack: !pr.daily.freePack,
+        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.SHOP.starterPrice, owned: pr.starters.includes(set) })), wallet: wallet(),
+      });
+      if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
+      if (p === '/me/shop/starter' && req.method === 'POST') return done({ ...Eco.buyStarter(a, CAT, RAW, String(b.set || '')), wallet: wallet() });
+      if (p === '/me/weekly-draw' && req.method === 'POST') return done({ ...Eco.weeklyDraw(pr), wallet: wallet() });
+      // ---- friends: add an online player (or a key from a profile), accept, remove/decline, invite to my room
+      if (p.startsWith('/me/friends')) {
+        const f = Eco.friendsOf(pr);
+        if (p === '/me/friends' && req.method === 'GET') {
+          const rows = async (ids: string[]) => (await Promise.all(ids.slice(0, Eco.FRIEND_MAX).map(friendRow))).filter(Boolean);
+          return send(res, 200, { friends: await rows(f.list), in: await rows(f.in), out: await rows(f.out) });
+        }
+        if (req.method !== 'POST') return send(res, 404, { error: 'Not found' });
+        if (limited('fr:' + a.id, 30)) return send(res, 429, { error: 'Wait a minute.' });
+        let otherId = '';
+        if (b.id) otherId = BY_ID.get(String(b.id))?.acct || '';
+        if (!otherId && b.key) otherId = KEY_TO_ID.get(String(b.key)) || '';
+        if (!otherId) return send(res, 400, { error: 'That player has no Google account (guests can\'t be friends). · ผู้เล่นนี้ไม่มีบัญชี' });
+        if (otherId === a.id) return send(res, 400, { error: 'That\'s you!' });
+        const o = await STORE.get(otherId);
+        if (!o) return send(res, 400, { error: 'No such player.' });
+        const of = Eco.friendsOf(Eco.prog(o));
+        const drop = (l: string[], x: string) => { const i = l.indexOf(x); if (i >= 0) l.splice(i, 1); };
+        if (p === '/me/friends/add') {
+          if (f.list.includes(otherId)) return send(res, 200, { ok: true, state: 'friends' });
+          if (f.list.length >= Eco.FRIEND_MAX) return send(res, 400, { error: `Up to ${Eco.FRIEND_MAX} friends.` });
+          if (f.in.includes(otherId)) { drop(f.in, otherId); drop(of.out, a.id); f.list.push(otherId); of.list.push(a.id); }
+          else if (!f.out.includes(otherId)) { f.out.push(otherId); if (!of.in.includes(a.id)) of.in.push(a.id); if (of.in.length > 100) of.in.shift(); }
+          await STORE.save(o); await STORE.save(a);
+          return send(res, 200, { ok: true, state: f.list.includes(otherId) ? 'friends' : 'sent' });
+        }
+        if (p === '/me/friends/accept') {
+          if (!f.in.includes(otherId)) return send(res, 400, { error: 'No request from that player.' });
+          drop(f.in, otherId); drop(of.out, a.id); if (!f.list.includes(otherId)) f.list.push(otherId); if (!of.list.includes(a.id)) of.list.push(a.id);
+          await STORE.save(o); await STORE.save(a);
+          return send(res, 200, { ok: true, state: 'friends' });
+        }
+        if (p === '/me/friends/remove') {
+          for (const l of [f.list, f.in, f.out]) drop(l, otherId);
+          for (const l of [of.list, of.in, of.out]) drop(l, a.id);
+          await STORE.save(o); await STORE.save(a);
+          return send(res, 200, { ok: true, state: 'none' });
+        }
+        if (p === '/me/friends/invite') {
+          if (!f.list.includes(otherId)) return send(res, 400, { error: 'Only friends can be invited. · เชิญได้เฉพาะเพื่อน' });
+          const r = u.room ? ROOMS.get(u.room) : null;
+          if (!r || r.ranked) return send(res, 400, { error: 'Make a room first. · สร้างห้องก่อน' });
+          const t = userOfAcct(otherId);
+          if (!t) return send(res, 400, { error: 'Your friend is offline. · เพื่อนออฟไลน์' });
+          (r.invited ??= new Set()).add(t.id);
+          const list = (INVITES.get(t.id) || []).filter((x) => x.code !== r.code && Date.now() - x.at < 600000).slice(-9);
+          list.push({ from: u.name, key: keyOf(a.id), avatar: u.avatar || '', code: r.code, room: r.name, at: Date.now() });
+          INVITES.set(t.id, list); bump();
+          return send(res, 200, { ok: true });
+        }
+        return send(res, 404, { error: 'Not found' });
       }
       return send(res, 404, { error: 'Not found' });
     }
     // ---- profiles and cloud decks (accounts)
     if (p === '/me/profile' && req.method === 'GET') return send(res, 200, await profileOf(u));
+    if (p === '/community') return send(res, 200, { players: communityList(u), online: online().length, chat: WORLD.slice(-50) });
+    if (p === '/invite/dismiss' && req.method === 'POST') { const b = await readBody(req); INVITES.set(u.id, (INVITES.get(u.id) || []).filter((x) => x.code !== String(b.code || ''))); return send(res, 200, { ok: true }); }
     if (p === '/profile' && req.method === 'GET') {
       const t = BY_ID.get(String(url.searchParams.get('id') || ''));
-      return t ? send(res, 200, await profileOf(t)) : send(res, 404, { error: 'That player is offline. · ผู้เล่นออฟไลน์' });
+      if (t) return send(res, 200, await profileOf(t));
+      const kid = KEY_TO_ID.get(String(url.searchParams.get('key') || ''));
+      const ka = kid ? await STORE.get(kid).catch(() => null) : null;
+      return ka ? send(res, 200, await profileAcct(ka, userOfAcct(ka.id))) : send(res, 404, { error: 'That player is offline. · ผู้เล่นออฟไลน์' });
     }
     if (p === '/me/profile' && req.method === 'POST') {
       const a = acctOf(u);
@@ -854,7 +985,10 @@ http.createServer(async (req, res) => {
       }
       if (b.avatar !== undefined && cleanAvatar(b.avatar)) { a.avatar = cleanAvatar(b.avatar); u.avatar = a.avatar; }
       if ((b.title !== undefined || b.banner !== undefined || b.frame !== undefined) && economyOn()) { const r = Eco.setBanner(a, b); if (r.error) return send(res, 400, r); }
-      if (Array.isArray(b.showcase)) a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c)).slice(0, 3);
+      if (Array.isArray(b.showcase)) {
+        const own = economyOn() ? Eco.ownedByName(Eco.prog(a), CAT) : null;
+        a.showcase = b.showcase.map((c: any) => String(c)).filter((c: string) => INFO.has(c) && (!own || (own.get(CAT.nameOf.get(c) || '') || 0) > 0)).slice(0, 5);
+      }
       await STORE.save(a);
       usersDirty = true; bump();
       return send(res, 200, await profileOf(u));
@@ -904,7 +1038,7 @@ http.createServer(async (req, res) => {
       if (!r) return send(res, 404, { error: 'No room with that code. · ไม่พบห้อง' });
       if (r.ranked && seatOf(r, u) < 0) return send(res, 403, { error: 'That is a Ranked match. · ห้องแรงก์' });
       if (seatOf(r, u) >= 0) { u.room = r.code; return send(res, 200, { ok: true, code: r.code }); }
-      if (r.password && cleanLine(b.password, 20) !== r.password) {
+      if (r.password && !r.invited?.has(u.id) && cleanLine(b.password, 20) !== r.password) {
         if (limited('pw:' + u.id, 8)) return send(res, 429, { error: 'Too many tries.' });
         return send(res, 403, { error: 'Wrong password. · รหัสผิด', needPassword: true });
       }

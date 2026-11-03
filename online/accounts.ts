@@ -25,7 +25,7 @@ export type Account = {
 export type DeckMap = Record<string, { d: any; t: number }>; // deck slug -> {deck (inline format), saved at (unix s)}
 export type Match = {
   at: string; a: string; b: string; a_name: string; b_name: string; a_avatar: string; b_avatar: string;
-  a_deck: string; b_deck: string; winner: number | null; reason: string; turns: number; secs: number; ranked?: boolean;
+  a_deck: string; b_deck: string; winner: number | null; reason: string; turns: number; secs: number; ranked?: boolean; replay?: string;
 };
 
 // XP (game design 2026-11-02): online duel win 100, loss 40, draw 50 (bot games: economy.ts).
@@ -78,7 +78,7 @@ export class Store {
   // a write that names a column the table lacks: switch to legacy mode once and write again without them
   private async sbTry(method: string, table: string, query: string, body: any, prefer: string, strip: (b: any) => any) {
     try { return await sb(method, table, query, body, prefer); } catch (e) {
-      if (!this.legacy && /column|PGRST204|42703/.test(String(e))) { this.legacy = true; console.error('Supabase has no economy columns yet (run README SQL step 2): ' + String(e).slice(0, 200)); return sb(method, table, query, strip(body), prefer); }
+      if (!this.legacy && /column|PGRST204|42703/.test(String(e)) && /prog|rank_pts|mmr|season|ranked/.test(String(e))) { this.legacy = true; console.error('Supabase has no economy columns yet (run README SQL step 2): ' + String(e).slice(0, 200)); return sb(method, table, query, strip(body), prefer); }
       throw e;
     }
   }
@@ -142,8 +142,19 @@ export class Store {
     if (this.local[id]) { this.local[id].decks = decks; this.saveLocal(); }
   }
 
+  noReplayCol = false; // README SQL step 3 not run yet: matches has no replay column
   async addMatch(m: Match): Promise<void> {
-    if (usingSupabase) { const { ranked, ...rest } = m; await this.sbTry('POST', 'matches', '', this.legacy ? rest : m, 'return=minimal', () => rest); return; }
+    if (usingSupabase) {
+      const { ranked, replay, ...rest } = m, noReplay = { ...rest, ranked };
+      if (!this.legacy && !this.noReplayCol && replay) {
+        try { await sb('POST', 'matches', '', m, 'return=minimal'); return; } catch (e) {
+          if (!/replay/.test(String(e))) throw e;
+          this.noReplayCol = true; console.error('matches has no replay column yet (README SQL step 3)');
+        }
+      }
+      await this.sbTry('POST', 'matches', '', this.legacy ? rest : noReplay, 'return=minimal', () => rest);
+      return;
+    }
     this.localMatches.push(m);
     try { fs.appendFileSync(path.join(this.dir, 'matches.jsonl'), JSON.stringify(m) + '\n'); } catch (e) { console.error(e); }
   }
@@ -160,11 +171,34 @@ export class Store {
       .sort((a, b) => b.rank_pts - a.rank_pts).slice(0, n);
   }
 
+  // PvP replays (the duel's log lines) and bug reports: Supabase tables from README SQL step 3, else local files
+  private localExtra(name: string) { return path.join(this.dir, name); }
+  async saveReplay(id: string, data: any): Promise<void> {
+    if (usingSupabase) { try { await sb('POST', 'replays', '', { id, at: new Date().toISOString(), data }, 'return=minimal'); return; } catch (e) { console.error('replay kept locally (README SQL step 3?): ' + String((e as any)?.message || e).slice(0, 160)); } }
+    try { fs.mkdirSync(this.localExtra('replays'), { recursive: true }); fs.writeFileSync(path.join(this.localExtra('replays'), id + '.json'), JSON.stringify(data)); } catch (e) { console.error(e); }
+  }
+  async replay(id: string): Promise<any> {
+    if (!/^[a-f0-9]{16,32}$/.test(id)) return null;
+    if (usingSupabase) { try { const r = (await sb('GET', 'replays', `id=eq.${id}&select=data`))?.[0]; if (r) return r.data; } catch {} }
+    try { return JSON.parse(fs.readFileSync(path.join(this.localExtra('replays'), id + '.json'), 'utf8')); } catch { return null; }
+  }
+  async addReport(r: any): Promise<void> {
+    if (usingSupabase) { try { await sb('POST', 'reports', '', r, 'return=minimal'); return; } catch (e) { console.error('report kept locally (README SQL step 3?): ' + String((e as any)?.message || e).slice(0, 160)); } }
+    try { fs.appendFileSync(this.localExtra('reports.jsonl'), JSON.stringify(r) + '\n'); } catch (e) { console.error(e); }
+  }
+  async reports(n = 50): Promise<any[]> {
+    if (usingSupabase) { try { return (await sb('GET', 'reports', `order=at.desc&limit=${n}&select=at,acct,name,text,version,log`)) || []; } catch {} }
+    try { return fs.readFileSync(this.localExtra('reports.jsonl'), 'utf8').trim().split('\n').filter(Boolean).slice(-n).reverse().map((l) => { const { shot, ...x } = JSON.parse(l); return x; }); } catch { return []; }
+  }
+
   async history(id: string, n = 20): Promise<Match[]> {
     if (usingSupabase) {
       const v = encodeURIComponent(`"${id}"`); // quoted: ids hold ':' which PostgREST reserves inside or=()
-      const q = `or=(a.eq.${v},b.eq.${v})&order=at.desc&limit=${n}&select=at,a,b,a_name,b_name,a_avatar,b_avatar,a_deck,b_deck,winner,reason,turns,secs${this.legacy ? '' : ',ranked'}`;
-      return (await sb('GET', 'matches', q)) || [];
+      const q = `or=(a.eq.${v},b.eq.${v})&order=at.desc&limit=${n}&select=at,a,b,a_name,b_name,a_avatar,b_avatar,a_deck,b_deck,winner,reason,turns,secs${this.legacy ? '' : ',ranked'}${this.noReplayCol || this.legacy ? '' : ',replay'}`;
+      try { return (await sb('GET', 'matches', q)) || []; } catch (e) {
+        if (!/replay/.test(String(e)) || this.noReplayCol) throw e;
+        this.noReplayCol = true; return this.history(id, n);
+      }
     }
     return this.localMatches.filter((m) => m.a === id || m.b === id).slice(-n).reverse();
   }

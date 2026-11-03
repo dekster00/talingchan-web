@@ -118,6 +118,32 @@ All values are decided by the server (no real money). Guests get 403 `{guest:tru
 - Ranked: `POST /ranked/queue {deck, char}` (refuses unowned decks), `POST /ranked/leave`, `GET /me/ranked`,
   `GET /ranked/leaderboard`. A match appears as a private ranked room in `/poll`; its `last.myRewards` shows rewards.
 
+## Hub extras: shop, friends, community, replays, bug reports, news (2026-11-03)
+**SQL step 3** (Supabase SQL Editor, run once; until then replays and bug reports are kept only until the server sleeps):
+```sql
+alter table matches add column replay text;
+create table replays (id text primary key, at timestamptz default now(), data jsonb);
+create table reports (id bigint generated always as identity primary key, at timestamptz default now(),
+  acct text, name text, text text, log text, shot text, version text);
+alter table replays enable row level security;
+alter table reports enable row level security;
+```
+- Shop: `GET /me/shop` -> `{packs (BT01-BT12, KD01-KD04, PRMO = "PROMO"; 6 cards each), price, inv, freePack, starters:[{set, price, owned}], wallet}`.
+  `POST /me/shop/packs {set, count, pay: coins|ticket}` puts packs in the inventory; open them with
+  `POST /me/packs/open {set, count, pay:"inv"}` (every card has its rarity). `POST /me/shop/starter {set: SD01-SD09}` once each, 300 coins
+  (the first starter is free: `/me/setup` or `/me/starter`). `GET /me/collection` also returns `inv` and `starters`.
+- `POST /me/weekly-draw` once a week (odds in `GET /news`). `/me/home` has `weekly.canDraw`, `inv`, `friendRequests`.
+- Community: `GET /community` -> `{players:[{id, key, name, avatar, level, status: idle|room|duel|queue, guest, title, banner}], online, chat}`
+  (world chat is the same as `/poll`). Friends (accounts): `GET /me/friends` -> `{friends, in, out}` rows `{key, id, name, avatar, level, online, status}`;
+  `POST /me/friends/add {id | key}`, `/accept {key}`, `/remove {key}` (also declines/cancels), `/invite {key}` (you must be in a room;
+  the friend sees `invites:[{from, key, code, room}]` in `/poll` and joins with `/room/join {code}`, no password; `POST /invite/dismiss {code}`).
+- Profiles: `GET /profile?id=<online id>` or `?key=<key>`: name, avatar, level, title, banner, frame, rank, `pvp {games, wins, losses, draws, winRate}`,
+  collection count, showcase (up to 5 owned cards; set with `POST /me/profile {showcase}`), last 20 PvP matches with `replay` ids.
+- Replays: `GET /replay?id=` -> `{names, decks, chars, winner, reason, turns, ranked, log}` (the duel's log lines, seat 0 view).
+- Bug reports: `POST /bugreport {text, log, screenshot (base64 PNG, under 2 MB), version}` (guests too, 5 per 10 min);
+  read them at `GET /reports?key=<ADMIN_KEY>`.
+- News: `GET /news` -> `{news:[{at, text}], events:[{from, to, text}], weekly}` from `online/news.txt`.
+
 ## How it works (for programmers)
 
 - `online/server.ts`: lobby (login, rooms, room list, world + room chat, long-poll `/online/poll`) and duels.

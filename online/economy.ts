@@ -70,7 +70,7 @@ export function catalog(raw: any[]): Catalog {
     const lo = lowest.get(row.code);
     if (!lo || RARITY_RANK[r] < RARITY_RANK[lo]) lowest.set(row.code, r);
     // packs: the BT sets, every printed rarity is a separate pull (the same code in SR and SCR = two slots)
-    if (/^BT\d\d$/.test(row.series) && row.type !== 'Life' && row.type !== 'Token') {
+    if (/^(BT\d\d|KD0[1-4]|PRMO)$/.test(row.series) && row.type !== 'Life' && row.type !== 'Token') {
       if (!sets.has(row.series)) sets.set(row.series, []);
       sets.get(row.series)!.push(row);
     }
@@ -209,19 +209,24 @@ function addCard(p: Prog, cat: Catalog, code: string, rarity: string): { code: s
 }
 
 // ---------------------------------------------------------------- packs
-// 5 cards: 3 commons, 1 rare (or better), 1 top slot (SCR 2.5%, UR 7.5%, SR 20%, else R); an SCR by the 40th pack.
-export const ODDS = { top: { SCR: 0.025, UR: 0.075, SR: 0.2 }, pity: 40, cards: 5 };
+// 6 cards (user, 2026-11-03): 4 commons, 1 rare (R, or SR in sets without R), 1 top slot (SCR 2.5%, UR 7.5%, SR 20%,
+// else R); the set's best rarity (SCR, or UR where a set has no SCR) is guaranteed by the 40th pack.
+// Packs: BT01-BT12, KD01-KD04 and PROMO (series PRMO).
+export const ODDS = { top: { SCR: 0.025, UR: 0.075, SR: 0.2 }, pity: 40, cards: 6 };
+const bestOf = (rows: CardRow[]) => ['SCR', 'UR', 'SR', 'R', 'C'].find((r) => rows.some((x) => x.rarity === r)) || 'C';
+export const packName = (set: string) => (set === 'PRMO' ? 'PROMO' : set);
 export function packInfo(cat: Catalog, p?: Prog) {
   return [...cat.sets.keys()].sort().map((set) => ({
-    set, cards: cat.sets.get(set)!.length, price: PRICE.pack, pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0,
-    odds: { common: '3 cards', rare: '1 card R or better', top: 'SCR 2.5% · UR 7.5% · SR 20% · R 70%', scrPity: `SCR guaranteed by pack ${ODDS.pity}` },
+    set, name: packName(set), kind: set.startsWith('BT') ? 'booster' : set.startsWith('KD') ? 'kd' : 'promo',
+    cards: cat.sets.get(set)!.length, perPack: ODDS.cards, price: PRICE.pack, pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0, best: bestOf(cat.sets.get(set)!),
+    odds: { common: '4 cards', rare: '1 card R or better', top: 'SCR 2.5% · UR 7.5% · SR 20% · R 70% (a rarity the set lacks drops to the next one)', scrPity: `${bestOf(cat.sets.get(set)!)} guaranteed by pack ${ODDS.pity}` },
   }));
 }
 function pickOf(rows: CardRow[], rarities: string[]): CardRow | null {
   for (const r of rarities) { const xs = rows.filter((x) => x.rarity === r); if (xs.length) return xs[rnd(xs.length)]; }
   return rows.length ? rows[rnd(rows.length)] : null;
 }
-export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay: 'coins' | 'ticket' | 'free') {
+export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay: 'coins' | 'ticket' | 'free' | 'inv') {
   rollDay(p);
   const rows = cat.sets.get(set);
   if (!rows) return { error: 'No such pack. · ไม่มีซองนี้' };
@@ -229,6 +234,10 @@ export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay
   if (pay === 'free') {
     if (p.daily.freePack) return { error: 'Today\'s free pack is opened. · รับซองฟรีวันนี้แล้ว' };
     count = 1; p.daily.freePack = true;
+  } else if (pay === 'inv') {
+    const inv = (p as any).inv ??= {};
+    if ((inv[set] || 0) < count) return { error: 'You have no unopened packs of this set. · ไม่มีซองนี้ในคลัง' };
+    inv[set] -= count; if (!inv[set]) delete inv[set];
   } else if (pay === 'ticket') {
     if (p.tickets < count) return { error: 'Not enough pack tickets. · ตั๋วไม่พอ' };
     p.tickets -= count;
@@ -240,15 +249,16 @@ export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay
   for (let k = 0; k < count; k++) {
     p.packs++;
     const pulls: CardRow[] = [];
-    for (let i = 0; i < 3; i++) pulls.push(pickOf(rows, ['C'])!);
-    pulls.push(pickOf(rows, ['R', 'C'])!);
+    for (let i = 0; i < 4; i++) pulls.push(pickOf(rows, ['C'])!);
+    pulls.push(pickOf(rows, ['R', 'SR', 'C'])!);
     const since = (p.pity[set] || 0) + 1;
     const x = Math.random();
     let top = x < ODDS.top.SCR ? 'SCR' : x < ODDS.top.SCR + ODDS.top.UR ? 'UR' : x < ODDS.top.SCR + ODDS.top.UR + ODDS.top.SR ? 'SR' : 'R';
-    if (since >= ODDS.pity) top = 'SCR';
+    const best = bestOf(rows);
+    if (since >= ODDS.pity) top = best;
     const order = ['SCR', 'UR', 'SR', 'R', 'C'];
     pulls.push(pickOf(rows, order.slice(order.indexOf(top)))!);
-    p.pity[set] = pulls.some((c) => c.rarity === 'SCR') ? 0 : since;
+    p.pity[set] = pulls.some((c) => c.rarity === best) ? 0 : since;
     packs.push(pulls.map((c) => addCard(p, cat, c.code, c.rarity)));
   }
   return { ok: true, set, packs, pityLeft: ODDS.pity - (p.pity[set] || 0) };
@@ -265,10 +275,9 @@ export function craft(p: Prog, cat: Catalog, code: string) {
 // starter decks (SD sets): 1 at the start, 2 more at level 5 and 10. Every card of the set, up to 4 copies.
 export function claimStarter(a: { xp: number; prog: any }, cat: Catalog, raw: any[], set: string) {
   const p = prog(a);
-  if (!/^SD0[1-9]$/.test(set)) return { error: 'Pick a starter deck (SD01-SD09).' };
+  if (!SHOP.starterSets.includes(set)) return { error: 'Pick a starter deck (SD01-SD09).' };
   if (p.starters.includes(set)) return { error: 'You already have this starter deck.' };
-  const lv = levelOf(a.xp).level, allowed = 1 + (lv >= 5 ? 1 : 0) + (lv >= 10 ? 1 : 0);
-  if (p.starters.length >= allowed) return { error: `Next starter deck at level ${p.starters.length === 1 ? 5 : 10}. · ปลดล็อกที่เลเวล ${p.starters.length === 1 ? 5 : 10}` };
+  if (p.starters.length >= 1) return { error: 'Your free starter deck is taken. Buy more in the Shop. · ซื้อเพิ่มได้ที่ร้าน' };
   const codes = [...new Set(raw.filter((c) => c.series === set && c.type !== 'Life' && c.type !== 'Token').map((c) => String(c.code)))];
   for (const c of codes) p.cards[c] = Math.max(p.cards[c] || 0, Math.min(4, cat.byCode.get(c)?.limit || 4));
   p.starters.push(set);
@@ -377,3 +386,48 @@ export function setBanner(a: { xp: number; wins: number; prog: any }, b: { title
   }
   return { ok: true };
 }
+
+// ---------------------------------------------------------------- shop (user, 2026-11-03)
+// Packs bought in the shop go to the pack inventory (prog.inv {set: n}) and are opened later in the Collection room
+// (openPacks pay 'inv'). Starter decks SD01-SD09: each bought once (the first one is free in the welcome flow).
+export const SHOP = { starterPrice: 300, starterSets: ['SD01', 'SD02', 'SD03', 'SD04', 'SD05', 'SD06', 'SD07', 'SD08', 'SD09'] };
+export function buyPacks(p: Prog, cat: Catalog, set: string, count: number, pay: 'coins' | 'ticket') {
+  if (!cat.sets.has(set)) return { error: 'No such pack. · ไม่มีซองนี้' };
+  count = Math.max(1, Math.min(10, Math.floor(count) || 1));
+  if (pay === 'ticket') { if (p.tickets < count) return { error: 'Not enough pack tickets. · ตั๋วไม่พอ' }; p.tickets -= count; }
+  else { if (p.coins < PRICE.pack * count) return { error: 'Not enough coins. · เหรียญไม่พอ' }; p.coins -= PRICE.pack * count; }
+  const inv = (p as any).inv ??= {};
+  inv[set] = (inv[set] || 0) + count;
+  return { ok: true, set, count, inv };
+}
+export function buyStarter(a: { xp: number; prog: any }, cat: Catalog, raw: any[], set: string) {
+  const p = prog(a);
+  if (!SHOP.starterSets.includes(set)) return { error: 'This starter deck is not for sale yet. · ยังไม่เปิดขาย' };
+  if (p.starters.includes(set)) return { error: 'You already have this starter deck. · มีแล้ว' };
+  if (p.coins < SHOP.starterPrice) return { error: 'Not enough coins. · เหรียญไม่พอ' };
+  p.coins -= SHOP.starterPrice;
+  const codes = [...new Set(raw.filter((c) => c.series === set && c.type !== 'Life' && c.type !== 'Token').map((c) => String(c.code)))];
+  for (const c of codes) p.cards[c] = Math.max(p.cards[c] || 0, Math.min(4, cat.byCode.get(c)?.limit || 4));
+  p.starters.push(set);
+  return { ok: true, set, cards: codes.length };
+}
+
+// ---------------------------------------------------------------- weekly draw (once a week, Monday-based, Thai time)
+export const WEEKLY = [
+  { w: 40, g: { coins: 100 } }, { w: 25, g: { coins: 200 } }, { w: 15, g: { tickets: 1 } }, { w: 10, g: { dust: 100 } },
+  { w: 6, g: { coins: 500 } }, { w: 3, g: { tickets: 3 } }, { w: 1, g: { tickets: 10 } },
+];
+export function weekOf(now = Date.now()) { const t = new Date(now + 7 * 3600e3); const day = (t.getUTCDay() + 6) % 7; const mon = new Date(t.getTime() - day * 864e5); return mon.toISOString().slice(0, 10); }
+export function weeklyDraw(p: Prog) {
+  const pp = p as any, wk = weekOf();
+  if (pp.weekly === wk) return { error: 'Already drawn this week. · สัปดาห์นี้จับแล้ว' };
+  const total = WEEKLY.reduce((x, y) => x + y.w, 0);
+  let r = rnd(total), pick = WEEKLY[0];
+  for (const x of WEEKLY) { if (r < x.w) { pick = x; break; } r -= x.w; }
+  pp.weekly = wk; give(p, pick.g);
+  return { ok: true, reward: pick.g, week: wk };
+}
+
+// ---------------------------------------------------------------- friends (prog.friends {list, in, out}: account ids)
+export function friendsOf(p: Prog) { const f = ((p as any).friends ??= { list: [], in: [], out: [] }); return f as { list: string[]; in: string[]; out: string[] }; }
+export const FRIEND_MAX = 100;
