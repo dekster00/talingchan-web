@@ -117,6 +117,7 @@ function mzOnDeath(mangoToo: boolean, extra: Fx = {}): Fx {
       extra.deathCry?.(g, c, owner);
       const pl = P(g, owner);
       if (!pl.hell.includes(c)) return;
+      if (mangoToo && KILL_FIRST === c.uid) { log(g, `${c.def.name}: สวีนนีย์ resolves first`); return; } // bugfix10 (user)
       if (killedByOpp(g, c, owner) || (mangoToo && pl.once[MANGO_KILL] === g.turn)) toMz(g, c, owner);
     },
   };
@@ -1610,7 +1611,7 @@ costFirst('แยกกันไปแตก', (g, p) => {
 });
 
 // ===== bugfix8 (2026-11-02): new BT12 มะม่วง / เครื่องใช้ไฟฟ้า cards =====
-import { addToHand as addToHandB8 } from '../engine.ts';
+import { addToHand as addToHandB8, KILL_FIRST } from '../engine.ts';
 const MANGO_GRANT = 'mangoGrant:';
 Object.assign(FX, {
   'นักยุทธศาสตร์แห่งภาคีมะม่วง': mzOnDeath(true, {
@@ -1633,6 +1634,7 @@ Object.assign(FX, {
       const pl = P(g, owner);
       if (!pl.once[MANGO_GRANT + c.uid]) return;
       delete pl.once[MANGO_GRANT + c.uid];
+      if (KILL_FIRST === c.uid) return; // bugfix10: สวีนนีย์ first
       if (pl.hell.includes(c) && (killedByOpp(g, c, owner) || pl.once[MANGO_KILL] === g.turn)) toMz(g, c, owner);
     },
   },

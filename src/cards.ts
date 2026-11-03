@@ -53,6 +53,7 @@ export interface Fx {
   onAssistUsed?(g: Game, src: Card, helper: Card, attacker: Card, kind: 'unity' | 'backstab'): void; // any helper used สามัคคี / แทงหลัง
   onAnyMill?(g: Game, src: Card, p: PID, cards: Card[]): void; // any ธรณีสูบ happened (src = a card in play)
   onScoutHell?(g: Game, c: Card, src: Card | null): void; // bugfix8: c was sent to Hell by a สอดแนม of src (มารินะ)
+  killFirst?: boolean; // bugfix10: this Avatar's onKill goes before the victim's คำสั่งเสีย (สวีนนีย์ vs มะม่วง)
   lockCtrl?: boolean | ((g: Game, s: Card) => boolean); // Magic Zone card: our Avatars' control can't change (รูปประจำบ้าน)
   magicImmune?(g: Game, c: Card): boolean; // continuous "unaffected by opponent Magic" (เล่าปี่)
   kwIf?(g: Game, c: Card, kw: string): boolean; // conditional own keyword

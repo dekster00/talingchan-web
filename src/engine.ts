@@ -1497,9 +1497,16 @@ function assistUsed(g: Game, u: Card, att: Card, kind: 'unity' | 'backstab') {
 }
 // > 0 while a fight's result is being applied (destroy() then knows the destruction is "from battle")
 let FIGHT = 0;
+/** bugfix10 (user 2026-11-03): uid of the Avatar being destroyed in battle by an Avatar whose FX.killFirst is set
+ *  (สวีนนีย์): its "on kill" goes before the victim's own คำสั่งเสีย (the มะม่วง "to our Magic Zone" deathcries check this). */
+export let KILL_FIRST = -1;
 function killed(g: Game, winner: Card, loser: Card, by: PID) {
   const lp = loser.def.power, lpow = power(g, loser);
-  if (!destroy(g, loser, by)) return;
+  const wf0 = fx(winner);
+  KILL_FIRST = wf0 && (wf0 as any).killFirst && !silenced(g, winner) ? loser.uid : -1;
+  let gone = false;
+  try { gone = destroy(g, loser, by); } finally { KILL_FIRST = -1; }
+  if (!gone) return;
   if (!P(g, winner.ctrl).avatars.includes(winner)) return;
   // granted "เมื่อ Avatar ใบนี้ทำลาย Avatar ฝ่ายตรงข้ามจากการต่อสู้: หงาย LIFE Card ใบบนสุดของฝ่ายตรงข้าม 1 ใบ" (เซนเซไฮ), until end of turn
   if ((winner.f.gFlipOnKill || 0) >= g.turn && !fullSilenced(g, winner)) {

@@ -362,7 +362,7 @@ Object.assign(FX, {
     },
   },
   'สวีนนีย์ มนุษย์ดาว R18': {
-    keep: 4.5,
+    keep: 4.5, killFirst: true, // bugfix10 (user 2026-11-03): its onKill goes before the victim's คำสั่งเสีย (มะม่วง)
     onKill: (g: Game, c: Card, victim: Card) => {
       if (!P(g, victim.owner).hell.includes(victim)) return;
       makeServant(g, c.ctrl, victim);
