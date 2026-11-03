@@ -3,6 +3,14 @@
   "updates": [
     {
       "date": "2026-11-03",
+      "title": "Ban list now works on the website · แบนลิสต์ใช้งานได้บนเว็บแล้ว",
+      "lines": [
+        "The web deck editor shows banned and limited cards and checks your deck against the official ban list (Aug 69), like the PC version. · หน้าจัดเด็คบนเว็บแสดงการ์ดต้องห้าม/จำกัดจำนวน และตรวจเด็คตามแบนลิสต์ทางการ (ส.ค. 69) เหมือนเวอร์ชัน PC",
+        "New COLLECTION room (My cards, My packs) and the 3-card profile showcase. · ห้อง COLLECTION (การ์ดของฉัน, ซองของฉัน) และการ์ดโชว์ 3 ใบบนโปรไฟล์"
+      ]
+    },
+    {
+      "date": "2026-11-03",
       "title": "Online fixes · แก้ไขโหมดออนไลน์",
       "lines": [
         "BT12 decks can be used in online rooms again. · ใช้เด็คที่มีการ์ด BT12 ในห้องออนไลน์ได้แล้ว",
