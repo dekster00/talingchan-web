@@ -29,6 +29,7 @@
       const x = new XMLHttpRequest();
       x.open('GET', url(rel), false);
       x.overrideMimeType('text/plain; charset=x-user-defined');
+      x.setRequestHeader('Cache-Control', 'no-cache'); // bugfix10: revalidate (a replaced picture keeps its file name)
       try { x.send(); } catch (e) { return ''; }
       if (x.status !== 200) return '';
       const s = x.responseText, b = new Uint8Array(s.length);
@@ -45,7 +46,7 @@
         while (busy < 6 && q.length) {
           const rel = q.shift();
           busy++;
-          fetch(url(rel)).then((r) => (r.ok ? r.arrayBuffer() : null)).then((buf) => { if (buf && !done[rel]) put(rel, new Uint8Array(buf)); })
+          fetch(url(rel), { cache: 'no-cache' }).then((r) => (r.ok ? r.arrayBuffer() : null)).then((buf) => { if (buf && !done[rel]) put(rel, new Uint8Array(buf)); })
             .catch(() => {}).finally(() => { delete pending[rel]; if (!done[rel]) done[rel] = ''; busy--; next(); });
         }
       };
