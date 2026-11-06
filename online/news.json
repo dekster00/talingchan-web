@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "3D cards · การ์ด 3 มิติ",
+   "lines": [
+    "Every card now looks like a real card: rounded corners, a thin edge, a light shine, and it leans toward your mouse. In duels, the deck editor, collection, showcase and pack opening (cards flip over in 3D). · การ์ดทุกใบดูเหมือนการ์ดจริง มุมโค้งมน ขอบบาง มีแสงสะท้อน และเอียงตามเมาส์ ทั้งในการดวล หน้าจัดเด็ค คอลเลกชัน โชว์เคส และตอนเปิดซอง (การ์ดพลิกแบบ 3 มิติ)"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "Card fixes + pay screen · แก้การ์ด + หน้าจ่าย GEM",
    "lines": [
     "Running out of Deck cards now loses at once. ซีกรุน can use ธรณีสูบ with under 10 Deck cards. · การ์ดใน Deck หมดแพ้ทันที / ซีกรุนใช้ธรณีสูบได้แม้ Deck เหลือน้อยกว่า 10 ใบ",
