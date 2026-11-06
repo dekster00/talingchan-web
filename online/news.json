@@ -3,6 +3,15 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "New shop tabs and profile badge · แท็บร้านค้าใหม่และโปรไฟล์ใหม่",
+   "lines": [
+    "The SHOP has RECOMMEND, BT BOOSTER, SPECIAL (CC01-03, ODY1) and KD DECKS tabs, 4 items a row. KD decks are bought once and give every card. · ร้านค้ามีแท็บ แนะนำ, บูสเตอร์ BT, ซองพิเศษ (CC01-03, ODY1) และเด็ค KD แถวละ 4 ชิ้น เด็ค KD ซื้อครั้งเดียวได้การ์ดครบ",
+    "Your profile is now a round icon with your level, name and EXP, top right on HOME and in the casual room. BACK is always top left. · โปรไฟล์เป็นไอคอนกลมพร้อมเลเวล ชื่อ และ EXP มุมขวาบนของหน้าหลักและห้องแคชชวล ปุ่มกลับอยู่มุมซ้ายบนเสมอ",
+    "Hard bots keep React cards, mind your hand size and stop attacking into โล่มนุษย์. · บอทระดับยากเก็บการ์ด React ไว้ คิดเรื่องจำนวนการ์ดบนมือ และไม่โจมตีใส่โล่มนุษย์"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "3D cards · การ์ด 3 มิติ",
    "lines": [
     "Every card now looks like a real card: rounded corners, a thin edge, a light shine, and it leans toward your mouse. In duels, the deck editor, collection, showcase and pack opening (cards flip over in 3D). · การ์ดทุกใบดูเหมือนการ์ดจริง มุมโค้งมน ขอบบาง มีแสงสะท้อน และเอียงตามเมาส์ ทั้งในการดวล หน้าจัดเด็ค คอลเลกชัน โชว์เคส และตอนเปิดซอง (การ์ดพลิกแบบ 3 มิติ)"
