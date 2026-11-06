@@ -3,6 +3,16 @@
   "updates": [
     {
       "date": "2026-11-06",
+      "title": "New SHOP screen · ร้านค้าใหม่",
+      "lines": [
+        "SHOP is its own screen: tabs on the left, items in the middle, featured on the right · ร้านค้าเป็นหน้าจอใหม่ แท็บซ้าย สินค้ากลาง แนะนำขวา",
+        "Real box art for BT01-12, SD01-09 and KD01-04; promo pack is now a reward · ภาพกล่องจริง ซองโปรโมเป็นรางวัล",
+        "HOME: COLLECTION replaced by EVENTS (collection is in CARDS and PROFILE) · หน้าแรก: เปลี่ยนคอลเลกชันเป็นกิจกรรม",
+        "Profile shows your picture and name once; round icons stay in the circle · โปรไฟล์ไม่ซ้ำ รูปอยู่ในวงกลม"
+      ]
+    },
+    {
+      "date": "2026-11-06",
       "title": "Bug fixes · แก้บั๊ก",
       "lines": [
         "When the opponent uses โล่มนุษย์, the attacker can answer with a React (like เชาว์ปัญญาลิง); if it negates it, the attack goes on to its first target. · เมื่อฝ่ายตรงข้ามใช้ โล่มนุษย์ ผู้โจมตีใช้ React ตอบได้ ถ้าลบความสามารถได้ การโจมตีจะไปที่เป้าหมายเดิม",
