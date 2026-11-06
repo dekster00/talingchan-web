@@ -29,6 +29,49 @@
   };
   if (document.body) add(); else document.addEventListener('DOMContentLoaded', add);
 
+  // Text fields: a tap on a Godot text field can't open the phone's keyboard, so scripts/web_keyboard.gd asks for the
+  // text here in a real HTML box; the answer goes back through window.tlcTextDone (null = Cancel)
+  window.tlcTextAsk = function (o) {
+    const old = document.getElementById('tlc-text'); if (old) old.remove();
+    const bg = document.createElement('div'); bg.id = 'tlc-text';
+    bg.style.cssText = 'position:fixed;inset:0;z-index:99998;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;' +
+      'justify-content:center;padding-top:6vh';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#101a2b;border:2px solid #e8b931;border-radius:10px;padding:14px;width:min(560px,92vw);' +
+      'font:16px sans-serif;color:#eee;box-sizing:border-box';
+    const ed = document.createElement(o.multi ? 'textarea' : 'input');
+    if (!o.multi) { ed.type = o.secret ? 'password' : 'text'; ed.enterKeyHint = 'done'; }
+    ed.value = o.value || ''; ed.placeholder = o.hint || '';
+    if (o.max > 0) ed.maxLength = o.max;
+    ed.autocomplete = 'off'; ed.setAttribute('autocapitalize', 'off'); ed.spellcheck = false;
+    ed.style.cssText = 'width:100%;box-sizing:border-box;background:#0a111d;color:#fff;border:1px solid #6a7690;' +
+      'border-radius:6px;padding:10px;font:18px sans-serif;' + (o.multi ? 'height:30vh' : '');
+    const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:10px';
+    const b = (t, c) => { const x = document.createElement('button'); x.textContent = t;
+      x.style.cssText = 'min-width:110px;padding:12px 18px;font:bold 17px sans-serif;color:#fff;border:0;border-radius:6px;background:' + c; return x; };
+    const cancel = b('Cancel', '#556'), ok = b('OK', '#2f9e5a');
+    let closed = false;
+    const done = (v) => { if (closed) return; closed = true; bg.remove(); if (window.tlcTextDone) window.tlcTextDone(v); };
+    cancel.onclick = () => done(null); ok.onclick = () => done(ed.value);
+    bg.addEventListener('pointerdown', (e) => { if (e.target === bg) done(null); });
+    ['keydown', 'keyup', 'keypress'].forEach((k) => ed.addEventListener(k, (e) => {
+      e.stopPropagation();
+      if (k === 'keydown' && e.key === 'Escape') done(null);
+      if (k === 'keydown' && e.key === 'Enter' && !o.multi) { e.preventDefault(); done(ed.value); }
+    }));
+    row.appendChild(cancel); row.appendChild(ok); box.appendChild(ed); box.appendChild(row); bg.appendChild(box);
+    document.body.appendChild(bg);
+    // Godot puts the focus back on its canvas after the tap, so focus the box a moment later (Android opens the
+    // keyboard; iPhone/iPad open it when the box is tapped)
+    const grab = () => { if (closed || document.activeElement === ed) return; ed.focus();
+      try { ed.setSelectionRange(ed.value.length, ed.value.length); } catch (e) {} };
+    [0, 120, 400].forEach((ms) => setTimeout(grab, ms));
+    const t0 = Date.now(); // ...and take it back if the canvas grabs it again in the first moments
+    const back = (e) => { if (closed || Date.now() - t0 > 1500) { document.removeEventListener('focusin', back, true); return; }
+      if (!box.contains(e.target)) setTimeout(grab, 0); };
+    document.addEventListener('focusin', back, true);
+  };
+
   // A phone browser that runs out of memory kills the tab and reloads it, again and again ("A problem repeatedly
   // occurred"). tlcLoading is set while the game starts and cleared once it has run for a while; when it is still
   // there at the next load, the last start crashed: the game waits (window.tlcGate, used by tlc_split.js) and asks.
