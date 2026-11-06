@@ -2,6 +2,13 @@
   "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
   "updates": [
     {
+      "date": "2026-11-06",
+      "title": "Collection shows card pictures · คอลเลกชันแสดงรูปการ์ดแล้ว",
+      "lines": [
+        "Your cards now show their pictures in the Collection album. Cards you don't have yet show in shadow. · อัลบั้มคอลเลกชันแสดงรูปการ์ดที่คุณมีแล้ว การ์ดที่ยังไม่มีจะแสดงเป็นเงามืด"
+      ]
+    },
+    {
       "date": "2026-11-03",
       "title": "Shop prices and online fixes · ราคาร้านค้าและแก้ออนไลน์",
       "lines": [
