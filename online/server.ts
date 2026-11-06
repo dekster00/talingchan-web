@@ -174,7 +174,7 @@ function pushMsg(list: Msg[], from: User | null, text: string, sys = false, cap 
 }
 
 // ---------------------------------------------------------------- rooms
-type Seat = { user: string; deck: any | null; deckName: string; ready: boolean; char: string; warnings: string[] };
+type Seat = { user: string; deck: any | null; deckName: string; ready: boolean; char: string; warnings: string[]; undo?: boolean }; // undo: allows take-back (both seats must)
 type Room = {
   code: string; name: string; host: string; password: string; priv: boolean; bo3: boolean;
   seats: (Seat | null)[]; chat: Msg[]; score: [number, number]; duel: Duel | null; last: any; created: number; games: number;
@@ -199,8 +199,8 @@ function roomDetail(r: Room, me: User) {
   const d = r.duel;
   return {
     code: r.code, name: r.name, host: r.host, hostName: BY_ID.get(r.host)?.name || '', locked: !!r.password, priv: r.priv, bo3: r.bo3,
-    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: (acctOf(BY_ID.get(s.user))?.showcase || []).slice(0, 3), profile: profileCard(BY_ID.get(s.user)), ready: s.ready, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
-    score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games,
+    seats: r.seats.map((s) => s && { id: s.user, name: BY_ID.get(s.user)?.name || '?', avatar: BY_ID.get(s.user)?.avatar || s.char, lv: levelFor(BY_ID.get(s.user)), showcase: (acctOf(BY_ID.get(s.user))?.showcase || []).slice(0, 3), profile: profileCard(BY_ID.get(s.user)), ready: s.ready, undo: !!s.undo, hasDeck: !!s.deck, deckName: s.deckName, char: s.char, warnings: s.user === me.id ? s.warnings : undefined }),
+    score: mine === 1 ? [r.score[1], r.score[0]] : r.score, games: r.games, takeBack: !r.ranked && r.seats.every((x) => x?.undo),
     chat: r.chat.slice(-50), last: r.last ? { ...r.last, rewards: undefined, myRewards: r.last.rewards?.[mine] || null, youWon: r.last.winnerId === me.id } : null, ranked: !!r.ranked,
     duel: d && !d.ended && mine >= 0 ? { id: d.id, seat: mine, opponent: d.names[1 - mine], oppChar: d.chars[1 - mine], char: d.chars[mine], oppProfile: profileCard(BY_ID.get(d.users[1 - mine])), myProfile: profileCard(BY_ID.get(d.users[mine])) } : null,
   };
@@ -266,7 +266,7 @@ function startDuel(r: Room) {
   const shared = new SharedArrayBuffer(8);
   const ch = new MessageChannel();
   const worker = new Worker(new URL('./duel_worker.ts', import.meta.url), {
-    workerData: { decks: [s0.deck, s1.deck], seed: crypto.randomInt(1, 0x7fffffff), shared, port: ch.port2, aces: ['', ''], turnSec: TURN_SEC, reactSec: REACT_SEC, timer: TIMER, speed: ONLINE_SPEED, fast: !!process.env.FAST },
+    workerData: { decks: [s0.deck, s1.deck], seed: crypto.randomInt(1, 0x7fffffff), shared, port: ch.port2, aces: ['', ''], undo: !r.ranked && !!s0.undo && !!s1.undo, turnSec: TURN_SEC, reactSec: REACT_SEC, timer: TIMER, speed: ONLINE_SPEED, fast: !!process.env.FAST },
     transferList: [ch.port2],
   });
   const cardsFor = (deck: any) => { const m: Record<string, any> = {}; for (const p of [...deckPrints(deck), ...DEFAULT_LIFE]) if (INFO.has(p)) m[p] = INFO.get(p); return m; };
@@ -1140,6 +1140,15 @@ http.createServer(async (req, res) => {
       bump();
       return send(res, 200, { ok: true, warnings: s.warnings });
     }
+    if (p === '/room/undo' && req.method === 'POST') { // casual take-back: each player allows it; on only when both do
+      if (!room || mySeat < 0) return send(res, 400, { error: 'You are not in a room.' });
+      if (room.duel && !room.duel.ended) return send(res, 409, { error: 'The duel is running.' });
+      const b = await readBody(req);
+      if (room.ranked) return send(res, 409, { error: 'Not in Ranked. · ไม่มีในแรงก์' });
+      room.seats[mySeat]!.undo = !!b.allow;
+      bump();
+      return send(res, 200, { ok: true, takeBack: room.seats.every((x) => x?.undo) });
+    }
     if (p === '/room/ready' && req.method === 'POST') {
       if (!room || mySeat < 0) return send(res, 400, { error: 'You are not in a room.' });
       const b = await readBody(req);
@@ -1165,6 +1174,14 @@ http.createServer(async (req, res) => {
       if (p === '/api/new') return send(res, 200, { ok: true, cards: d.cards[seat], errors: { you: [], bot: [] }, online: { seat, names: [d.names[seat], d.names[1 - seat]] } });
       if (p === '/api/cards') return send(res, 200, d.cards[seat]);
       if (p === '/api/speed') return send(res, 200, { ok: true, factor: 1 });
+      if (p === '/api/undo' && req.method === 'POST') { // casual take-back (worker: choice -3 on a Main question that offers undo)
+        const b = await readBody(req);
+        const q = d.asks[seat];
+        if (d.ended || !q || !q.undo || (b.id !== undefined && q.id !== b.id)) return send(res, 409, { error: 'Nothing to take back now. · ย้อนไม่ได้ตอนนี้' });
+        d.port.postMessage({ seat, id: q.id, choice: -3 });
+        Atomics.store(d.flag, 0, 1); Atomics.notify(d.flag, 0);
+        return send(res, 200, { ok: true });
+      }
       if (p === '/api/undo' || p === '/api/admin') return send(res, 409, { error: 'Not in online duels.' });
       if (p === '/api/state') {
         const since = Number(url.searchParams.get('since') ?? -1), from = Math.max(0, Number(url.searchParams.get('log') || 0));

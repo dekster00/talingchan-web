@@ -103,6 +103,8 @@ export interface Fx {
   /** 1. Leave protection: self = a card in play (c itself, its attached cards, any other card) or in a hand; target = the
    *  card about to leave. Return a LeaveGuard when self can keep target on the field, else null. */
   leaveGuard?(g: Game, self: Card, target: Card, info: LeaveInfo): LeaveGuard | null;
+  /** bugfix15: why this card can't be played now ('EN · TH'), or null to use the generic reason (table.ts whyNot) */
+  why?(g: Game, p: PID, c: Card): string | null;
   /** 2. This card left the field and is already in its new zone (info.to). Not run when its text was off. */
   afterLeave?(g: Game, self: Card, info: LeaveInfo): void;
   onCastToHell?(g: Game, self: Card): void; // simplify1: this Magic went to Hell straight from its cast (cancelled / no wearer / resolved Normal)

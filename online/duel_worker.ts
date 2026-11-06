@@ -12,13 +12,13 @@ import type { Brain, Ev, Act } from '../src/engine.ts';
 import {
   newGame, playGame, mulligan, rand, setPhaseHook, setPay, gemOf, setBrains, setAskSeats, askSeat, setLogHook, withDecider, quiet, mainActs, doAct, legalTargets, pileActs,
   canAttack, attack, canUseReact, castMagic, bestPayment, costOf, fx, hasKw, power, P, opp, findCard, isAvatarDef,
-  setEvHook, gemColorOf, reqOf, type GameEv, setOrder, setChoose, COLOR_EN, colorsEn, fullSilenced,
+  setEvHook, gemColorOf, reqOf, log, type GameEv, setOrder, setChoose, COLOR_EN, colorsEn, fullSilenced,
   CHAIN, ratSix, kwList, shieldOptions, useShield, magicImmune, attackDuty, dutyReason, reactCands, battleActs,
   assignSlots, slotOf, inLink, buffActs, applyBuff, cancelBuff, buffTargetOf, pendingBuffs, isConstruct,
 } from '../src/engine.ts';
 import fs from 'node:fs';
 import { loadDefs, loadDeck, CARDS } from '../src/sim.ts';
-import { whyNot, battlePreview, scaledMs } from '../src/table.ts';
+import { whyNot, battlePreview, scaledMs, copyGame, restoreGame } from '../src/table.ts';
 import { cardView, deckTopRevealed } from '../src/view.ts';
 import { cardLabel, textLabel } from '../src/labels.ts';
 
@@ -39,6 +39,18 @@ const NO_MARKS: Marks = { hand: new Set(), field: new Set() };
 const CURS: Marks[] = [NO_MARKS, NO_MARKS];
 let VIEW: PID = 0; // the seat the data being built is for ("your" / "opponent's", hand cards, act marks)
 const REFRESH = -99;
+// Casual take-back (2026-11-06, user-approved list): only when both players allowed it in the room (workerData.undo).
+// Like the offline Undo: a copy at every Main question of yours; going back is allowed while nothing hidden came out
+// (draw, shuffle, reveal, mill, LIFE, dice), the random seed is unchanged, the opponent's hand is the same and the
+// opponent answered no question since (a React they passed or used). Ranked rooms never allow it.
+const ALLOW_UNDO = !!workerData.undo, UNDO_CHOICE = -3;
+type Snap = { g: any; turn: number; hidden: number; rng: number; oppHand: string; oppAns: number; label: string };
+let UNDO: Snap[] = [], HIDDEN = 0;
+const ANSWERS = [0, 0]; // questions each seat answered
+const HIDDEN_EV = new Set(['draw', 'shuffle', 'reveal', 'mill', 'lifefx', 'life', 'hit', 'dice', 'roll', 'mulligan']);
+const handKey = (seat: PID) => G.p[seat].hand.map((c) => c.uid).join(',');
+const takeSnap = (me: PID): Snap => ({ g: copyGame(G), turn: G.turn, hidden: HIDDEN, rng: G.rng, oppHand: handKey(opp(me)), oppAns: ANSWERS[opp(me)], label: '' });
+const canUndo = (s: Snap | null, me: PID) => !!s && s.turn === G.turn && s.hidden === HIDDEN && s.rng === G.rng && s.oppHand === handKey(opp(me)) && s.oppAns === ANSWERS[opp(me)] && G.winner === null;
 const sleep = (ms: number) => { if (FAST) return; const t = scaledMs(ms, SPEED); if (t > 0) Atomics.wait(nap, 0, 0, t); };
 
 // ---------- state snapshot for the screen ----------
@@ -186,6 +198,7 @@ function askAll(items: { seat: PID; q: any; marks: Marks }[]): number[] {
   }
   items.forEach((it, i) => {
     CURS[it.seat] = NO_MARKS;
+    ANSWERS[it.seat]++;
     if (it.seat === G.active && !MULL) bank[it.seat] = Math.max(0, bank[it.seat] - (Date.now() - t0) / 1000);
     post({ t: 'answered', seat: it.seat });
   });
@@ -273,8 +286,21 @@ function makeHuman(seat: PID): Brain { return {
       const marks: Marks = { hand: new Set(), field: new Set(), why: new Map() };
       for (const a of acts) (a.k === 'field' || a.k === 'link' ? marks.field : marks.hand).add(a.uid);
       quiet(() => { for (const c of P(g, me).hand) if (!marks.hand.has(c.uid)) marks.why!.set(c.uid, whyNot(g, me, c)); });
+      let snap: Snap | null = null, prev: Snap | null = null;
+      if (ALLOW_UNDO) {
+        if (UNDO.length && UNDO[UNDO.length - 1].turn !== g.turn) UNDO = [];
+        snap = takeSnap(me); UNDO.push(snap);
+        prev = UNDO.length >= 2 ? UNDO[UNDO.length - 2] : null;
+        if (canUndo(prev, me)) q.undo = `Undo: ${prev!.label}`;
+      }
       const k = ask(me, q, marks, true);
       if (k === REFRESH) { guard--; continue; }
+      if (k === UNDO_CHOICE && ALLOW_UNDO) {
+        UNDO.pop();
+        if (canUndo(prev, me)) { UNDO.pop(); restoreGame(G, prev!.g); log(g, `Take-back: "${prev!.label}" was taken back · ย้อนการเล่น`); }
+        guard--; continue;
+      }
+      if (snap) snap.label = k >= 0 && k < acts.length ? opts[k].label : '';
       if (k === -2 && q.pass2) skipBattle = g.turn; // v14: no skipping the Battle Phase while an Avatar must attack
       if (k < 0 || k >= acts.length) break;
       let act = acts[k];
@@ -482,6 +508,7 @@ function postEv(g: Game, e: GameEv) {
 }
 setEvHook((g, e) => {
   if (g !== G) return;
+  if (HIDDEN_EV.has(e.ev)) HIDDEN++;
   postEv(g, e);
   // pacing: both screens play each event over this time
   if (e.ev === 'attack') sleep(1100);

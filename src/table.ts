@@ -1,7 +1,7 @@
 // v11 play-table helpers (used by play/worker.ts, tested in tools/unit.ts):
 // whyNot = why a hand card can't be played now (tooltip on a greyed hand card); copyGame / restoreGame = Main Phase Undo.
 import type { Card, Game, PID } from './types.ts';
-import { magicSlotFree } from './engine.ts'; // simplify1
+import { magicSlotFree, cardText, opp, canWear } from './engine.ts'; // simplify1; bugfix15: condWhy
 import {
   P, fx, costOf, reqOf, gemOf, gemColorOf, gemFits, colorsEn, bestPayment, isAvatarDef, canPlaceAvatar, uniqueBlocked, ratSix, realAvatars, power, hasKw, exactLand, lands,
 } from './engine.ts';
@@ -25,6 +25,43 @@ function gemWhy(g: Game, p: PID, c: Card): string {
   if (exactLand(g, c)) return 'หมู่บ้านพอดี: an Avatar must be paid with GEM exactly equal to its cost · Avatar ต้องจ่าย GEM พอดี ห้ามเกิน';
   return "Can't pay its cost right now · จ่าย GEM ไม่ได้";
 }
+/** bugfix15 (UI thread, user ask): the real reason instead of "condition not met". Order: the card's own FX.why, wear
+ *  limits (Modification), the text's condition ("สามารถใช้ได้เมื่อ X :", "เมื่อ X :", "ถ้า X :"), its text cost ("X : ..."
+ *  with เซ่นไหว้ / สภาพนอน / ทิ้ง / เนรเทศ / ลงนรก), missing targets, then the generic line. Format 'EN · TH'. */
+const CLIP = (x: string, n = 64) => { x = x.replace(/\s+/g, ' ').trim(); return x.length > n ? x.slice(0, n - 1) + '…' : x; };
+export function condWhy(g: Game, p: PID, c: Card): string {
+  const f = fx(c);
+  if (f && f.why) { const r = f.why(g, p, c); if (r) return r; }
+  const t = cardText(c).replace(/\s+/g, ' ').trim();
+  const pl = P(g, p), op = P(g, opp(p));
+  if (c.def.subtype === 'Modification') {
+    const line = cardText(c).split('\n').find((l) => /สวมใส่(?:ได้)?เฉพาะ/.test(l)) || '';
+    const om = line.match(/สวมใส่(?:ได้)?เฉพาะ\s*(.+?)(?:\s+เท่านั้น|\s+และ|\s*$)/);
+    const only = om ? [om[0], om[1].replace(/""/g, '"').replace(/"\s*([^"]*?)\s*"/g, '"$1"')] : null;
+    let anyWear = pl.avatars.some((a) => { try { return canWear(g, c, a); } catch { return true; } });
+    if (anyWear && f && f.modTarget) { try { anyWear = !!f.modTarget(g, p, c); } catch { /* keep */ } }
+    if (only && !anyWear) return `Only ${CLIP(only[1], 50)} can wear it, none on your field · สวมใส่ได้เฉพาะ ${CLIP(only[1], 50)} (ไม่มีบนสนามเรา)`;
+    if (!pl.avatars.length) return 'Needs an Avatar on your field to wear it · ต้องมี Avatar บนสนามเราให้สวมใส่';
+    if (!anyWear) return 'None of your Avatars can wear it now · ไม่มี Avatar ของเราที่สวมใส่ได้ตอนนี้';
+  }
+  const cond = t.match(/(?:สามารถ)?ใช้(?:การ์ดใบนี้)?ได้(?:เฉพาะ)?(?:เมื่อ|ถ้า|ก็ต่อเมื่อ)\s*([^:]+?)\s*:/) || t.match(/^(?:เมื่อ|ถ้า|หาก)\s*([^:]+?)\s*:/)
+    || t.match(/(?:อัญเชิญ(?:การ์ดใบนี้)?ได้(?:เฉพาะ)?(?:เมื่อ|ถ้า|ก็ต่อเมื่อ))\s*([^:/]+)/);
+  if (cond) return `Needs: ${CLIP(cond[1])} · เงื่อนไข: ${CLIP(cond[1])}`;
+  const head = t.match(/^([^:]{4,160}?)\s*:\s/);
+  if (head && /เซ่นไหว้|สภาพนอน|ทิ้ง|เนรเทศ|ลงนรก|ลง นรก|จ่าย|เปิด LIFE|คว่ำ/.test(head[1])) return `Can't pay its text cost: ${CLIP(head[1])} · จ่ายค่าใช้จ่ายของการ์ดไม่ได้: ${CLIP(head[1])}`;
+  if (/ทุกคน|ทั้งสองฝ่าย/.test(t) && /Avatar/.test(t) && (!pl.avatars.length || !op.avatars.length)) return 'Both players need an Avatar · ผู้เล่นทั้งสองฝ่ายต้องมี Avatar';
+  if (/Avatar\s*(?:บนสนาม|บน Avatar Zone|ใน Avatar Zone)?\s*(?:ของ)?(?:อีกฝ่าย|ฝ่ายตรงข้าม)/.test(t) && !op.avatars.length) return "Needs an opponent's Avatar · ฝ่ายตรงข้ามไม่มี Avatar";
+  if (/Magic Zone/.test(t) && /ทำลาย|เลือก/.test(t) && !op.mz.length && !lands(g).length) return 'No card in the Magic Zone / Land to choose · ไม่มีการ์ดใน Magic Zone หรือ Land ให้เลือก';
+  if (/Avatar\s*(?:บนสนาม|บน Avatar Zone|ใน Avatar Zone)?\s*(?:ของ)?(?:ฝ่าย)?เรา/.test(t) && !pl.avatars.length) return 'Needs an Avatar on your field · ต้องมี Avatar บนสนามเรา';
+  if (/คว่ำ LIFE/.test(t) && !pl.life.some((l: any) => l.faceUp)) return 'No face-up LIFE card to turn down · ไม่มี LIFE ที่หงายอยู่';
+  if (/เลือกปฏิบัติ/.test(t)) {
+    const ifs = [...t.matchAll(/\d\)\s*ถ้า\s*(.+?)\s+(?:อัญเชิญ|จั่ว|ทำลาย|นำ|เลือก|ให้|:)/g)].map((m) => CLIP(m[1], 40));
+    if (ifs.length) return `No option can be used now: ${ifs.join(' / ')} · ไม่มีตัวเลือกที่ใช้ได้ตอนนี้: ${ifs.join(' / ')}`;
+    return 'No option of this card can be used now · ไม่มีตัวเลือกที่ใช้ได้ตอนนี้';
+  }
+  if (/1 เทิร์น|เทิร์นละ|ครั้งต่อเทิร์น/.test(t)) return 'Once per turn: already used · ใช้ไปแล้วเทิร์นนี้';
+  return 'Its condition is not met · ยังไม่เข้าเงื่อนไข';
+}
 export function whyNot(g: Game, p: PID, c: Card): string {
   const pl = P(g, p), f = fx(c);
   if (g.active !== p || g.phase !== 'Main') return 'Only in your Main Phase · ใช้ได้ในเฟสหลักของเราเท่านั้น';
@@ -32,14 +69,14 @@ export function whyNot(g: Game, p: PID, c: Card): string {
   if (c.def.type === 'Construct') {
     if (pl.mz.filter((x) => x.def.type === 'Construct' && x.def.name === c.def.name).length >= (c.def.czMax || 1)) return 'A Construct with this name is already built · สร้างชื่อนี้ไปแล้ว';
     if (pl.mz.filter((x) => x.def.type === 'Construct').length >= 3) return 'Magic Zone is full (3 Constructs) · Magic Zone เต็ม';
-    return bestPayment(g, p, costOf(g, p, c), [c], c) === null ? gemWhy(g, p, c) : 'Its condition is not met · ยังไม่เข้าเงื่อนไข';
+    return bestPayment(g, p, costOf(g, p, c), [c], c) === null ? gemWhy(g, p, c) : condWhy(g, p, c);
   }
   if (isAvatarDef(c.def)) {
     if (!canPlaceAvatar(pl, false, c)) return (realAvatars(pl).length >= 4 && !ratSix(g, pl) ? 'Avatar Zone is full (4 Avatars) · Avatar Zone เต็ม' : 'Avatar Zone is full · Avatar Zone เต็ม');
     if (f && f.noHandSummon) return "Can't be summoned from the hand · อัญเชิญจากมือไม่ได้";
     if (uniqueBlocked(g, p, c)) return 'Only one with this name on the field · มีชื่อนี้บนสนามได้ใบเดียว';
     if (bestPayment(g, p, costOf(g, p, c), [c], c) === null) return gemWhy(g, p, c);
-    return 'Its condition is not met · ยังไม่เข้าเงื่อนไข';
+    return condWhy(g, p, c);
   }
   if (c.def.type === 'Magic') {
     const kind = c.def.subtype as 'Normal';
@@ -48,7 +85,7 @@ export function whyNot(g: Game, p: PID, c: Card): string {
     if (kind === ('React' as any) && !f.mainUse) return 'React: used in reply to the opponent · ใช้ตอบโต้ฝ่ายตรงข้ามเท่านั้น';
     if (kind === ('Land' as any) && lands(g).some((l) => fx(l)?.lockLand)) return "The Land in play can't be replaced · เปลี่ยน Land ตอนนี้ไม่ได้";
     if (bestPayment(g, p, costOf(g, p, c), [c], c) === null) return gemWhy(g, p, c);
-    return 'Its condition is not met · ยังไม่เข้าเงื่อนไข';
+    return condWhy(g, p, c);
   }
   return '';
 }
