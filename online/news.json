@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "Phone keyboard · คีย์บอร์ดบนมือถือ",
+   "lines": [
+    "On phones and tablets, tapping a text box (name, room code, chat) now opens a box with the keyboard. · บนมือถือและแท็บเล็ต แตะช่องพิมพ์ (ชื่อ, รหัสห้อง, แชท) จะเปิดกล่องพร้อมคีย์บอร์ดให้พิมพ์ได้แล้ว"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "New shop tabs and profile badge · แท็บร้านค้าใหม่และโปรไฟล์ใหม่",
    "lines": [
     "The SHOP has RECOMMEND, BT BOOSTER, SPECIAL (CC01-03, ODY1) and KD DECKS tabs, 4 items a row. KD decks are bought once and give every card. · ร้านค้ามีแท็บ แนะนำ, บูสเตอร์ BT, ซองพิเศษ (CC01-03, ODY1) และเด็ค KD แถวละ 4 ชิ้น เด็ค KD ซื้อครั้งเดียวได้การ์ดครบ",
