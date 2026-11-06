@@ -30,7 +30,9 @@ export const BOT = {
 export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (lv % 5 === 0 ? 2 : 0), packs: { PRMO: 1 } });
 // prices (user 2026-11-03): packs 100 coins, KD and BT11-BT12 200; the PROMO pack is not sold, it is a reward
 // (every level up, day 7 of the login calendar, tournaments). Starter decks 600, SD09 1000.
-export const packPrice = (set: string) => (/^KD/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack);
+export const packPrice = (set: string) => (/^(KD|CC|ODY)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
+// packs announced without card data yet: listed as SOON, not sold
+export const SOON_PACKS = ['CC03'];
 export const SHOP_CLOSED = new Set(['PRMO']);
 export const starterPrice = (set: string) => (set === 'SD09' ? 1000 : 600);
 // duplicates beyond the copy limit become dust; crafting a card costs dust by its lowest rarity
@@ -75,7 +77,7 @@ export function catalog(raw: any[]): Catalog {
     const lo = lowest.get(row.code);
     if (!lo || RARITY_RANK[r] < RARITY_RANK[lo]) lowest.set(row.code, r);
     // packs: the BT sets, every printed rarity is a separate pull (the same code in SR and SCR = two slots)
-    if (/^(BT\d\d|KD0[1-4]|PRMO)$/.test(row.series) && row.type !== 'Life' && row.type !== 'Token') {
+    if (/^(BT\d\d|KD0[1-4]|PRMO|CC0\d|ODY1)$/.test(row.series) && row.type !== 'Life' && row.type !== 'Token') {
       if (!sets.has(row.series)) sets.set(row.series, []);
       sets.get(row.series)!.push(row);
     }
@@ -223,10 +225,10 @@ const bestOf = (rows: CardRow[]) => ['SCR', 'UR', 'SR', 'R', 'C'].find((r) => ro
 export const packName = (set: string) => (set === 'PRMO' ? 'PROMO' : set);
 export function packInfo(cat: Catalog, p?: Prog) {
   return [...cat.sets.keys()].sort().map((set) => ({
-    set, name: packName(set), kind: set.startsWith('BT') ? 'booster' : set.startsWith('KD') ? 'kd' : 'promo',
+    set, name: packName(set), kind: set.startsWith('BT') || set.startsWith('CC') || set.startsWith('ODY') ? 'booster' : set.startsWith('KD') ? 'kd' : 'promo',
     cards: cat.sets.get(set)!.length, perPack: ODDS.cards, price: packPrice(set), forSale: !SHOP_CLOSED.has(set), pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0, best: bestOf(cat.sets.get(set)!),
     odds: { common: '4 cards', rare: '1 card R or better', top: 'SCR 2.5% · UR 7.5% · SR 20% · R 70% (a rarity the set lacks drops to the next one)', scrPity: `${bestOf(cat.sets.get(set)!)} guaranteed by pack ${ODDS.pity}` },
-  }));
+  } as any)).concat(SOON_PACKS.filter((s) => !cat.sets.has(s)).map((set) => ({ set, name: set, kind: 'booster', soon: true, forSale: false, price: packPrice(set), cards: 0, perPack: ODDS.cards })));
 }
 function pickOf(rows: CardRow[], rarities: string[]): CardRow | null {
   for (const r of rarities) { const xs = rows.filter((x) => x.rarity === r); if (xs.length) return xs[rnd(xs.length)]; }
@@ -256,8 +258,8 @@ export function openPacks(p: Prog, cat: Catalog, set: string, count: number, pay
   for (let k = 0; k < count; k++) {
     p.packs++;
     const pulls: CardRow[] = [];
-    for (let i = 0; i < 4; i++) pulls.push(pickOf(rows, ['C'])!);
-    pulls.push(pickOf(rows, ['R', 'SR', 'C'])!);
+    for (let i = 0; i < 4; i++) pulls.push(pickOf(rows, ['C', 'R', 'SR'])!); // sets without commons (CC) give their lowest rarity
+    pulls.push(pickOf(rows, ['R', 'SR', 'C'].filter((r) => rows.filter((x) => x.rarity === r).length >= 3))!); // a rarity with 1-2 cards (ODY1 has 1 R) is skipped, or every pack would hold the same card
     const since = (p.pity[set] || 0) + 1;
     const x = Math.random();
     let top = x < ODDS.top.SCR ? 'SCR' : x < ODDS.top.SCR + ODDS.top.UR ? 'UR' : x < ODDS.top.SCR + ODDS.top.UR + ODDS.top.SR ? 'SR' : 'R';
