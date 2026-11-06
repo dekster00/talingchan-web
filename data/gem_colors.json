@@ -5988,7 +5988,7 @@
   "req": null
  },
  "BT12-021": {
-  "gemColor": "colorless",
+  "gemColor": "blue",
   "req": null
  },
  "BT12-022": {
@@ -6000,7 +6000,7 @@
   "req": null
  },
  "BT12-025": {
-  "gemColor": "colorless",
+  "gemColor": "blue",
   "req": null
  },
  "BT12-029": {
@@ -6032,11 +6032,11 @@
   "req": null
  },
  "BT12-046": {
-  "gemColor": "colorless",
+  "gemColor": "green",
   "req": null
  },
  "BT12-047": {
-  "gemColor": "green",
+  "gemColor": "colorless",
   "req": null
  },
  "BT12-051": {
@@ -6088,11 +6088,15 @@
   "req": null
  },
  "BT12-073": {
-  "gemColor": "red/purple",
+  "gemColor": "red/blue",
   "req": null
  },
  "BT12-075": {
   "gemColor": "red/blue",
+  "req": null
+ },
+ "BT12-039": {
+  "gemColor": "colorless",
   "req": null
  }
 }

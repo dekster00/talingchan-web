@@ -6,7 +6,7 @@
 import { rollDie } from '../engine.ts';
 import type { Card, Game, PID, Def } from '../types.ts';
 import type { Fx, HandAct } from '../cards.ts';
-import { FX, value, best, worst, pickN, worstN, mayDo, chooseMode, oppChoice } from '../cards.ts';
+import { FX, value, best, worst, pickN, worstN, mayDo, chooseMode, oppChoice, search } from '../cards.ts';
 import {
   P, opp, power, draw, destroy, toHell, toExile, toDeck, discard, detach, summon, shuffle, mill, placeToken,
   canPlaceAvatar, flippedLife, critical, onceUsed, markOnce, keepValue, log, findCard, rand, hitLife,
@@ -158,11 +158,12 @@ const oppMzAvatars = (g: Game, p: PID) => P(g, opp(p)).mz.filter(mzAvatar);
 // กุนซือลงสนาม BT12-055
 function onlyGenerals(g: Game, p: PID) {
   const pl = P(g, p);
-  return [...pl.hand, ...pl.avatars, ...pl.hell].filter((x) => isA(x) && x.def.only && named(x, 'ขุนพล'));
+  return [...pl.hand, ...pl.deck, ...pl.avatars, ...pl.hell].filter((x) => isA(x) && x.def.only && named(x, 'ขุนพล')); // official BT12-055: hand, Deck, field or Hell
 }
 const sameColor = (a: Card, b: Card) => colorsEn(a).some((k) => colorsEn(b).includes(k));
 const advisors = (g: Game, p: PID, shown: Card) => P(g, p).deck.filter((x) => isA(x) && named(x, 'กุนซือ') && sameColor(x, shown) && summonAllowed(g, p, x, 'jutsu') && !uniqueBlocked(g, p, x));
-const sleepers = (g: Game, p: PID) => P(g, p).avatars.filter((a) => a.asleep && named(a, 'นักท่องเรื่องราว'));
+// official BT12-064: any "เรื่องราว" Avatar (นักท่องเรื่องราว and ขวัญตา เรื่องราว ...)
+const sleepers = (g: Game, p: PID) => P(g, p).avatars.filter((a) => a.asleep && named(a, 'เรื่องราว'));
 function dacknova(g: Game, p: PID, c: Card) {
   const t = best(sleepers(g, p), (a) => power(g, a));
   if (!t) return;
@@ -352,22 +353,22 @@ Object.assign(FX, {
       shuffle(g2, pl.deck);
     })],
   },
-  'โคลัส นักธนูแห่งปาร์ตี้ผู้กล้า': {
+  'โกลัส นักธนูแห่งปาร์ตี้ผู้กล้า': {
     keep: 3,
     jutsu: (g, c) => {
       const p = c.ctrl, q = opp(p);
       if (!P(g, p).avatars.some((a) => a !== c && party(a))) return;
       const r = d6(g);
-      log(g, `โคลัส rolls ${r}`);
+      log(g, `โกลัส rolls ${r}`);
       if (r % 2 === 0) {
         if (P(g, q).hand.length) { const x = oppChoice(g, p, () => worst(P(g, q).hand, (y) => keepValue(g, y))); if (x) discard(g, q, x); }
         else draw(g, p, 1);
       } else if (P(g, q).avatars.length) {
         const t = best(P(g, q).avatars, (a) => value(g, a));
-        if (t) { addPower(g, t, -1, 'perm', c); log(g, `โคลัส: ${t.def.name} POWER -1`); } // no duration in the text: lasts while it stays on the field
+        if (t) { addPower(g, t, -1, 'perm', c); log(g, `โกลัส: ${t.def.name} POWER -1`); } // no duration in the text: lasts while it stays on the field
       } else {
         const t = best(P(g, p).avatars.filter(party), (a) => value(g, a));
-        if (t) { addPower(g, t, 1, 'perm', c); log(g, `โคลัส: ${t.def.name} POWER +1`); }
+        if (t) { addPower(g, t, 1, 'perm', c); log(g, `โกลัส: ${t.def.name} POWER +1`); }
       }
     },
   },
@@ -380,17 +381,17 @@ Object.assign(FX, {
     },
     aura: (g, s, t) => (P(g, s.ctrl).mz.includes(s) && P(g, s.ctrl).avatars.includes(t) && multiSym(g, t) ? 1 : 0),
   },
-  'ชุนอก กุนซือพรสวรรค์แห่งวุยก๊ก': {
+  'ชุนฮก กุนซือพรสวรรค์แห่งวุยก๊ก': {
     keep: 3,
     usedAsCost: (g, p, c, summoned) => {
       if (!(named(summoned, 'ขุนพล') && colorIs(summoned, 'ฟ้า') && symIs(summoned, 'ต่างชาติ'))) return;
       withSource(c, () => peek(g, p, 2, (top) => { takeHand(g, p, top, (x) => named(x, 'ขุนพล') && colorIs(x, 'ฟ้า') && symIs(x, 'ต่างชาติ')); }, 'either'));
     },
   },
-  'อาคัส มังกรแห่งห้วงเหวน้ำลึก': {
+  'อาดัส มังกรแห่งห้วงเหวน้ำลึก': {
     keep: 4,
-    fieldActs: (g, p, c) => [act('อาคัส: rest, destroy an Avatar in the opponent\'s Magic Zone', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && !c.asleep
-      && once(g2, p, 'akas:' + c.uid) && P(g2, p).avatars.some((a) => a !== c && beast(a) && !a.asleep) && oppMzAvatars(g2, p).length > 0,
+    fieldActs: (g, p, c) => [act('อาดัส: rest, destroy an Avatar in the opponent\'s Magic Zone', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && !c.asleep
+      && once(g2, p, 'akas:' + c.uid) && P(g2, p).avatars.some((a) => a !== c && beast(a)) /* official BT12-028: any other dragon (no awake check) */ && oppMzAvatars(g2, p).length > 0,
     (g2) => {
       use(g2, p, 'akas:' + c.uid);
       c.asleep = true;
@@ -420,7 +421,7 @@ Object.assign(FX, {
       resolve: (g, p, c) => dacknova(g, p, c),
     },
   },
-  'ถ้าเป็นอิมไลน์ก็คงทำแบบนี้': {
+  'ถ้าเป็นฮิมไลน์ก็คงทำแบบนี้': {
     keep: 2.5,
     react: {
       on: ['attack'],
@@ -509,6 +510,20 @@ Object.assign(FX, {
       const got = [P(g, self.ctrl).avatars.some((a) => a !== self && word(a, 'ฮอล')) ? 'โล่มนุษย์ (ฮอล)' : '', P(g, self.ctrl).avatars.some((a) => a !== self && word(a, 'นาย')) ? 'POWER +2 (นาย)' : ''].filter(Boolean);
       return got.length ? got.join(', ') : false;
     },
+  },
+  // official BT12-039 (2026-11-06): new card from the official set
+  'แม่นางลิ บุตรีแห่งขุนพลเทพสงคราม': {
+    keep: 3,
+    // ต่อเนื่อง: summoning a ต่างชาติ "ลิโป้", cards with "ขุนพล" in their Text Box in our Hell may also pay GEM (exiled)
+    hellPayFor: (g: Game, self: Card, forCard: Card) => (isA(forCard) && named(forCard, 'ลิโป้') && symIs(forCard, 'ต่างชาติ') ? (x: Card) => cardTextLi(x).includes('ขุนพล') : null),
+    getActive: (g: Game, self: Card) => P(g, self.ctrl).hell.some((x) => cardTextLi(x).includes('ขุนพล')) && 'ลิโป้: ขุนพล ในนรกจ่าย GEM ได้',
+    fieldActs: (g, p, c) => [act('แม่นางลิ: discard 1, a Magic with "ขุนพล" from Deck to hand', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'maenangli:' + c.uid)
+      && P(g2, p).hand.length >= 1 && P(g2, p).deck.some(liMagic),
+    (g2) => withSource(c, () => {
+      use(g2, p, 'maenangli:' + c.uid);
+      if (!discardN(g2, p, 1, [], () => true, `${c.def.name}: discard 1 (cost)`)) return;
+      search(g2, p, liMagic, 'deck'); // shuffles the Deck
+    }))],
   },
   'เช็กเราว์ ยอดอาชาแห่งขุนพล': {
     keep: 3,
@@ -863,7 +878,8 @@ Object.assign(FX, {
 } as Record<string, Fx>);
 
 // ===== bugfix8 (2026-11-02): the rest of BT12 from the real card pictures (user upload). Approximations are marked "approx:". =====
-import { addToHand } from '../engine.ts';
+import { addToHand, cardText as cardTextLi } from '../engine.ts';
+const liMagic = (x: Card) => x.def.type === 'Magic' && cardTextLi(x).includes('ขุนพล');
 import { addSymbols, setSymbols } from '../view.ts';
 import { addRule as addRule2, RULES as RULES2 } from '../engine.ts';
 const XVI = (c: Card) => named(c, 'หน่วยรบ XVI');
@@ -973,7 +989,7 @@ Object.assign(FX, {
     keep: 2.5,
     battle: (g: Game, c: Card, other: Card) => { if (symIs(other, 'ผี')) { boost(c, 8 - c.def.power, 'battle'); log(g, `${c.def.name}: base POWER 8 (fights a {ผี} Avatar)`); } },
   },
-  'หัวหน้าเผ่าสายตาดี': {
+  'หัวหน้าชนเผ่าสายตาดี': {
     keep: 3,
     jutsu: (g: Game, c: Card) => {
       const p = c.ctrl;
@@ -984,9 +1000,9 @@ Object.assign(FX, {
       if (t) boost(t, 1);
     },
   },
-  'โอ้หนึ่ง เซลล์แมนกิตติมศักดิ์รุ่นแรก': {
+  'ไอ้หนึ่ง เซลล์แมนกิตติมศักดิ์รุ่นแรก': {
     keep: 2.5, alias: ['ผู้รู้ความจริง'],
-    fieldActs: (g, p, c) => [act('โอ้หนึ่ง: สอดแนม 1, top or bottom', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'ohnueng:' + c.uid) && P(g2, p).deck.length > 0,
+    fieldActs: (g, p, c) => [act('ไอ้หนึ่ง: สอดแนม 1, top or bottom', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'ohnueng:' + c.uid) && P(g2, p).deck.length > 0,
     (g2) => withSource(c, () => { use(g2, p, 'ohnueng:' + c.uid); peek(g2, p, 1, () => {}, 'either'); }))],
   },
   'เกตุ ฮีโร่วัยเยาว์': {

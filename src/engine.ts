@@ -1,7 +1,7 @@
 // Rules engine for Battle of Talingchan. Pure data state + functions.
 // Card effects live in cards.ts; decisions are delegated to a Brain (bot.ts).
 import type { Card, Def, Game, Player, PID, MagicKind, Life, GemColor, LifeSpec } from './types.ts';
-import { FX, value, worstN } from './cards.ts';
+import { FX, value, worstN, pickN } from './cards.ts';
 import type { HandAct } from './cards.ts'; // bugfix1
 import './cards2.ts';
 import './fx/index.ts';
@@ -928,11 +928,21 @@ export function payOk(g: Game, cards: Card[], cost: number, forCard: Card | null
 }
 // linkbot item 2a: เพนกวิ้น ฮัท is paid as GEM only when no other payment works (while its once-per-game ability is unused)
 function payKeep(g: Game, p: PID, c: Card): number { return c.def.name === 'เพนกวิ้น ฮัท' && !P(g, p).onceGame['เพนกวิ้น'] ? 1000 : 0; }
-export function bestPayment(g: Game, p: PID, cost: number, exclude: Card[] = [], forCard: Card | null = null): Card[] | null {
+// BT12-039 แม่นางลิ (FX.hellPayFor): while it is on our field, cards in our Hell that pass its test may also pay GEM for
+// the summon it names ("ลิโป้" ต่างชาติ); they are exiled instead of discarded (payCard).
+export function hellPayPool(g: Game, p: PID, forCard: Card | null): Card[] {
+  if (!forCard) return [];
+  const pl = P(g, p);
+  const tests = pl.avatars.filter((a) => fx(a)?.hellPayFor && !silenced(g, a)).map((a) => fx(a)!.hellPayFor!(g, a, forCard)).filter((t): t is (x: Card) => boolean => !!t);
+  if (!tests.length) return [];
+  return pl.hell.filter((x) => x !== forCard && tests.some((t) => t(x)) && gemFits(g, x, forCard) && gemOf(g, x, forCard) > 0);
+}
+export function bestPayment(g: Game, p: PID, cost: number, exclude: Card[] = [], forCard: Card | null = null, withHell = true): Card[] | null {
   const req = reqOf(g, forCard);
   if (cost <= 0 && !req) return [];
   const gem = new Map<Card, number>();
-  const hand = P(g, p).hand.filter((c) => !exclude.includes(c) && gemFits(g, c, forCard) && (gem.set(c, gemOf(g, c, forCard)), gem.get(c)! > 0));
+  const fromHell = withHell ? hellPayPool(g, p, forCard) : [];
+  const hand = [...P(g, p).hand, ...fromHell].filter((c) => !exclude.includes(c) && gemFits(g, c, forCard) && (gem.set(c, gemOf(g, c, forCard)), gem.get(c)! > 0));
   if (hand.reduce((s, c) => s + gem.get(c)!, 0) < cost) return null;
   const isCol = hand.map((c) => !!req && gemIs(gemColorOf(g, c, forCard), req.color));
   const exact = exactLand(g, forCard);
@@ -942,7 +952,7 @@ export function bestPayment(g: Game, p: PID, cost: number, exclude: Card[] = [],
   let best: Card[] | null = null, bestV = Infinity;
   for (let mask = 1; mask < 1 << n; mask++) {
     let sum = 0, cs = 0, v = 0;
-    for (let i = 0; i < n; i++) if (mask & (1 << i)) { const gm = gem.get(hand[i])!; sum += gm; if (isCol[i]) cs += gm; v += keepValue(g, hand[i]) + payKeep(g, p, hand[i]); }
+    for (let i = 0; i < n; i++) if (mask & (1 << i)) { const gm = gem.get(hand[i])!; sum += gm; if (isCol[i]) cs += gm; v += (fromHell.includes(hand[i]) ? 0.2 : keepValue(g, hand[i]) + payKeep(g, p, hand[i])); }
     if (sum < cost || cs < need || (exact && sum !== cost)) continue; // must cover the cost and the colour requirement
     let extra = false; // no card may be unnecessary
     for (let i = 0; i < n && !extra; i++) if (mask & (1 << i)) { const gm = gem.get(hand[i])!; if (sum - gm >= cost && cs - (isCol[i] ? gm : 0) >= need) extra = true; }
@@ -965,6 +975,21 @@ export function emitPay(g: Game, p: PID, forCard: Card, cost: number, pay: Card[
 export function choosePayment(g: Game, p: PID, cost: number, exclude: Card[] = [], forCard: Card | null = null): Card[] | null {
   const dflt = bestPayment(g, p, cost, exclude, forCard);
   if (!dflt || !PAY || g.sim || !dflt.length || p !== topDecider() || !humanTop()) return dflt;
+  { // BT12-039: the human first picks the Hell cards to exile (pick screen), then pays the rest from hand as usual
+    const pool = hellPayPool(g, p, forCard).filter((c) => !exclude.includes(c));
+    if (pool.length) {
+      const extra = pickN(pool, pool.length, (x) => (dflt.includes(x) ? 1 : -1), { optional: true, title: 'Exile cards from your Hell to pay GEM (Skip = done)' });
+      const rest = Math.max(0, cost - extra.reduce((a, x) => a + gemOf(g, x, forCard), 0));
+      if (rest <= 0 && extra.length) return extra;
+      const h = bestPayment(g, p, rest, [...exclude, ...extra], forCard, false);
+      if (!h) return extra.length ? null : dflt;
+      const hc = P(g, p).hand.filter((c) => !exclude.includes(c) && gemFits(g, c, forCard) && gemOf(g, c, forCard) > 0);
+      if (!h.length || hc.length === h.length) return [...extra, ...h];
+      const r = quiet(() => PAY!(g, p, rest, hc, h, forCard));
+      if (!r) return null;
+      return [...extra, ...(r.every((c) => hc.includes(c)) && payOk(g, r, rest, forCard) ? r : h)];
+    }
+  }
   const cands = P(g, p).hand.filter((c) => !exclude.includes(c) && gemFits(g, c, forCard) && gemOf(g, c, forCard) > 0);
   if (cands.length === dflt.length) return dflt; // only one way to pay
   const r = quiet(() => PAY!(g, p, cost, cands, dflt, forCard));
@@ -1049,6 +1074,7 @@ export function canUseReact(g: Game, p: PID, c: Card, ev: Ev): boolean {
 
 // ---------- summoning ----------
 function payCard(g: Game, p: PID, c: Card, summoned: Card | null) {
+  if (P(g, p).hell.includes(c)) { detach(g, c); P(g, c.owner).exile.push(c); log(g, `${c.def.name} is exiled from Hell to pay GEM`); return; } // BT12-039 hellPayPool
   PAYING++; try { discard(g, p, c); } finally { PAYING--; } // v14b: GEM payment is not an ability discard
   if (summoned) { const f = fx(c); if (f && f.usedAsCost) withSource(c, () => f.usedAsCost!(g, p, c, summoned)); } // v14c: under withSource
 }

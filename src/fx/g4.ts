@@ -1226,7 +1226,7 @@ Object.assign(FX, {
     }),
     endPhase: narayEnd,
   },
-  'มาร์โก้ มนุษย์ดาว R18': {
+  'มาร์โกต์ มนุษย์ดาว R18': {
     keep: 3,
     jutsu: (g: Game, c: Card) => {
       const hs = hellAvatars(g, opp(c.ctrl));

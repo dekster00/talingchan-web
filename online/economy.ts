@@ -104,6 +104,8 @@ export function prog(a: { prog: any }): Prog {
   p.cards ??= {}; p.pity ??= {}; p.packs ??= 0; p.starters ??= [];
   p.rank ??= { season: '', best: 0, games: 0, wins: 0 };
   p.icons ??= []; p.levelPaid ??= 0;
+  // 2026-11-06: official BT12 swapped the numbers of BT12-046 and BT12-047; owned copies follow their card
+  if (!(p as any).bt12swap) { (p as any).bt12swap = 1; const a46 = p.cards['BT12-046'], a47 = p.cards['BT12-047']; delete p.cards['BT12-046']; delete p.cards['BT12-047']; if (a47) p.cards['BT12-046'] = a47; if (a46) p.cards['BT12-047'] = a46; }
   return p as Prog;
 }
 const rnd = (n: number) => crypto.randomInt(n);
