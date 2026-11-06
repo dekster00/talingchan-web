@@ -3,6 +3,13 @@
   "updates": [
     {
       "date": "2026-11-06",
+      "title": "3D shop items · ไอเท็มร้านค้า 3D",
+      "lines": [
+        "Shop items are now 3D: packs and deck boxes sway gently, lean toward your mouse with a shine, and you can drag the featured item to turn it and look around. · ไอเท็มในร้านค้าเป็น 3D แล้ว ลากเพื่อหมุนดูได้"
+      ]
+    },
+    {
+      "date": "2026-11-06",
       "title": "Bug fixes (6 Nov) · แก้บั๊ก (6 พ.ย.)",
       "lines": [
         "บ่าวแสม: you choose the effect, and POWER +1 now stays. · บ่าวแสม เลือกผลเองได้ และ POWER +1 อยู่ตลอด",
