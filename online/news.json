@@ -1,184 +1,191 @@
 {
-  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
-  "updates": [
-    {
-      "date": "2026-11-06",
-      "title": "Official BT12 cards · การ์ด BT12 ฉบับทางการ",
-      "lines": [
-        "All BT12 pictures replaced with the official art, plus 22 SCR/PR/CBR alternate arts. · เปลี่ยนรูป BT12 ทั้งหมดเป็นรูปทางการ และเพิ่มรูปพิเศษ SCR/PR/CBR 22 ใบ",
-        "New card: BT12-039 แม่นางลิ. · การ์ดใหม่: BT12-039 แม่นางลิ",
-        "Names, GEM and text fixed to the official cards; BT12-046/047 numbers swapped. · แก้ชื่อ GEM และข้อความตามการ์ดจริง สลับเลข BT12-046/047",
-        "กุ่ย พาลาดิน now has สามัคคี; อาดัส, กุนซือลงสนาม, Skill : Dacknova follow the official text. · กุ่ย พาลาดิน ได้ สามัคคี; อาดัส, กุนซือลงสนาม, Skill : Dacknova ทำงานตามข้อความทางการ"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "New box art · ภาพกล่องใหม่",
-      "lines": [
-        "Starter and KD boxes now show the real hang hole, and the SD04/SD05 box pictures are no longer swapped. · กล่อง Starter และ KD มีรูแขวนจริง และแก้ภาพกล่อง SD04/SD05 ที่สลับกัน"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "New packs: CC01, CC02, ODY1 · ซองใหม่ CC01 CC02 ODY1",
-      "lines": [
-        "CC01, CC02 and ODY1 booster packs are in the SHOP (200 coins). CC03 is coming soon. · ซอง CC01, CC02, ODY1 วางขายแล้ว (200 เหรียญ) CC03 เร็ว ๆ นี้"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "Shop deck boxes reshaped · กล่องเด็คในร้านค้าเหมือนของจริง",
-      "lines": [
-        "Starter and KD decks now look like the real box: hang tab, black side spine with the title, turned so you see the side. · กล่อง Starter และ KD มีหูแขวน สันกล่องสีดำพร้อมชื่อ และหันให้เห็นด้านข้างเหมือนกล่องจริง"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "3D shop items · ไอเท็มร้านค้า 3D",
-      "lines": [
-        "Shop items are now 3D: packs and deck boxes sway gently, lean toward your mouse with a shine, and you can drag the featured item to turn it and look around. · ไอเท็มในร้านค้าเป็น 3D แล้ว ลากเพื่อหมุนดูได้"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "Bug fixes (6 Nov) · แก้บั๊ก (6 พ.ย.)",
-      "lines": [
-        "บ่าวแสม: you choose the effect, and POWER +1 now stays. · บ่าวแสม เลือกผลเองได้ และ POWER +1 อยู่ตลอด",
-        "ประมาทร่วม and เฮล่า can mill with fewer than 10 cards in the Deck. · ประมาทร่วม และ เฮล่า ธรณีสูบได้แม้เด็คเหลือน้อยกว่า 10 ใบ",
-        "ไต้ฝุ่น can be used as a React in the opponent's turn or in your Battle Phase. · ไต้ฝุ่น ใช้เป็น React ในเทิร์นฝ่ายตรงข้ามหรือ Battle Phase เราได้",
-        "นักดาบตะวันแดง destroys an opponent Avatar whenever it survives an attack (หมอมาแล้วววว too). · นักดาบตะวันแดง รอดจากการถูกโจมตี (รวมใช้หมอ) จะทำลาย Avatar อีกฝ่าย",
-        "หมอมาแล้วววว can be used after a failed ไบโพล่า ชิลด์ roll. · ใช้หมอมาแล้วววว ได้หลังทอยไบโพล่า ชิลด์ไม่สำเร็จ",
-        "Online on the website shows the opponent's card text. · โหมด Online บนเว็บ อ่าน text การ์ดอีกฝ่ายได้แล้ว"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "New SHOP screen · ร้านค้าใหม่",
-      "lines": [
-        "SHOP is its own screen: tabs on the left, items in the middle, featured on the right · ร้านค้าเป็นหน้าจอใหม่ แท็บซ้าย สินค้ากลาง แนะนำขวา",
-        "Real box art for BT01-12, SD01-09 and KD01-04; promo pack is now a reward · ภาพกล่องจริง ซองโปรโมเป็นรางวัล",
-        "HOME: COLLECTION replaced by EVENTS (collection is in CARDS and PROFILE) · หน้าแรก: เปลี่ยนคอลเลกชันเป็นกิจกรรม",
-        "Profile shows your picture and name once; round icons stay in the circle · โปรไฟล์ไม่ซ้ำ รูปอยู่ในวงกลม"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "Bug fixes · แก้บั๊ก",
-      "lines": [
-        "When the opponent uses โล่มนุษย์, the attacker can answer with a React (like เชาว์ปัญญาลิง); if it negates it, the attack goes on to its first target. · เมื่อฝ่ายตรงข้ามใช้ โล่มนุษย์ ผู้โจมตีใช้ React ตอบได้ ถ้าลบความสามารถได้ การโจมตีจะไปที่เป้าหมายเดิม",
-        "เตียวหุย's POWER +1 now lasts only for that attack. · เตียวหุย ได้ POWER +1 เฉพาะการโจมตีครั้งนั้น"
-      ]
-    },
-    {
-      "date": "2026-11-06",
-      "title": "Collection shows card pictures · คอลเลกชันแสดงรูปการ์ดแล้ว",
-      "lines": [
-        "Your cards now show their pictures in the Collection album. Cards you don't have yet show in shadow. · อัลบั้มคอลเลกชันแสดงรูปการ์ดที่คุณมีแล้ว การ์ดที่ยังไม่มีจะแสดงเป็นเงามืด"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Shop prices and online fixes · ราคาร้านค้าและแก้ออนไลน์",
-      "lines": [
-        "Casual online games pay coins and EXP whether you win or lose. · เล่นออนไลน์ทั่วไป แพ้หรือชนะก็ได้เหรียญและ EXP",
-        "Starter decks 600 coins (SD09 1000), KD and BT11-BT12 packs 200. · สตาร์ทเตอร์ 600 (SD09 1000) ซอง KD, BT11-12 ราคา 200",
-        "PROMO packs are now rewards: every level up and day 7 of the login calendar. · ซองโปรโมได้จากเลเวลอัปและล็อกอินวันที่ 7",
-        "An online answer that failed to send is retried, so an attack no longer gets stuck after a long React. · แก้การโจมตีค้างหลังอีกฝ่ายคิดนาน"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Profiles everywhere · โปรไฟล์ทุกโหมด",
-      "lines": [
-        "Click a name in a duel to see that player's profile · คลิกชื่อในการดวลเพื่อดูโปรไฟล์",
-        "Your name banner in TOURNAMENT opens your profile · แบนเนอร์ชื่อในทัวร์นาเมนต์เปิดโปรไฟล์ได้"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Card pictures and BATTLE menu fixes · แก้ภาพการ์ดและเมนูต่อสู้",
-      "lines": [
-        "A replaced card picture now updates without clearing the browser. · ภาพการ์ดที่เปลี่ยนใหม่อัปเดตทันทีโดยไม่ต้องล้างเบราว์เซอร์",
-        "The Tournament screen opens with your saved deck. · หน้าทัวร์นาเมนต์ใช้เด็คที่บันทึกไว้ได้แล้ว"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Home news shows game updates · ข่าวหน้าแรกแสดงอัปเดตเกม",
-      "lines": [
-        "Tap the news bar to see every update · แตะแถบข่าวเพื่อดูอัปเดตทั้งหมด"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Fixes · แก้บัค",
-      "lines": [
-        "STORY MODE entry shows again in BATTLE on PC · ปุ่มโหมดเนื้อเรื่องกลับมาแล้ว (PC)",
-        "Tournament no longer crashes when picking a deck · ทัวร์นาเมนต์ไม่เด้งตอนเลือกเด็ค"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "New HOME · หน้าแรกใหม่",
-      "lines": [
-        "Profile pop-up with 3 showcase cards, history and replays · โปรไฟล์ โชว์การ์ด 3 ใบ ประวัติ รีเพลย์",
-        "SHOP: packs BT01-12, KD, PROMO, starter decks, characters · ร้านค้า ซอง เด็คเริ่มต้น ตัวละคร",
-        "COMMUNITY: online players, world chat, friends · ผู้เล่นออนไลน์ แชท เพื่อน",
-        "Bug report, mailbox and weekly draw · แจ้งบัค จดหมาย จับรางวัลรายสัปดาห์"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Bug fixes (3 Nov) · แก้บั๊ก (3 พ.ย.)",
-      "lines": [
-        "เมอลิน พ่อมดแห่งอวาลอน now reads \"เลือกปฏิบัติ\" (choose one) instead of \"เนรเทศ\". · แก้ข้อความเป็น \"เลือกปฏิบัติ\" แทน \"เนรเทศ\"",
-        "BT12-046 and BT12-047 show the right pictures on the website. · รูปการ์ด BT12-046 และ BT12-047 บนเว็บแสดงถูกต้องแล้ว",
-        "The ban list works in Edit Deck on the website. · Ban list ใช้งานได้ในโหมดแก้ไขเด็คบนเว็บแล้ว",
-        "สวีนนีย์ มนุษย์ดาว R18 now resolves first when it destroys a มะม่วง card, so the มะม่วง becomes its servant. · เมื่อ สวีนนีย์ มนุษย์ดาว R18 ทำลายการ์ด \"มะม่วง\" ความสามารถของสวีนนีย์จะทำงานก่อน การ์ดมะม่วงจะไปเป็นข้ารับใช้"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Ban list now works on the website · แบนลิสต์ใช้งานได้บนเว็บแล้ว",
-      "lines": [
-        "The web deck editor shows banned and limited cards and checks your deck against the official ban list (Aug 69), like the PC version. · หน้าจัดเด็คบนเว็บแสดงการ์ดต้องห้าม/จำกัดจำนวน และตรวจเด็คตามแบนลิสต์ทางการ (ส.ค. 69) เหมือนเวอร์ชัน PC",
-        "New COLLECTION room (My cards, My packs) and the 3-card profile showcase. · ห้อง COLLECTION (การ์ดของฉัน, ซองของฉัน) และการ์ดโชว์ 3 ใบบนโปรไฟล์"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Online fixes · แก้ไขโหมดออนไลน์",
-      "lines": [
-        "BT12 decks can be used in online rooms again. · ใช้เด็คที่มีการ์ด BT12 ในห้องออนไลน์ได้แล้ว",
-        "The game now finds the online server even if an old web address was saved. · เกมเชื่อมต่อเซิร์ฟเวอร์ได้ถูกต้องแม้เคยบันทึกที่อยู่เก่าไว้",
-        "Clearer message when a server's card list is older than your game. · แจ้งเตือนชัดเจนขึ้นเมื่อเซิร์ฟเวอร์ยังไม่มีการ์ดใหม่"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Online: straight into the lobby · เข้าออนไลน์ได้ทันที",
-      "lines": [
-        "ONLINE uses your home profile and connects by itself (no more name / picture form). · ใช้โปรไฟล์จากหน้าหลักอัตโนมัติ",
-        "A Connecting... sign while the server wakes up, with TRY AGAIN. · แสดงกำลังเชื่อมต่อ และปุ่มลองใหม่",
-        "An expired Google login asks you to log in again. · ถ้า Google หมดอายุ ระบบจะให้เข้าสู่ระบบใหม่"
-      ]
-    },
-    {
-      "date": "2026-11-03",
-      "title": "Shop, collection and Ranked · ร้านค้า คอลเลกชัน และแรงก์",
-      "lines": [
-        "Packs BT01-BT12, KD01-KD04 and PROMO (6 cards each); starter decks SD01-SD09. · ซองการ์ดและสตาร์ทเตอร์เด็ค",
-        "Daily login stamps, missions, weekly draw. · ล็อกอินรายวัน ภารกิจ จับรางวัลรายสัปดาห์",
-        "Ranked from Bronze to Master with a leaderboard. · แรงก์ บรอนซ์ถึงมาสเตอร์",
-        "Friends, community list and one profile with 3 showcase cards. · เพื่อน รายชื่อผู้เล่น โปรไฟล์เดียว"
-      ]
-    }
-  ],
-  "events": [
-    {
-      "from": "2026-11-03",
-      "to": "2026-11-30",
-      "text": "Season 1 of Ranked: climb from Bronze to Master! · แรงก์ซีซั่น 1"
-    }
-  ]
+ "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
+ "updates": [
+  {
+   "date": "2026-11-06",
+   "title": "Web game loading fixed · แก้ปัญหาเกมเว็บโหลดไม่ขึ้น",
+   "lines": [
+    "Fixed 'Failed loading file index.pck' after updates. If you still see it, refresh once (Ctrl+F5). · แก้ข้อความ 'Failed loading file index.pck' หลังอัปเดต ถ้ายังเจอ กดรีเฟรชหนึ่งครั้ง (Ctrl+F5)"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Official BT12 cards · การ์ด BT12 ฉบับทางการ",
+   "lines": [
+    "All BT12 pictures replaced with the official art, plus 22 SCR/PR/CBR alternate arts. · เปลี่ยนรูป BT12 ทั้งหมดเป็นรูปทางการ และเพิ่มรูปพิเศษ SCR/PR/CBR 22 ใบ",
+    "New card: BT12-039 แม่นางลิ. · การ์ดใหม่: BT12-039 แม่นางลิ",
+    "Names, GEM and text fixed to the official cards; BT12-046/047 numbers swapped. · แก้ชื่อ GEM และข้อความตามการ์ดจริง สลับเลข BT12-046/047",
+    "กุ่ย พาลาดิน now has สามัคคี; อาดัส, กุนซือลงสนาม, Skill : Dacknova follow the official text. · กุ่ย พาลาดิน ได้ สามัคคี; อาดัส, กุนซือลงสนาม, Skill : Dacknova ทำงานตามข้อความทางการ"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "New box art · ภาพกล่องใหม่",
+   "lines": [
+    "Starter and KD boxes now show the real hang hole, and the SD04/SD05 box pictures are no longer swapped. · กล่อง Starter และ KD มีรูแขวนจริง และแก้ภาพกล่อง SD04/SD05 ที่สลับกัน"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "New packs: CC01, CC02, ODY1 · ซองใหม่ CC01 CC02 ODY1",
+   "lines": [
+    "CC01, CC02 and ODY1 booster packs are in the SHOP (200 coins). CC03 is coming soon. · ซอง CC01, CC02, ODY1 วางขายแล้ว (200 เหรียญ) CC03 เร็ว ๆ นี้"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Shop deck boxes reshaped · กล่องเด็คในร้านค้าเหมือนของจริง",
+   "lines": [
+    "Starter and KD decks now look like the real box: hang tab, black side spine with the title, turned so you see the side. · กล่อง Starter และ KD มีหูแขวน สันกล่องสีดำพร้อมชื่อ และหันให้เห็นด้านข้างเหมือนกล่องจริง"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "3D shop items · ไอเท็มร้านค้า 3D",
+   "lines": [
+    "Shop items are now 3D: packs and deck boxes sway gently, lean toward your mouse with a shine, and you can drag the featured item to turn it and look around. · ไอเท็มในร้านค้าเป็น 3D แล้ว ลากเพื่อหมุนดูได้"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Bug fixes (6 Nov) · แก้บั๊ก (6 พ.ย.)",
+   "lines": [
+    "บ่าวแสม: you choose the effect, and POWER +1 now stays. · บ่าวแสม เลือกผลเองได้ และ POWER +1 อยู่ตลอด",
+    "ประมาทร่วม and เฮล่า can mill with fewer than 10 cards in the Deck. · ประมาทร่วม และ เฮล่า ธรณีสูบได้แม้เด็คเหลือน้อยกว่า 10 ใบ",
+    "ไต้ฝุ่น can be used as a React in the opponent's turn or in your Battle Phase. · ไต้ฝุ่น ใช้เป็น React ในเทิร์นฝ่ายตรงข้ามหรือ Battle Phase เราได้",
+    "นักดาบตะวันแดง destroys an opponent Avatar whenever it survives an attack (หมอมาแล้วววว too). · นักดาบตะวันแดง รอดจากการถูกโจมตี (รวมใช้หมอ) จะทำลาย Avatar อีกฝ่าย",
+    "หมอมาแล้วววว can be used after a failed ไบโพล่า ชิลด์ roll. · ใช้หมอมาแล้วววว ได้หลังทอยไบโพล่า ชิลด์ไม่สำเร็จ",
+    "Online on the website shows the opponent's card text. · โหมด Online บนเว็บ อ่าน text การ์ดอีกฝ่ายได้แล้ว"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "New SHOP screen · ร้านค้าใหม่",
+   "lines": [
+    "SHOP is its own screen: tabs on the left, items in the middle, featured on the right · ร้านค้าเป็นหน้าจอใหม่ แท็บซ้าย สินค้ากลาง แนะนำขวา",
+    "Real box art for BT01-12, SD01-09 and KD01-04; promo pack is now a reward · ภาพกล่องจริง ซองโปรโมเป็นรางวัล",
+    "HOME: COLLECTION replaced by EVENTS (collection is in CARDS and PROFILE) · หน้าแรก: เปลี่ยนคอลเลกชันเป็นกิจกรรม",
+    "Profile shows your picture and name once; round icons stay in the circle · โปรไฟล์ไม่ซ้ำ รูปอยู่ในวงกลม"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Bug fixes · แก้บั๊ก",
+   "lines": [
+    "When the opponent uses โล่มนุษย์, the attacker can answer with a React (like เชาว์ปัญญาลิง); if it negates it, the attack goes on to its first target. · เมื่อฝ่ายตรงข้ามใช้ โล่มนุษย์ ผู้โจมตีใช้ React ตอบได้ ถ้าลบความสามารถได้ การโจมตีจะไปที่เป้าหมายเดิม",
+    "เตียวหุย's POWER +1 now lasts only for that attack. · เตียวหุย ได้ POWER +1 เฉพาะการโจมตีครั้งนั้น"
+   ]
+  },
+  {
+   "date": "2026-11-06",
+   "title": "Collection shows card pictures · คอลเลกชันแสดงรูปการ์ดแล้ว",
+   "lines": [
+    "Your cards now show their pictures in the Collection album. Cards you don't have yet show in shadow. · อัลบั้มคอลเลกชันแสดงรูปการ์ดที่คุณมีแล้ว การ์ดที่ยังไม่มีจะแสดงเป็นเงามืด"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Shop prices and online fixes · ราคาร้านค้าและแก้ออนไลน์",
+   "lines": [
+    "Casual online games pay coins and EXP whether you win or lose. · เล่นออนไลน์ทั่วไป แพ้หรือชนะก็ได้เหรียญและ EXP",
+    "Starter decks 600 coins (SD09 1000), KD and BT11-BT12 packs 200. · สตาร์ทเตอร์ 600 (SD09 1000) ซอง KD, BT11-12 ราคา 200",
+    "PROMO packs are now rewards: every level up and day 7 of the login calendar. · ซองโปรโมได้จากเลเวลอัปและล็อกอินวันที่ 7",
+    "An online answer that failed to send is retried, so an attack no longer gets stuck after a long React. · แก้การโจมตีค้างหลังอีกฝ่ายคิดนาน"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Profiles everywhere · โปรไฟล์ทุกโหมด",
+   "lines": [
+    "Click a name in a duel to see that player's profile · คลิกชื่อในการดวลเพื่อดูโปรไฟล์",
+    "Your name banner in TOURNAMENT opens your profile · แบนเนอร์ชื่อในทัวร์นาเมนต์เปิดโปรไฟล์ได้"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Card pictures and BATTLE menu fixes · แก้ภาพการ์ดและเมนูต่อสู้",
+   "lines": [
+    "A replaced card picture now updates without clearing the browser. · ภาพการ์ดที่เปลี่ยนใหม่อัปเดตทันทีโดยไม่ต้องล้างเบราว์เซอร์",
+    "The Tournament screen opens with your saved deck. · หน้าทัวร์นาเมนต์ใช้เด็คที่บันทึกไว้ได้แล้ว"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Home news shows game updates · ข่าวหน้าแรกแสดงอัปเดตเกม",
+   "lines": [
+    "Tap the news bar to see every update · แตะแถบข่าวเพื่อดูอัปเดตทั้งหมด"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Fixes · แก้บัค",
+   "lines": [
+    "STORY MODE entry shows again in BATTLE on PC · ปุ่มโหมดเนื้อเรื่องกลับมาแล้ว (PC)",
+    "Tournament no longer crashes when picking a deck · ทัวร์นาเมนต์ไม่เด้งตอนเลือกเด็ค"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "New HOME · หน้าแรกใหม่",
+   "lines": [
+    "Profile pop-up with 3 showcase cards, history and replays · โปรไฟล์ โชว์การ์ด 3 ใบ ประวัติ รีเพลย์",
+    "SHOP: packs BT01-12, KD, PROMO, starter decks, characters · ร้านค้า ซอง เด็คเริ่มต้น ตัวละคร",
+    "COMMUNITY: online players, world chat, friends · ผู้เล่นออนไลน์ แชท เพื่อน",
+    "Bug report, mailbox and weekly draw · แจ้งบัค จดหมาย จับรางวัลรายสัปดาห์"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Bug fixes (3 Nov) · แก้บั๊ก (3 พ.ย.)",
+   "lines": [
+    "เมอลิน พ่อมดแห่งอวาลอน now reads \"เลือกปฏิบัติ\" (choose one) instead of \"เนรเทศ\". · แก้ข้อความเป็น \"เลือกปฏิบัติ\" แทน \"เนรเทศ\"",
+    "BT12-046 and BT12-047 show the right pictures on the website. · รูปการ์ด BT12-046 และ BT12-047 บนเว็บแสดงถูกต้องแล้ว",
+    "The ban list works in Edit Deck on the website. · Ban list ใช้งานได้ในโหมดแก้ไขเด็คบนเว็บแล้ว",
+    "สวีนนีย์ มนุษย์ดาว R18 now resolves first when it destroys a มะม่วง card, so the มะม่วง becomes its servant. · เมื่อ สวีนนีย์ มนุษย์ดาว R18 ทำลายการ์ด \"มะม่วง\" ความสามารถของสวีนนีย์จะทำงานก่อน การ์ดมะม่วงจะไปเป็นข้ารับใช้"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Ban list now works on the website · แบนลิสต์ใช้งานได้บนเว็บแล้ว",
+   "lines": [
+    "The web deck editor shows banned and limited cards and checks your deck against the official ban list (Aug 69), like the PC version. · หน้าจัดเด็คบนเว็บแสดงการ์ดต้องห้าม/จำกัดจำนวน และตรวจเด็คตามแบนลิสต์ทางการ (ส.ค. 69) เหมือนเวอร์ชัน PC",
+    "New COLLECTION room (My cards, My packs) and the 3-card profile showcase. · ห้อง COLLECTION (การ์ดของฉัน, ซองของฉัน) และการ์ดโชว์ 3 ใบบนโปรไฟล์"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Online fixes · แก้ไขโหมดออนไลน์",
+   "lines": [
+    "BT12 decks can be used in online rooms again. · ใช้เด็คที่มีการ์ด BT12 ในห้องออนไลน์ได้แล้ว",
+    "The game now finds the online server even if an old web address was saved. · เกมเชื่อมต่อเซิร์ฟเวอร์ได้ถูกต้องแม้เคยบันทึกที่อยู่เก่าไว้",
+    "Clearer message when a server's card list is older than your game. · แจ้งเตือนชัดเจนขึ้นเมื่อเซิร์ฟเวอร์ยังไม่มีการ์ดใหม่"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Online: straight into the lobby · เข้าออนไลน์ได้ทันที",
+   "lines": [
+    "ONLINE uses your home profile and connects by itself (no more name / picture form). · ใช้โปรไฟล์จากหน้าหลักอัตโนมัติ",
+    "A Connecting... sign while the server wakes up, with TRY AGAIN. · แสดงกำลังเชื่อมต่อ และปุ่มลองใหม่",
+    "An expired Google login asks you to log in again. · ถ้า Google หมดอายุ ระบบจะให้เข้าสู่ระบบใหม่"
+   ]
+  },
+  {
+   "date": "2026-11-03",
+   "title": "Shop, collection and Ranked · ร้านค้า คอลเลกชัน และแรงก์",
+   "lines": [
+    "Packs BT01-BT12, KD01-KD04 and PROMO (6 cards each); starter decks SD01-SD09. · ซองการ์ดและสตาร์ทเตอร์เด็ค",
+    "Daily login stamps, missions, weekly draw. · ล็อกอินรายวัน ภารกิจ จับรางวัลรายสัปดาห์",
+    "Ranked from Bronze to Master with a leaderboard. · แรงก์ บรอนซ์ถึงมาสเตอร์",
+    "Friends, community list and one profile with 3 showcase cards. · เพื่อน รายชื่อผู้เล่น โปรไฟล์เดียว"
+   ]
+  }
+ ],
+ "events": [
+  {
+   "from": "2026-11-03",
+   "to": "2026-11-30",
+   "text": "Season 1 of Ranked: climb from Bronze to Master! · แรงก์ซีซั่น 1"
+  }
+ ]
 }
