@@ -3,6 +3,13 @@
   "updates": [
     {
       "date": "2026-11-06",
+      "title": "Shop deck boxes reshaped · กล่องเด็คในร้านค้าเหมือนของจริง",
+      "lines": [
+        "Starter and KD decks now look like the real box: hang tab, black side spine with the title, turned so you see the side. · กล่อง Starter และ KD มีหูแขวน สันกล่องสีดำพร้อมชื่อ และหันให้เห็นด้านข้างเหมือนกล่องจริง"
+      ]
+    },
+    {
+      "date": "2026-11-06",
       "title": "3D shop items · ไอเท็มร้านค้า 3D",
       "lines": [
         "Shop items are now 3D: packs and deck boxes sway gently, lean toward your mouse with a shine, and you can drag the featured item to turn it and look around. · ไอเท็มในร้านค้าเป็น 3D แล้ว ลากเพื่อหมุนดูได้"
