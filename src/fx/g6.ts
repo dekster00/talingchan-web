@@ -702,7 +702,7 @@ Object.assign(FX, {
     modTarget: (g, p) => best(onZone(g, p, 'อาเธอร์ ราชาแห่งอัศวินโต๊ะกลม'), (a) => value(g, a)),
     modPower: () => 2,
     leaveGuard: (g, self, t, info) => (t.uid === self.wearer && !info.cost
-      ? { label: `destroy ${self.def.name} instead of ${t.def.name} leaving`, want: true, run: () => toHell(g, self, { cost: true }) } : null),
+      ? { label: `destroy ${self.def.name} instead of ${t.def.name} leaving`, want: true, optional: false, run: () => toHell(g, self, { cost: true }) } : null), // bugfix14 (user): always, no prompt
     hellActs: (g, p, c) => [act('เอกซ์คาลิเบอร์: equip from hell', (g2) => inMain(g2, p) && !P(g2, p).used.Modification && P(g2, p).hell.includes(c)
       && onZone(g2, p, 'อาเธอร์ ราชาแห่งอัศวินโต๊ะกลม').length > 0,
     (g2) => {

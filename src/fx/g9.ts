@@ -447,16 +447,11 @@ Object.assign(FX, {
     wearerBattle: (g, m, w, other) => { if (him(w) && symIs(other, 'นรก')) { boost(w, 2, 'battle'); log(g, `แอสคาลอน: ${w.def.name} POWER +2 (fights a {นรก} Avatar)`); } },
     // "ไม่รับผลความสามารถจากการ์ด {symbol นรก}" (v14d shieldFrom: POWER changes, being chosen, being removed)
     shieldFrom: (g: Game, self: Card, t: Card, src: Card) => t.mods.includes(self) && him(t) && src !== t && symIs(src, 'นรก'),
-    leaveGuard: (g: Game, self: Card, t: Card, info: any) => {
-      // bugfix2 item 1 (user): "นำการ์ดใบนี้กลับเข้า Deck แทนการถูกทำลาย" = this card goes back into the Deck instead of to
-      // Hell; the wearer is still destroyed (ฮิมไลน์ is saved only once per summon, by its own ability)
-      if (t.uid !== self.wearer || !t.mods.includes(self)) return null;
-      self.f.deckOnDrop = info.how === 'destroy' ? g.turn : 0;
-      return null;
-    },
-    onWearerLeave: (g: Game, m: Card) => {
-      if (m.f.deckOnDrop !== g.turn) return false;
-      m.f.deckOnDrop = 0;
+    // bugfix2 item 1 (user): "นำการ์ดใบนี้กลับเข้า Deck แทนการถูกทำลาย" = this card goes back into the Deck instead of to
+    // Hell; the wearer is still destroyed (ฮิมไลน์ is saved only once per summon, by its own ability).
+    // bugfix14: any destruction of the wearer counts (also เซ่นไหว้ as a cost and unprotected kills); destroy() marks f.destroyed
+    onWearerLeave: (g: Game, m: Card, w: Card) => {
+      if (!w || w.f.destroyed !== g.turn) return false;
       const pl = P(g, m.owner); pl.deck.push(m); shuffle(g, pl.deck);
       log(g, `${m.def.name} goes back into the Deck (shuffled) instead of to Hell`);
       return true;

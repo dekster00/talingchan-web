@@ -754,7 +754,7 @@ export function destroy(g: Game, c: Card, by: PID | null, viaMagic = false, o: L
   emit(g, { ev: 'destroy', who: c.ctrl, uid: c.uid, print: c.def.print });
   const owner = c.owner, ctrl = c.ctrl;
   const dcExile = !!c.f.dcExile; // granted "คำสั่งเสีย : เนรเทศ การ์ดใบนี้" (ดอกเตอร์เต้ BT12-024)
-  detach(g, c); dropMods(g, c); resetOnLeave(c);
+  detach(g, c); c.f.destroyed = g.turn; dropMods(g, c); resetOnLeave(c); // bugfix14: f.destroyed lets mods see "destroyed" (แอสคาลอน)
   if (!c.token) P(g, owner).hell.push(c);
   if (f && f.deathCry && !c.token && !info.noDeathCry) decide(g, owner, () => withSource(c, () => f.deathCry!(g, c, owner)));
   if (dcExile && !info.noDeathCry && P(g, owner).hell.includes(c)) { detach(g, c); P(g, owner).exile.push(c); log(g, `${c.def.name}: คำสั่งเสีย, exiled`); }

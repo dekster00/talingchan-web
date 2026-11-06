@@ -27,14 +27,15 @@ export const LEVELS: Level[] = ['easy', 'normal', 'hard'];
 // then only push on for the kill), key-unit priorities for attacks and React cards, a small opening board (1-2 Avatars)
 // against one-turn kills, hand building, and fair look-ahead (its own draws and the opponent's hidden cards are
 // shuffled in every look-ahead copy, so it never plans with cards it could not know).
-interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean; pro: boolean; handW: number; fair?: boolean; samples?: number; curve?: boolean; threatW?: number; landW?: number; opening?: boolean; reactPro?: boolean }
+interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean; pro: boolean; handW: number; fair?: boolean; samples?: number; curve?: boolean; threatW?: number; landW?: number; opening?: boolean; reactPro?: boolean; pro2?: boolean }
 const TUNE: Record<string, Tune> = {
   easy: { depth: 1, beam: 0, lifeW: 7, exposeW: 0.5, noise: 3, stopChance: 0.2, reactHold: 0, reactSkip: 0.5, lifeGuard: false, pro: false, handW: 0.6 },
   normal: { depth: 1, beam: 0, lifeW: 7, exposeW: 1, noise: 0, stopChance: 0, reactHold: 0, reactSkip: 0, lifeGuard: false, pro: false, handW: 0.6 },
-  hard: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: true, handW: 0.8, fair: true, curve: true, threatW: 1, landW: 1, opening: true, reactPro: true, samples: 3 },
+  hard: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: true, handW: 0.8, fair: true, curve: true, threatW: 1, landW: 1, opening: true, reactPro: true, samples: 3, pro2: true },
   hard0: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: false, handW: 0.6 }, // the Hard of 2026-10-21 (tests)
 };
 TUNE.hard0f = { ...TUNE.hard0, fair: true }; // tests: the old Hard without peeking
+TUNE.hard1 = { ...TUNE.hard, pro2: false }; // tests: the Hard of 2026-10-26 (before the user's 2026-11-06 list)
 // tests only: BOT_X='{"fair":true,...}' makes level hardx = hard0 plus those settings (node; never in the browser)
 try { const x = (globalThis as any).process?.env?.BOT_X; if (x) TUNE.hardx = { ...TUNE.hard0, ...JSON.parse(x) }; } catch { /* no env */ }
 
@@ -53,6 +54,19 @@ const THREAT: Record<string, number> = {
 // Lands that run a deck's engine: worth removing (ไต้ฝุ่น) and worth keeping
 const KEY_LAND = new Set(['ด่านตรวจเข้าเมือง', 'หมู่บ้านเห็ด', 'โคกอีสานนูน', 'พิภพรัททาทุย']);
 export const threatOf = (c: Card | null | undefined): number => (c ? THREAT[c.def.name] || 0 : 0);
+
+// pro2 (user 2026-11-06, bot list): deck styles and the units that stay home.
+const ARTHUR = 'อาเธอร์ ราชาแห่งอัศวินโต๊ะกลม';
+const NGI = new Set(['งี่เง่ากับงอแง', 'งี่เง่า และ งอแง']);
+const MEPHISTO = 'ปีศาจแห่งพันรเลือด เมฟิสโตเฟเลส';
+const isReactCard = (c: Card) => c.def.type === 'Magic' && c.def.subtype === 'React';
+function allMine(g: Game, me: PID): Card[] { const pl = P(g, me); return [...pl.deck, ...pl.hand, ...pl.avatars, ...pl.hell]; }
+/** ninja: the deck sneaks (1-2 attackers a turn) until the opponent is down to 1-2 LIFE. */
+function ninjaDeck(g: Game, me: PID): boolean { return allMine(g, me).filter((c) => c.def.name.includes('นินจา')).length >= 6; }
+/** นรก: takes a hit or two early while it digs for สัญญาเลือด, then walls up until เมฟิสโต. */
+function hellDeck(g: Game, me: PID): boolean { return allMine(g, me).some((c) => c.def.name === 'สัญญาเลือด' || c.def.name === MEPHISTO); }
+/** a strong piece that stays home (lots of equipment, อาเธอร์): a React removal on the attack costs too much. */
+function keepHome(a: Card): boolean { return a.def.name === ARTHUR || a.mods.length >= 2; }
 // The opponent's LIFE as the pros count it: 1-3 face up is the target; the 4th and 5th only matter on the way to the
 // kill (each LIFE card hit gives its owner an effect and cards, and at 4 face up เลือกจน gets better).
 const PRO_LIFE = [0, 7, 14, 21, 22.5, 24];
@@ -91,7 +105,49 @@ export function evaluate(g: Game, me: PID): number {
   const exposed = Math.max(0, o.avatars.length - my.avatars.length);
   s -= exposed * (2 + flippedLife(my)) * T.exposeW;
   if (my.deck.length < 6) s -= (6 - my.deck.length) * 2;
+  if (T.pro2) {
+    // keep React cards in hand to answer the opponent
+    for (const c of my.hand) if (isReactCard(c)) s += 1.2;
+    // no board spam: Avatars beyond what the board needs are only more targets for a sweep
+    const extra = my.avatars.length - Math.max(3, o.avatars.length + 1);
+    if (extra > 0) s -= 1.5 * extra;
+    // hand balance: every LIFE hit hands the opponent cards; a full hand (7) is only worth it near the kill
+    if (o.hand.length > 6 && flippedLife(o) < 3) s -= 1.5 * (o.hand.length - 6);
+    // นรก deck: early LIFE hits are fine while it digs; once it can, it walls up until เมฟิสโต comes
+    if (hellDeck(g, me)) {
+      const meph = my.avatars.some((a) => a.def.name === MEPHISTO);
+      if (!meph && g.turn <= 6 && flippedLife(my) <= 2) s += 0.35 * T.lifeW * flippedLife(my);
+      if (g.turn > 4 && !meph) s += 1.0 * my.avatars.length;
+    }
+  }
   return s;
+}
+
+// pro2: what an attack choice costs beyond the board score (user 2026-11-06).
+function attackPenalty(g: Game, me: PID, att: Card, t: Card | null, sim: Game, attacksSoFar: number): number {
+  if (sim.winner === me) return 0;
+  const my = P(g, me), o = P(g, opp(me));
+  const finishing = flippedLife(o) >= 3; // the opponent has 1-2 LIFE left: all in
+  let pen = 0;
+  if (t === null && !finishing) {
+    // each LIFE hit gives the opponent a card: attack when we hold 4-5 and they end on 5-6 (7 only near the kill)
+    const oh = o.hand.length + 1;
+    if (oh > 6) pen += 2.5 * (oh - 6);
+    if (my.hand.length < 4 && oh >= 5) pen += 0.8 * (4 - my.hand.length);
+  }
+  // a strong piece stays home (a React removal like ไมเกรนขั้นวิกฤต costs too much) while others attack
+  if (keepHome(att) && !finishing && o.hand.length >= 2) pen += 3;
+  // งี่เง่า: it is there to be sacrificed for cards; it attacks only for the win
+  if (NGI.has(att.def.name)) pen += 6;
+  // โล่มนุษย์: an awake shield Avatar that is at least as strong just takes the hit and wins the fight
+  if (!finishing || t !== null) {
+    const ev = { kind: 'attack', actor: me, source: att, target: t, cancelled: false, depth: 0 } as Ev;
+    const sh = shieldOptions(g, opp(me), ev).filter((a) => { const [pa, ps] = estBattle(g, att, a); return ps >= pa; });
+    if (sh.length) pen += 4;
+  }
+  // ninja: sneak with 1-2 attackers a turn; all in only when the opponent is down to 1-2 LIFE
+  if (attacksSoFar >= 2 && !finishing && ninjaDeck(g, me)) pen += 5;
+  return pen;
 }
 
 // Estimated battle powers including "when this fights" effects.
@@ -178,6 +234,7 @@ const Classic: Brain = {
       for (const a of mainActs(g, me)) {
         if (a.k === 'summon' && botNoSummon(findCard(g, a.uid))) continue; // linkbot item 2
         if (a.k === 'summon' && opening && summons >= 2) continue;
+        if (T.pro2 && a.k === 'field' && a.label.includes('เตะไข่') && NGI.has(findCard(g, a.uid)?.def.name || '') && flippedLife(P(g, opp(me))) < 4) continue; // งี่เง่า: draw, not เตะไข่, unless it is the kill
         let s = T.noise ? (botRand() - 0.5) * 2 * T.noise : 0, c: Game | null = null;
         for (let k = 0; k < ns; k++) {
           lookSeed = dec + k * 977;
@@ -219,6 +276,7 @@ const Classic: Brain = {
       const f = fx(c);
       if (f && f.battleUse && f.battleUse(g, me, c)) castMagic(g, me, c, 0);
     }
+    let attacks = 0;
     for (let guard = 0; guard < 10 && g.winner === null && !g.stopBattle; guard++) {
       // Battle-phase hand abilities (โกเอมอน when LIFE >= 3 face up)
       for (const c of [...P(g, me).hand]) {
@@ -249,7 +307,8 @@ const Classic: Brain = {
       const base = 0.4 * bnow + 0.6 * evaluate(bs, me);
       let pick: [number, number | null, number[]] | null = null, bestS = base + 0.05;
       // v14 features item 1: a Construct is chosen as a target only with 15% probability when an Avatar or LIFE is open
-      const conOk = rand(g) < 0.15;
+      // user 2026-11-06: 50-50 now (was 15%)
+      const conOk = rand(g) < 0.5;
       for (const att of atts) {
         // helper sets: none, all, and all but the แทงหลัง helpers whose colour would destroy the attacker
         const all = helpersFor(g, me, att);
@@ -271,6 +330,7 @@ const Classic: Brain = {
             let s = evaluate(sim, me);
             if (sim.winner === null) { const now = s; oppReply(sim, me); s = 0.4 * now + 0.6 * evaluate(sim, me); }
             if (T.noise) s += (botRand() - 0.5) * 2 * T.noise;
+            if (T.pro2) s -= attackPenalty(g, me, att, t, sim, attacks);
             if (s > bestS) { bestS = s; pick = [att.uid, t ? t.uid : null, hs.map((u) => u.uid)]; }
           }
         }
@@ -280,6 +340,7 @@ const Classic: Brain = {
       for (const uid of pick[2]) { const u = findCard(g, uid); if (u) applyBuff(g, me, u, a); } // v14 features item 9
       if (g.winner !== null || !P(g, me).avatars.includes(a) || !canAttack(g, me, a) || !legalTargets(g, me, a).includes(t)) continue;
       attack(g, me, a, t);
+      attacks++;
     }
   },
 
@@ -359,7 +420,7 @@ function reactStakes(g: Game, me: PID, ev: Ev): number {
 }
 
 /** A bot brain for a level. Each call sets the tuning used by evaluate() and the helpers above. */
-export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' = 'normal'): Brain {
+export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' | 'hard1' = 'normal'): Brain {
   const tune = TUNE[level] || TUNE.normal;
   const run = <R>(fn: () => R): R => { const prev = T; T = tune; try { return fn(); } finally { T = prev; } };
   return {

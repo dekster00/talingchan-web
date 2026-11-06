@@ -3,6 +3,16 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "Card fixes + pay screen · แก้การ์ด + หน้าจ่าย GEM",
+   "lines": [
+    "Running out of Deck cards now loses at once. ซีกรุน can use ธรณีสูบ with under 10 Deck cards. · การ์ดใน Deck หมดแพ้ทันที / ซีกรุนใช้ธรณีสูบได้แม้ Deck เหลือน้อยกว่า 10 ใบ",
+    "เอกซ์คาลิเบอร์ always takes the hit for อาเธอร์. แอสคาลอน goes back to the Deck whenever its wearer is destroyed. เตียวหุย keeps +1 POWER per attack. เชาว์ปัญญาลิง also removes the POWER an Avatar's own ability gave it. A Land cancelled by ชายจากอนาคต sends the old Land to Hell too. คริติคอล ไมเกรน's exiled ไมเกรน stay exiled even if the ability is stopped. · เอกซ์คาลิเบอร์ถูกทำลายแทนอาเธอร์เสมอ / แอสคาลอนกลับเข้า Deck ทุกครั้งที่ผู้สวมใส่ถูกทำลาย / เตียวหุย POWER +1 ทุกครั้งที่โจมตีแบบถาวร / เชาว์ปัญญาลิงลบ POWER ที่ได้จากความสามารถตัวเองด้วย / Land ที่ถูกชายจากอนาคตยกเลิก Land เดิมลงนรกด้วย / ไมเกรนที่เนรเทศเป็นค่าใช้จ่ายของคริติคอล ไมเกรนไม่กลับมา",
+    "Pay screen: bigger CONFIRM / CANCEL stacked, and the Hell-GEM pop-up sits in the middle of the screen. · หน้าจ่าย GEM: ปุ่ม CONFIRM / CANCEL ใหญ่ขึ้นและเรียงแนวตั้ง, หน้าต่าง GEM จากนรกอยู่กลางจอ",
+    "Attack arrows: yours are blue, your opponent's are red. Casual duels show each player's name above their LIFE bar. · ลูกศรโจมตี: ของเราเป็นสีฟ้า ของคู่แข่งเป็นสีแดง / โหมด Casual แสดงชื่อผู้เล่นเหนือแถบ LIFE"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "Shop and online speed · ร้านค้าและความเร็วออนไลน์",
    "lines": [
     "All characters now cost 2,000 coins. · ตัวละครทุกตัวราคา 2,000 เหรียญ",
