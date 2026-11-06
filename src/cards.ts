@@ -463,6 +463,20 @@ export const FX: Record<string, Fx> = {
       const m = best(mods, (x) => keepValue(g, x));
       if (m) toHell(g, m, { by: p, viaMagic: true }); // v14: through the leave path (สิงสู่เพื่อสู่สม / ริกกี้ react to it)
     },
+    // bugfix12 (user 2026-11-06): "สามารถใช้การ์ดใบนี้ในเทิร์นฝ่ายตรงข้าม หรือใน Battle Phase เราได้โดยถือว่าเป็นการใช้ {react}"
+    battleUse: (g: Game, p: PID, c: Card) => !!FX['ไต้ฝุ่น'].canCast!(g, p, c, 0),
+    react: {
+      on: ['attack', 'fight', 'magic', 'summon', 'ability', 'battleStart', 'endTurn', 'lifeHit', 'destroyed', 'left'],
+      can: (g, p, c) => g.active !== p && (!!FX['ไต้ฝุ่น'].canCast!(g, p, c, 0) || !!FX['ไต้ฝุ่น'].canCast!(g, p, c, 1)),
+      want: (g, p, c, ev) => ev.kind === 'magic' || ev.kind === 'battleStart',
+      resolve: (g, p, c) => {
+        const f = FX['ไต้ฝุ่น'];
+        const ok = [0, 1].filter((o) => f.canCast!(g, p, c, o));
+        if (!ok.length) return;
+        const o = ok.length > 1 ? ok[chooseMode(g, c, ok.map((x) => (x === 0 ? "Destroy 1 card in the opponent's Magic Zone" : 'Destroy the Land')), 0)] ?? ok[0] : ok[0];
+        f.resolve!(g, p, c, o);
+      },
+    },
   },
   'ไอ นีด เมดิก': {
     keep: 3,

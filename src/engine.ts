@@ -731,6 +731,12 @@ export function destroy(g: Game, c: Card, by: PID | null, viaMagic = false, o: L
   const info = leaveInfo(g, c, 'destroy', { ...o, by, viaMagic }, isCon ? 'mz' : 'avatars');
   if (!bare && !o.noGuard && LEAVE_DEPTH < 12 && leaveGuarded(g, c, info)) return false;
   if (!fieldZone(g, c)) return false;
+  // bugfix12 (user 2026-11-06): a failed guard roll (ไบโพล่า ชิลด์) -> the controller may still answer (หมอมาแล้วววว)
+  if ((info as any).guardFailed && by !== c.ctrl && !g.sim) {
+    const ev2: Ev = { kind: 'destroy', actor: opp(c.ctrl), source: c, cancelled: false, depth: 0 };
+    respond(g, ev2);
+    if (ev2.cancelled || !fieldZone(g, c)) return false;
+  }
   info.noDeathCry = abilitiesOff(g, c, 'deathCry') || deathCryBlocked(g, c, info);
   log(g, `destroy ${c.def.name}`);
   emit(g, { ev: 'destroy', who: c.ctrl, uid: c.uid, print: c.def.print });
@@ -1832,6 +1838,7 @@ export function leaveGuarded(g: Game, c: Card, info: LeaveInfo): boolean {
       if (!use) continue;
       const kept = decide(g, s.ctrl, () => withSource(s, () => gd.run()));
       if (!fieldZone(g, c)) return true; // the guard moved it itself
+      if (!kept) (info as any).guardFailed = true; // bugfix12: e.g. ไบโพล่า ชิลด์ rolled odd
       if (kept) {
         log(g, `${s.def.name}: ${c.def.name} stays on the field`);
         emit(g, { ev: 'protect', who: c.ctrl, uid: c.uid, by: s.uid, s: `${s.def.name}: ${c.def.name} stays on the field` });

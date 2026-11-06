@@ -574,7 +574,7 @@ const NEW: Record<string, any> = {
   },
   'ประมาทร่วม': {
     keep: 2,
-    canCast: (g: Game, p: PID) => P(g, p).deck.length > 10,
+    canCast: (g: Game, p: PID) => P(g, p).deck.length > (humanSeatB12(g, p) ? 0 : 10), // bugfix12 (user): a player may mill a short Deck; the bot keeps 10
     resolve: (g: Game, p: PID) => { myMill(g, p, 3); mill(g, opp(p), 3); },
   },
 
@@ -1147,3 +1147,5 @@ Object.assign(FX, {
     onAttach: (g: Game, m: Card, w: Card) => refreshTank(g, w),
   },
 } as Record<string, any>);
+
+import { humanSeat as humanSeatB12 } from '../engine.ts';

@@ -854,9 +854,17 @@ Object.assign(FX, {
       const p = c.ctrl; if (!once(g, p, 'baosam:' + c.uid)) return; use(g, p, 'baosam:' + c.uid);
       exileTop(g, p, 1);
       const n = P(g, p).exile.length;
-      if (n >= 3 && P(g, opp(p)).hand.length > 0) randDiscard(g, opp(p));
-      else if (n >= 2) c.asleep = false;
-      else if (n >= 1) boost(c, 1);
+      // bugfix12 (user 2026-11-06): the player chooses 1 effect it qualifies for; POWER +1 stays (no end of turn)
+      const opts: [string, number][] = [];
+      if (n >= 1) opts.push(['POWER +1 (stays)', 0]);
+      if (n >= 2) opts.push(['Wake this Avatar up', 1]);
+      if (n >= 3 && P(g, opp(p)).hand.length > 0) opts.push(["Discard 1 random card from the opponent's hand", 2]);
+      if (!opts.length) return;
+      const dflt = opts.length - 1;
+      const k = opts[chooseMode(g, c, opts.map((o) => o[0]), dflt)]?.[1] ?? opts[dflt][1];
+      if (k === 2) randDiscard(g, opp(p));
+      else if (k === 1) c.asleep = false;
+      else addPower(g, c, 1, 'perm', c);
     },
   },
   'ลิขวิดบอย': {

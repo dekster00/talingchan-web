@@ -3,6 +3,18 @@
   "updates": [
     {
       "date": "2026-11-06",
+      "title": "Bug fixes (6 Nov) · แก้บั๊ก (6 พ.ย.)",
+      "lines": [
+        "บ่าวแสม: you choose the effect, and POWER +1 now stays. · บ่าวแสม เลือกผลเองได้ และ POWER +1 อยู่ตลอด",
+        "ประมาทร่วม and เฮล่า can mill with fewer than 10 cards in the Deck. · ประมาทร่วม และ เฮล่า ธรณีสูบได้แม้เด็คเหลือน้อยกว่า 10 ใบ",
+        "ไต้ฝุ่น can be used as a React in the opponent's turn or in your Battle Phase. · ไต้ฝุ่น ใช้เป็น React ในเทิร์นฝ่ายตรงข้ามหรือ Battle Phase เราได้",
+        "นักดาบตะวันแดง destroys an opponent Avatar whenever it survives an attack (หมอมาแล้วววว too). · นักดาบตะวันแดง รอดจากการถูกโจมตี (รวมใช้หมอ) จะทำลาย Avatar อีกฝ่าย",
+        "หมอมาแล้วววว can be used after a failed ไบโพล่า ชิลด์ roll. · ใช้หมอมาแล้วววว ได้หลังทอยไบโพล่า ชิลด์ไม่สำเร็จ",
+        "Online on the website shows the opponent's card text. · โหมด Online บนเว็บ อ่าน text การ์ดอีกฝ่ายได้แล้ว"
+      ]
+    },
+    {
+      "date": "2026-11-06",
       "title": "New SHOP screen · ร้านค้าใหม่",
       "lines": [
         "SHOP is its own screen: tabs on the left, items in the middle, featured on the right · ร้านค้าเป็นหน้าจอใหม่ แท็บซ้าย สินค้ากลาง แนะนำขวา",

@@ -631,7 +631,7 @@ const G3: Record<string, Fx> = {
   },
   'เฮล่า เทพแอสการ์ดแห่งความตาย': {
     keep: 4,
-    fieldActs: (g, p, c) => [act('เฮล่า: mill, เทพ สีม่วง +X', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'hela') && P(g2, p).deck.length > 10,
+    fieldActs: (g, p, c) => [act('เฮล่า: mill, เทพ สีม่วง +X', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'hela') && P(g2, p).deck.length > (humanSeatB12(g2, p) ? 1 : 10), // bugfix12 (user): a player may use it on a short Deck
       (g2) => {
         markOnce(g2, P(g2, p), 'hela');
         const maxN = Math.min(5, P(g2, p).deck.length - 1), botN = Math.max(0, Math.min(5, P(g2, p).deck.length - 10));
@@ -1178,3 +1178,5 @@ costFirst('พระคุ้มครอง', null, null, (g, p) => { const x =
   const axe = FX['ขวานเงิน'], on0 = axe && axe.onAttach;
   if (axe) axe.onAttach = (g, m, w) => { if (on0) on0(g, m, w); if (w.def.name === 'น้องสาม ผู้รู้ความจริง') w.temp = w.temp.filter((t) => !(t as any).samP); };
 }
+
+import { humanSeat as humanSeatB12 } from '../engine.ts';

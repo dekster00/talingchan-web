@@ -858,7 +858,13 @@ const NEW: Record<string, Fx> = {
   'นักดาบตะวันแดง': {
     keep: 4, // when it wins a fight as the defender (user: correct). "#" Symbol หุ่นยนต์ = Def.syms (rules + detail box note)
     viewNote: (g, self, t) => (t === self ? 'ถือว่าเป็น Symbol หุ่นยนต์ ด้วย' : null),
-    onKill: (g, c) => { if (g.active === c.ctrl) return; const t = best(P(g, opp(c.ctrl)).avatars, (a) => value(g, a)); if (t) destroy(g, t, c.ctrl); },
+    // bugfix12 (user 2026-11-06): "ไม่ถูกทำลายจากการถูกโจมตี" = it was attacked and is still on the field after the fight
+    // (it won, or หมอมาแล้วววว / a guard saved it), not only when it destroyed the attacker
+    afterFight: (g, self, att, target) => {
+      if (target !== self || g.active === self.ctrl || !P(g, self.ctrl).avatars.includes(self) || silenced(g, self)) return;
+      const t = decide(g, self.ctrl, () => withSourceB12(self, () => pickN(P(g, opp(self.ctrl)).avatars, 1, (a) => value(g, a), { title: `${self.def.name}: destroy 1 opponent Avatar` })[0]));
+      if (t) destroy(g, t, self.ctrl);
+    },
   },
   'หมีบราซิล': {
     keep: 3,
@@ -1123,3 +1129,5 @@ Object.assign(FX, NEW);
       : worst(onZone(g, p, 'ริกกี้').filter((a) => isA(a) && okRicky(g, p, a)), (a) => value(g, a))),
     (g, p, c) => summonRicky(g, p, c));
 }
+
+import { withSource as withSourceB12 } from '../engine.ts';
