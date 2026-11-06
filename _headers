@@ -5,3 +5,28 @@
   Cache-Control: public, max-age=604800
 /parts/*
   Cache-Control: public, max-age=31536000, immutable
+# the page and its scripts are checked again on every visit, so a page never asks for an older deploy's parts
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/index.js
+  Cache-Control: no-cache
+/index.service.worker.js
+  Cache-Control: no-cache
+/parts.json
+  Cache-Control: no-cache
+/tlc_split.js
+  Cache-Control: no-cache
+/tlc_assets.js
+  Cache-Control: no-cache
+/tlc_mobile.js
+  Cache-Control: no-cache
+/coi.js
+  Cache-Control: no-cache
+/engine_host.js
+  Cache-Control: no-cache
+/engine_game.js
+  Cache-Control: no-cache
+/engine_worker.js
+  Cache-Control: no-cache
