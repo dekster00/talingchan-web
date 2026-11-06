@@ -30,8 +30,8 @@ const PORT = Number(argPort > 0 ? process.argv[argPort + 1] : process.env.PORT |
 const DATA = path.resolve(process.env.DATA_DIR || path.join(HERE, 'data'));
 const ADMIN_KEY = process.env.ADMIN_KEY || '';
 const TURN_SEC = Number(process.env.TURN_SEC) || 120, REACT_SEC = Number(process.env.REACT_SEC) || 30;
-// user 2026-11-02: online duels have no turn timer for now (TIMER=1 turns it on) and run at 2x speed (ONLINE_SPEED, 0.5 = 2x)
-const TIMER = process.env.TIMER === '1', ONLINE_SPEED = process.env.ONLINE_SPEED === undefined ? 0.5 : Number(process.env.ONLINE_SPEED);
+// user 2026-11-02: online duels have no turn timer for now (TIMER=1 turns it on); speed 1.5x since 2026-11-06 (ONLINE_SPEED is the pause factor: 0.5 = 2x, 1/1.5 = 1.5x)
+const TIMER = process.env.TIMER === '1', ONLINE_SPEED = process.env.ONLINE_SPEED === undefined ? 1 / 1.5 : Number(process.env.ONLINE_SPEED);
 const ORIGIN = process.env.ORIGIN || '*';
 const VERSION = '1.0-online1';
 fs.mkdirSync(DATA, { recursive: true });
@@ -949,11 +949,11 @@ http.createServer(async (req, res) => {
       const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
       if (p === '/me/shop') return send(res, 200, {
         packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, inventory: (pr as any).inv || {}, freePack: !pr.daily.freePack,
-        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.starterPrice(set), owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), wallet: wallet(),
+        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.starterPrice(set), owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), recommended: Eco.RECOMMENDED, kds: (pr as any).kds || [], wallet: wallet(),
       });
       if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
       if (p === '/me/shop/buy' && req.method === 'POST') { // one-call form (Game modes client)
-        const out: any = b.kind === 'character' ? Eco.buyCharacter(pr, String(b.id || '')) : b.kind === 'starter' ? Eco.buyStarter(a, CAT, RAW, String(b.set || '')) : b.kind === 'pack' ? Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins') : { error: 'kind: pack, starter or character' };
+        const out: any = b.kind === 'character' ? Eco.buyCharacter(pr, String(b.id || '')) : b.kind === 'starter' ? Eco.buyStarter(a, CAT, RAW, String(b.set || '')) : b.kind === 'kd' ? Eco.buyKd(pr, CAT, String(b.set || '')) : b.kind === 'pack' ? Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins') : { error: 'kind: pack, starter or character' };
         return done({ ...out, wallet: wallet(), inventory: (pr as any).inv || {} });
       }
       if (p === '/me/shop/character' && req.method === 'POST') return done({ ...Eco.buyCharacter(pr, String(b.id || '')), wallet: wallet() });

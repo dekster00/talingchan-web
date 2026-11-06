@@ -175,7 +175,7 @@ const NEW: Record<string, Fx> = {
     handActs: (g, p, c) => [act('เมฟิสโต: summon from hand', (g2) => inMain(g2, p) && P(g2, p).hand.includes(c) && P(g2, p).hand.length >= 3
       && distinctNames(hellAvatars(g2, p, (x) => symIs(x, 'นรก'))) >= 7 && canPlaceAvatar(P(g2, p)),
     (g2) => { if (discardWorst(g2, p, 2, [c])) summon(g2, p, c, 'own'); })],
-    fieldActs: (g, p, c) => [act('เมฟิสโต: mill 5, destroy all other Avatars', (g2) => inMain(g2, p) && once(g2, p, 'mephisto') && P(g2, p).deck.length > 8,
+    fieldActs: (g, p, c) => [act('เมฟิสโต: mill 5, destroy all other Avatars', (g2) => inMain(g2, p) && once(g2, p, 'mephisto') && deckRoom(g2, p, 8),
       (g2) => { markOnce(g2, P(g2, p), 'mephisto'); const was = g2.p.flatMap((q) => q.avatars.filter((a) => a !== c)); mill(g2, p, 5); for (const a of was) if (fzE(g2, a) === 'avatars') destroy(g2, a, p); })], // other-team audit: only the Avatars that were there before
   },
   'นางฟ้าลูกซอง': {
@@ -237,7 +237,7 @@ const NEW: Record<string, Fx> = {
   },
   'สัญญาเลือด': {
     keep: 4,
-    canCast: (g, p) => P(g, p).deck.length > 8,
+    canCast: (g, p) => deckRoom(g, p, 8),
     resolve: (g, p) => { mill(g, p, 3); draw(g, p, distinctNames(hellAvatars(g, p, (x) => symIs(x, 'นรก'))) >= 5 ? 2 : 1); },
     onMilled: (g, c, p) => { // optional: only exile it when there is a นายนิรยบาล to summon
       if (!canPlaceAvatar(P(g, p)) || !hellAvatars(g, p, (x) => named(x, 'นายนิรยบาล')).length) return;
@@ -430,7 +430,7 @@ const NEW: Record<string, Fx> = {
   },
   'อีสานสลิงเกอร์ เปอร์': {
     keep: 3.5,
-    fieldActs: (g, p, c) => [act('เปอร์: mill 3, +2', (g2) => inMain(g2, p) && once(g2, p, 'per:' + c.uid) && !!landOn(g2, 'โคกอีสานนูน') && P(g2, p).deck.length > 8,
+    fieldActs: (g, p, c) => [act('เปอร์: mill 3, +2', (g2) => inMain(g2, p) && once(g2, p, 'per:' + c.uid) && !!landOn(g2, 'โคกอีสานนูน') && deckRoom(g2, p, 8),
       (g2) => { markOnce(g2, P(g2, p), 'per:' + c.uid); mill(g2, p, 3); boost(c, 2); })],
   },
   'อู๊ด ประธานผู้รู้ความจริง': {
@@ -514,7 +514,7 @@ const NEW: Record<string, Fx> = {
   'จ่ายุทธ ทหารรักชาติ': { keep: 3.5, onAttack: (g, c, t) => { if (t && symIs(t, 'ต่างชาติ')) destroy(g, t, c.ctrl); } },
   '1 - 2 - 2': {
     keep: 4,
-    canCast: (g, p) => P(g, p).once['summoned'] !== g.turn && !P(g, p).used.Normal && P(g, p).deck.length > 6,
+    canCast: (g, p) => P(g, p).once['summoned'] !== g.turn && !P(g, p).used.Normal && deckRoom(g, p, 6),
     resolve: (g, p) => { draw(g, p, 3); P(g, p).once['noDraw'] = g.turn + 2; },
   },
   'หมอมาแล้วววว': {
@@ -627,7 +627,7 @@ const NEW: Record<string, Fx> = {
   'เวทีแห่งความฝัน': {
     keep: 3,
     canCast: (g, p) => !g.land || g.land.owner !== p,
-    fieldActs: (g, p, c) => [act('เวที: discard 1, find โอตะ/ไอดอล', (g2) => inMain(g2, p) && once(g2, p, 'stage') && P(g2, p).hand.length >= 1 && P(g2, p).deck.length > 7,
+    fieldActs: (g, p, c) => [act('เวที: discard 1, find โอตะ/ไอดอล', (g2) => inMain(g2, p) && once(g2, p, 'stage') && P(g2, p).hand.length >= 1 && deckRoom(g2, p, 7),
       (g2) => {
         markOnce(g2, P(g2, p), 'stage'); discardWorst(g2, p, 1);
         const idols = onZone(g2, p, 'ไอดอล');
@@ -795,7 +795,7 @@ const NEW: Record<string, Fx> = {
       if (hoku.some((x) => P(g, c.ctrl).avatars.includes(x))) draw(g, c.ctrl, 1); // only if the summoned one is โฮคุ
     }),
     // linkbot: the destroy on entering คู่หู is โฮคุ's text (its onLink); the rest-to-draw is below [คู่หู - โฮคุ โพลีกอน]
-    fieldActs: (g, p, c) => [act('โซน่า: rest to draw 1', (g2) => inMain(g2, p) && linked(g2, c, 'โฮคุ') && once(g2, p, 'sona') && !c.asleep && P(g2, p).deck.length > 5,
+    fieldActs: (g, p, c) => [act('โซน่า: rest to draw 1', (g2) => inMain(g2, p) && linked(g2, c, 'โฮคุ') && once(g2, p, 'sona') && !c.asleep && deckRoom(g2, p, 5),
       (g2) => { markOnce(g2, P(g2, p), 'sona'); c.asleep = true; draw(g2, p, 1); })],
   },
   // 'มนุษย์ดัดแปลง': group E entry at the end of this file,
@@ -909,7 +909,7 @@ const NEW: Record<string, Fx> = {
   },
   'คาร์ร่า หน่วยรบ XVI': {
     keep: 4,
-    fieldActs: (g, p, c) => [act('คาร์ร่า: call XVI from top 3', (g2) => inMain(g2, p) && once(g2, p, 'karra') && canPlaceAvatar(P(g2, p)) && P(g2, p).deck.length > 6,
+    fieldActs: (g, p, c) => [act('คาร์ร่า: call XVI from top 3', (g2) => inMain(g2, p) && once(g2, p, 'karra') && canPlaceAvatar(P(g2, p)) && deckRoom(g2, p, 6),
       (g2) => { markOnce(g2, P(g2, p), 'karra'); peek(g2, p, 3, (top) => { takeSummon(g2, p, top, (x) => isA(x) && named(x, XVI) && x.def.name !== c.def.name, 'jutsu'); }, 'hell'); })],
     grant: (g, s, t, kw) => kw === 'shield' && t.ctrl === s.ctrl && g.active !== s.ctrl && named(t, XVI),
   },
@@ -923,7 +923,7 @@ const NEW: Record<string, Fx> = {
   },
   'โอเปอเรชั่น : สเกาท์': {
     keep: 3.5,
-    canCast: (g, p) => canPlaceAvatar(P(g, p)) && P(g, p).deck.length > 4,
+    canCast: (g, p) => canPlaceAvatar(P(g, p)) && deckRoom(g, p, 4),
     resolve: (g, p) => peek(g, p, 3, (top) => { takeSummon(g, p, top, (x) => isA(x) && named(x, XVI), 'jutsu'); }, 'bottom'),
   },
   'โอเปอเรชั่น : รอยัล': {
@@ -1582,3 +1582,4 @@ const E: Record<string, any> = {
   },
 };
 Object.assign(FX, E);
+import { deckRoom } from './engine.ts'; // bugfix14

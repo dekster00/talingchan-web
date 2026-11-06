@@ -444,7 +444,7 @@ export const FX: Record<string, Fx> = {
       if (t) destroy(g, t, owner);
     },
   },
-  'ความเจริญ': { keep: 4, canCast: (g, p) => P(g, p).deck.length > 3, resolve: (g, p) => draw(g, p, 2) },
+  'ความเจริญ': { keep: 4, canCast: (g, p) => deckRoom(g, p, 3), resolve: (g, p) => draw(g, p, 2) },
   'ร้อนมากก็เปิดหน้าต่างสิว๊ากกกก': {
     keep: 5,
     // other-team audit Q12 (user): Avatars in the opponent's Magic Zone count as "บนสนาม" too
@@ -757,3 +757,4 @@ export function costFirst(name: string, pay: PayFn | null, eff: EffFn | null, rp
   if (rpay && reff && f.react) n.react = { ...f.react, preCost: rpay, resolve: (g, p, c, ev) => { if (textCost(g, c, () => rpay(g, p, c, ev))) reff(g, p, c, ev); } };
   FX[name] = n;
 }
+import { deckRoom } from './engine.ts'; // bugfix14

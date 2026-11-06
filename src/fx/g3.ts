@@ -275,7 +275,7 @@ const G3: Record<string, Fx> = {
       if (!summon(g, p, c, 'own')) { const i = pl.hell.indexOf(c); if (i >= 0) pl.hell.splice(i, 1); delete c.f.viaScout; }
       else log(g, `${c.def.name} is summoned (scouted by ${src.def.name})`);
     },
-    fieldActs: (g, p, c) => [act('คนแก่สติเลอะเลือน: draw 1', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'oldman') && P(g2, p).deck.length > 3,
+    fieldActs: (g, p, c) => [act('คนแก่สติเลอะเลือน: draw 1', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'oldman') && deckRoom(g2, p, 3),
       (g2) => { markOnce(g2, P(g2, p), 'oldman'); draw(g2, p, 1); })],
   },
   'น้องสาม ผู้รู้ความจริง': {
@@ -443,7 +443,7 @@ const G3: Record<string, Fx> = {
   },
   'ความจริงงงงงงง': {
     keep: 2.5,
-    canCast: (g, p) => P(g, p).avatars.some(seer) && P(g, p).deck.length > 1,
+    canCast: (g, p) => P(g, p).avatars.some(seer) && deckRoom(g, p, 1),
     resolve: (g, p) => {
       const pl = P(g, p); const x = best(pl.deck, (y) => keepValue(g, y));
       shuffle(g, pl.deck);
@@ -802,7 +802,7 @@ const G3: Record<string, Fx> = {
   },
   'พูดไทยได้ 5 คำ': {
     keep: 3,
-    canCast: (g, p) => P(g, p).deck.length > 5,
+    canCast: (g, p) => deckRoom(g, p, 5),
     resolve: (g, p) => peek(g, p, 5, (top) => {
       const x = best(top.filter((y) => y.def.type === 'Avatar' && symIs(y, 'ต่างชาติ')), (y) => value(g, y));
       if (!x) return;
@@ -822,7 +822,7 @@ const G3: Record<string, Fx> = {
   },
   'Jump Scare': {
     keep: 3,
-    canCast: (g, p) => P(g, p).hand.length >= 2 && P(g, p).deck.length > 3,
+    canCast: (g, p) => P(g, p).hand.length >= 2 && deckRoom(g, p, 3),
     resolve: (g, p) => {
       const pl = P(g, p);
       if (!discardWorst(g, p, 1) || !pl.deck.length) return;
@@ -1180,3 +1180,4 @@ costFirst('พระคุ้มครอง', null, null, (g, p) => { const x =
 }
 
 import { humanSeat as humanSeatB12 } from '../engine.ts';
+import { deckRoom } from '../engine.ts'; // bugfix14

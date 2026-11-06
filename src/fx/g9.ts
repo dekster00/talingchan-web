@@ -284,7 +284,7 @@ Object.assign(FX, {
   },
   'เรือรบโบราณฉวน': {
     keep: 4,
-    fieldActs: (g, p, c) => [act('เรือรบโบราณฉวน: scout 5 for a red "ขุนพล"', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'chuan:' + c.uid) && P(g2, p).deck.length > 1,
+    fieldActs: (g, p, c) => [act('เรือรบโบราณฉวน: scout 5 for a red "ขุนพล"', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'chuan:' + c.uid) && deckRoom(g2, p, 1),
       (g2) => {
         use(g2, p, 'chuan:' + c.uid);
         let got: Card | null = null;
@@ -1148,3 +1148,4 @@ Object.assign(FX, {
     lockCtrl: (g: Game, s: Card) => knightCount(g, s.ctrl) >= 4,
   },
 } as Record<string, Fx>);
+import { deckRoom } from '../engine.ts'; // bugfix14

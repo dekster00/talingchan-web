@@ -236,7 +236,7 @@ Object.assign(FX, {
     // v14: after drawing 3, this turn only {สัตว์} Avatars can be summoned (other Avatars can still be paid as GEM;
     // Magic is used normally): the timed rule 'เพื่อลูกค้า' (engine RULES)
     keep: 3.5,
-    canCast: (g, p) => P(g, p).avatars.some((a) => symIs(a, 'สัตว์')) && P(g, p).deck.length > 5,
+    canCast: (g, p) => P(g, p).avatars.some((a) => symIs(a, 'สัตว์')) && deckRoom(g, p, 5),
     resolve: (g, p) => {
       if (!sacrifice(g, p, P(g, p).avatars.filter((a) => symIs(a, 'สัตว์')), 1)) return;
       draw(g, p, 3);
@@ -541,7 +541,7 @@ Object.assign(FX, {
   },
   'แมลงปอทอด': turnMagic({
     keep: 3,
-    canCast: (g, p) => P(g, p).avatars.some(isBug) && P(g, p).deck.length > 5,
+    canCast: (g, p) => P(g, p).avatars.some(isBug) && deckRoom(g, p, 5),
     resolve: (g, p, c) => { c.f.turn = g.turn; if (sacrifice(g, p, P(g, p).avatars.filter(isBug), 1)) draw(g, p, 3); },
     aura: (g, s, t) => { if (liveTurnMagic(g, s) && t.ctrl === s.ctrl && !isBug(t)) t.f.noAttack = g.turn; return 0; },
   }),
@@ -818,7 +818,7 @@ Object.assign(FX, {
   },
   'เก็บค่าคุ้มครอง': {
     keep: 3,
-    canCast: (g, p) => !!g.land && P(g, p).hand.length >= 2 && P(g, p).deck.length > 3,
+    canCast: (g, p) => !!g.land && P(g, p).hand.length >= 2 && deckRoom(g, p, 3),
     resolve: (g, p) => { if (g.land && discardWorst(g, p, 1)) draw(g, p, 2); },
   },
   'ตู้โชว์ไอดอล': {
@@ -873,7 +873,7 @@ Object.assign(FX, {
   'งับ': {
     keep: 3.5,
     react: {
-      on: ['attack'], can: (g, p, c, ev) => ev.actor !== p && !!ev.source && P(g, p).deck.length >= 2,
+      on: ['attack'], can: (g, p, c, ev) => ev.actor !== p && !!ev.source && deckRoom(g, p, 1),
       // the bot doesn't peek: it plays this while its Deck still holds a fair share of กะปอม Avatars
       want: (g, p, c, ev) => { const d = P(g, p).deck; return d.filter((x) => isA(x) && symIs(x, 'กะปอม')).length / d.length >= 0.25 && value(g, ev.source!) >= 4; },
       resolve: (g, p, c, ev) => {
@@ -938,7 +938,7 @@ Object.assign(FX, {
     // (uses this turn's Land Magic; FX.onScouted)
     keep: 3,
     canCast: (g, p) => !g.land || g.land.owner !== p,
-    fieldActs: (g, p, c) => [act('ยุคกาฬสินธุ์โซอิค: pay 3 GEM, find กะปอม', (g2) => inMain(g2, p) && once(g2, p, 'zoic') && P(g2, p).deck.length > 5
+    fieldActs: (g, p, c) => [act('ยุคกาฬสินธุ์โซอิค: pay 3 GEM, find กะปอม', (g2) => inMain(g2, p) && once(g2, p, 'zoic') && deckRoom(g2, p, 5)
       && P(g2, p).deck.some((x) => isA(x) && symIs(x, 'กะปอม')) && choosePayment(g2, p, 3, [], null) !== null,
     (g2) => {
       const pl = P(g2, p); markOnce(g2, pl, 'zoic');
@@ -1047,3 +1047,4 @@ costFirst('แมลงปอทอด', (g, p, c) => { c.f.turn = g.turn; retur
   costFirst('เอาเสื้อมาหมุนๆแล้วตบ', shirtPay, shirtHit, shirtPay, shirtHit);
 }
 import { decide as decideB13, humanDeciding as humanDecidingB13 } from '../engine.ts'; // bugfix13
+import { deckRoom } from '../engine.ts'; // bugfix14

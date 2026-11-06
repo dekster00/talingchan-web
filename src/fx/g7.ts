@@ -224,7 +224,7 @@ function legacy(color: string, label: string): Fx {
     && !uniqueBlocked(g, p, a) && bestPayment(g, p, Math.max(0, costOf(g, p, a) - 2), [a], a) !== null);
   return {
     keep: 3, stayMz: true,
-    canCast: (g, p) => P(g, p).deck.length > 4,
+    canCast: (g, p) => deckRoom(g, p, 4),
     resolve: (g, p, c) => { c.f.placed = g.turn; peek(g, p, 2, (top) => { takeHand(g, p, top, (x) => colorIs(x, color)); }, 'bottom'); },
     fieldActs: (g, p, c) => [act(`${label}: destroy, summon a ${color} Avatar at Cost -2`, (g2) => inMain(g2, p) && P(g2, p).mz.includes(c)
       && g2.turn > (c.f.placed ?? 1e9) && canPlaceAvatar(P(g2, p)) && cands(g2, p).length > 0,
@@ -694,7 +694,7 @@ const NEW: Record<string, Fx> = {
   } as Fx,
   'Ah-ah, ah!': {
     keep: 3.5, options: 2,
-    canCast: (g, p, c, o) => P(g, p).deck.length > 8 && canPlaceAvatar(P(g, p))
+    canCast: (g, p, c, o) => deckRoom(g, p, 8) && canPlaceAvatar(P(g, p))
       && P(g, p).avatars.some((a) => named(a, o === 0 ? 'ธอร์' : 'โลกิ'))
       && [...P(g, p).hell, ...P(g, p).deck].some((x) => isA(x) && named(x, o === 0 ? 'โลกิ' : 'ธอร์')),
     resolve: (g, p, c, o) => {
@@ -802,7 +802,7 @@ const NEW: Record<string, Fx> = {
     landPower: (g, l, a) => (fruit(a) ? 2 : 0),
     grant: (g, s, t, kw) => kw === 'unite' && fruit(t), // "Avatar ภูติผลไม้ POWER +2 และได้รับ ความสามารถ สามัคคี" (v13: Lands grant keywords)
     fieldActs: (g, p, c) => [act('ป่าพงไพร: exile Deck top, revive ภูติผลไม้', (g2) => inMain(g2, p) && isLandOn(g2, c) && once(g2, p, 'forest')
-      && P(g2, p).deck.length > 3 && hellAvatars(g2, p, fruit).length > 0 && canPlaceAvatar(P(g2, p)),
+      && deckRoom(g2, p, 3) && hellAvatars(g2, p, fruit).length > 0 && canPlaceAvatar(P(g2, p)),
     (g2) => {
       use(g2, p, 'forest');
       const top = P(g2, p).deck[0]; if (top) toExile(g2, top);
@@ -1061,7 +1061,7 @@ const NEW: Record<string, Fx> = {
     keep: 3, alias: ['บึงทมิฬ'],
     canCast: (g, p) => !g.land || g.land.owner !== p,
     fieldActs: (g, p, c) => [act('วิหาร: rest a ปลา, dig 3 for ปลา', (g2) => inMain(g2, p) && isLandOn(g2, c) && once(g2, p, 'temple')
-      && P(g2, p).avatars.some((a) => symIs(a, 'ปลา') && !a.asleep) && P(g2, p).deck.length > 4,
+      && P(g2, p).avatars.some((a) => symIs(a, 'ปลา') && !a.asleep) && deckRoom(g2, p, 4),
     (g2) => {
       use(g2, p, 'temple');
       const f = worst(P(g2, p).avatars.filter((a) => symIs(a, 'ปลา') && !a.asleep), (a) => power(g2, a));
@@ -1131,3 +1131,4 @@ Object.assign(FX, NEW);
 }
 
 import { withSource as withSourceB12 } from '../engine.ts';
+import { deckRoom } from '../engine.ts'; // bugfix14

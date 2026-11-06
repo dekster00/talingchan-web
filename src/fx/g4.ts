@@ -442,7 +442,7 @@ Object.assign(FX, {
   },
   'อู๊ด คุณแม่': {
     keep: 3,
-    fieldActs: (g: Game, p: PID, c: Card) => [act('อู๊ด: sacrifice, mill 3, call แบงค์', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && P(g2, p).deck.length > 6
+    fieldActs: (g: Game, p: PID, c: Card) => [act('อู๊ด: sacrifice, mill 3, call แบงค์', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && deckRoom(g2, p, 6)
       && P(g2, p).deck.some((x) => isA(x) && named(x, 'แบงค์') && !x.def.only),
     (g2) => {
       const pl = P(g2, p);
@@ -472,7 +472,7 @@ Object.assign(FX, {
   },
   'ซีกรุน เทพธิดาแห่งวัลฮัลลา': {
     keep: 4,
-    fieldActs: (g: Game, p: PID, c: Card) => [act('ซีกรุน: mill 3, +1', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'sigrun') && P(g2, p).deck.length > 8,
+    fieldActs: (g: Game, p: PID, c: Card) => [act('ซีกรุน: mill 3, +1', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'sigrun') && deckRoom(g2, p, 8),
       (g2) => { markOnce(g2, P(g2, p), 'sigrun'); valMill(g2, p, 3); if (P(g2, p).avatars.includes(c)) c.bonus += 1; })],
   },
   'อาม่อน No.7': {
@@ -583,7 +583,7 @@ Object.assign(FX, {
   // ===== BT06 Magic =====
   'งานวิจัยของพระพรหม': {
     keep: 3,
-    canCast: (g: Game, p: PID) => P(g, p).avatars.some((a) => named(a, 'พระพรหม')) || (P(g, p).hand.length - 1 >= 3 && P(g, p).deck.length > 6),
+    canCast: (g: Game, p: PID) => P(g, p).avatars.some((a) => named(a, 'พระพรหม')) || (P(g, p).hand.length - 1 >= 3 && deckRoom(g, p, 6)),
     resolve: (g: Game, p: PID) => {
       const pl = P(g, p);
       const brahma = pl.avatars.some((a) => named(a, 'พระพรหม'));
@@ -616,7 +616,7 @@ Object.assign(FX, {
   },
   'เฮือกสุดท้าย': {
     keep: 4,
-    canCast: (g: Game, p: PID) => critical(P(g, p)) && once(g, p, 'heuak') && P(g, p).deck.length > 4,
+    canCast: (g: Game, p: PID) => critical(P(g, p)) && once(g, p, 'heuak') && deckRoom(g, p, 4),
     resolve: (g: Game, p: PID) => { const pl = P(g, p); markOnce(g, pl, 'heuak'); draw(g, p, 4); pl.used.Normal = false; },
   },
   'แผนลับของเหล่าพลเอก': {
@@ -660,7 +660,7 @@ Object.assign(FX, {
     keep: 5,
     react: {
       on: ['attack'],
-      can: (g: Game, p: PID, c: Card, ev: Ev) => ev.actor !== p && critical(P(g, p)) && P(g, p).deck.length >= 5,
+      can: (g: Game, p: PID, c: Card, ev: Ev) => ev.actor !== p && critical(P(g, p)) && deckRoom(g, p, 4),
       want: () => true,
       resolve: (g: Game, p: PID, c: Card, ev: Ev) => {
         mill(g, p, 5);
@@ -751,7 +751,7 @@ Object.assign(FX, {
     keep: 2.5,
     canCast: (g: Game, p: PID) => !g.land || g.land.owner !== p,
     fieldActs: (g: Game, p: PID, c: Card) => [act('ประตูวัลฮัลลา: mill 2, goddess back to hand', (g2) => inMain(g2, p) && isLandOn(g2, c) && once(g2, p, 'valgate')
-      && P(g2, p).deck.length > 6 && hellAvatars(g2, p, valk).length > 0,
+      && deckRoom(g2, p, 6) && hellAvatars(g2, p, valk).length > 0,
     (g2) => { markOnce(g2, P(g2, p), 'valgate'); valMill(g2, p, 2); search(g2, p, valk, 'hell'); })],
   },
 
@@ -788,7 +788,7 @@ Object.assign(FX, {
     keep: 2.5,
     // v14 ruling (confirmed): ใบดำใบแดง is cast from hand with the changed text through this Construct (no Normal limit)
     fieldActs: (g: Game, p: PID, c: Card) => [act('หุบเขา 3 พลเอก: ใบดำใบแดง (scout 3, call green คน)', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c)
-      && P(g2, p).hand.some((x) => x.def.name === 'ใบดำใบแดง') && P(g2, p).deck.length > 3 && canPlaceAvatar(P(g2, p)),
+      && P(g2, p).hand.some((x) => x.def.name === 'ใบดำใบแดง') && deckRoom(g2, p, 3) && canPlaceAvatar(P(g2, p)),
     (g2) => {
       const pl = P(g2, p);
       const m = pl.hand.find((x) => x.def.name === 'ใบดำใบแดง'); if (!m) return;
@@ -1028,7 +1028,7 @@ Object.assign(FX, {
   },
   'ขอมือเธอหน่อย~': {
     keep: 2.5,
-    canCast: (g: Game, p: PID) => P(g, p).deck.length > 6,
+    canCast: (g: Game, p: PID) => deckRoom(g, p, 6),
     resolve: (g: Game) => {
       const max = Math.max(g.p[0].hand.length, g.p[1].hand.length);
       for (const q of g.p) if (q.hand.length === max) decide(g, q.id, () => discardWorst(g, q.id, 2));
@@ -1242,3 +1242,4 @@ Object.assign(FX, {
   },
 } as Record<string, Fx>);
 import { decide as decideB13, humanDeciding as humanDecidingB13 } from '../engine.ts'; // bugfix13
+import { deckRoom } from '../engine.ts'; // bugfix14

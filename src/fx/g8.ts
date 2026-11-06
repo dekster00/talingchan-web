@@ -296,7 +296,7 @@ Object.assign(FX, {
   },
   'ทะลวงส้วม': {
     keep: 3,
-    canCast: (g, p) => P(g, p).avatars.some((a) => named(a, SEWAGE)) && P(g, p).deck.length > 4,
+    canCast: (g, p) => P(g, p).avatars.some((a) => named(a, SEWAGE)) && deckRoom(g, p, 4),
     resolve: (g, p) => {
       if (!sacrifice(g, p, P(g, p).avatars.filter((a) => named(a, SEWAGE)), 1)) return;
       draw(g, p, 3); discardWorst(g, p, 1);
@@ -457,7 +457,7 @@ Object.assign(FX, {
   },
   'คาถา เฟรนลี่คัม': {
     keep: 3.5, costOnlyFor: (s) => wizard(s),
-    canCast: (g, p) => P(g, p).avatars.some(wizard) && canPlaceAvatar(P(g, p)) && P(g, p).deck.length >= 5,
+    canCast: (g, p) => P(g, p).avatars.some(wizard) && canPlaceAvatar(P(g, p)) && deckRoom(g, p, 4),
     resolve: (g, p) => peek(g, p, 5, (top) => { takeSummon(g, p, top, wizard, 'jutsu'); }, 'bottom'),
   },
   'ชีวิตที่พอดี': {
@@ -727,7 +727,7 @@ Object.assign(FX, {
     keep: 3.5,
     jutsu: (g, c) => peek(g, c.ctrl, 3, (top) => { takeHand(g, c.ctrl, top, (x) => !x.def.only && (named(x, 'พระแม่อุมาเทวี') || named(x, 'พระอิศวร'))); }, 'bottom'),
     fieldActs: (g, p, c) => [act('พระอิศวร: draw 1, give this to the opponent', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'ishvara:' + c.uid)
-      && canPlaceAvatar(P(g2, opp(p))) && P(g2, p).deck.length > 3,
+      && canPlaceAvatar(P(g2, opp(p))) && deckRoom(g2, p, 3),
     (g2) => { use(g2, p, 'ishvara:' + c.uid); draw(g2, p, 1); if (!P(g2, p).avatars.includes(c) || !takeControl(g2, c, opp(p))) return; log(g2, `${c.def.name} moves to P${opp(p)}`); })],
   },
   'พระพิฆเนศ': {
@@ -749,7 +749,7 @@ Object.assign(FX, {
   },
   'นารายณ์ 10 ปาง': {
     keep: 2.5,
-    canCast: (g, p, c) => P(g, p).hand.some((x) => x !== c) && P(g, p).deck.length >= 3,
+    canCast: (g, p, c) => P(g, p).hand.some((x) => x !== c) && deckRoom(g, p, 2),
     resolve: (g, p) => { if (discardWorst(g, p, 1)) peek(g, p, 3, (top) => { takeHand(g, p, top, (x) => isA(x) && named(x, 'นารายณ์') && symIs(x, 'เทพ') && x.def.cost <= 6); }, 'bottom'); },
   },
   'ฤาษีอังคต': {
@@ -906,7 +906,7 @@ Object.assign(FX, {
       const ok = (g2: Game) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'nuangS:' + c.uid) && theirs(g2).length > 0;
       const pay = (g2: Game) => { use(g2, p, 'nuangS:' + c.uid); const x = worst(theirs(g2), (y) => y.def.power); if (x) toExile(g2, x); };
       return [
-        act('พี่หน่วงโซเชียล: find คุณเก่ง/ทนาย/พี่หน่วง', (g2) => ok(g2) && P(g2, p).deck.length >= 5,
+        act('พี่หน่วงโซเชียล: find คุณเก่ง/ทนาย/พี่หน่วง', (g2) => ok(g2) && deckRoom(g2, p, 4),
           (g2) => { pay(g2); peek(g2, p, 5, (top) => { takeHand(g2, p, top, (x) => named(x, 'คุณเก่ง') || named(x, 'ทนาย') || named(x, 'พี่หน่วง')); }, 'bottom'); }),
         act('พี่หน่วงโซเชียล: opponent hell Avatar to our Magic Zone', (g2) => ok(g2) && hellAvatars(g2, opp(p)).length > 0,
           (g2) => { pay(g2); const x = best(hellAvatars(g2, opp(p)), (y) => keepValue(g2, y)); if (x) { detach(g2, x); P(g2, p).mz.push(x); } }),
@@ -1050,7 +1050,7 @@ Object.assign(FX, {
     keep: 4,
     // "can only be destroyed by being attacked": Constructs are never destroyed in the engine anyway
     fieldActs: (g, p, c) => [
-      act('นครทิเนนทอล: exile an อาวุธนคร from top 5', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'nakhon1') && P(g2, p).deck.length >= 5,
+      act('นครทิเนนทอล: exile an อาวุธนคร from top 5', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'nakhon1') && deckRoom(g2, p, 4),
         (g2) => { use(g2, p, 'nakhon1'); peek(g2, p, 5, (top) => { const w = best(top.filter(isWeapon), (x) => keepValue(g2, x)); if (w) { top.splice(top.indexOf(w), 1); P(g2, p).exile.push(w); } }); }),
       act('นครทิเนนทอล: equip อาวุธนคร from exile, +2', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'nakhon2') && !P(g2, p).used.Modification
         && P(g2, p).exile.some((m) => isWeapon(m) && P(g2, p).avatars.some((a) => canWear(a, m))),
@@ -1155,7 +1155,7 @@ Object.assign(FX, {
   },
   'แป้นสกุล อิเล็กทรอนิกส์': {
     keep: 2.5,
-    fieldActs: (g, p, c) => [act('แป้นสกุล: เครื่องใช้ไฟฟ้า from top 5 to Magic Zone', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'keyboard') && P(g2, p).deck.length >= 5,
+    fieldActs: (g, p, c) => [act('แป้นสกุล: เครื่องใช้ไฟฟ้า from top 5 to Magic Zone', (g2) => inMain(g2, p) && P(g2, p).mz.includes(c) && once(g2, p, 'keyboard') && deckRoom(g2, p, 4),
       (g2) => { use(g2, p, 'keyboard'); peek(g2, p, 5, (top) => { const x = best(top.filter((y) => isA(y) && named(y, APPLIANCE)), (y) => keepValue(g2, y)); if (x) { top.splice(top.indexOf(x), 1); x.ctrl = p; P(g2, p).mz.push(x); } }); })],
   },
   'รูปประจำบ้าน': { keep: 1.5, lockCtrl: true }, // v13: every control change goes through engine takeControl / canChangeCtrl
@@ -1678,3 +1678,4 @@ Object.assign(FX, {
     },
   },
 } as Record<string, Fx>);
+import { deckRoom } from '../engine.ts'; // bugfix14

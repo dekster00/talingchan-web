@@ -3,6 +3,16 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "Shop and online speed · ร้านค้าและความเร็วออนไลน์",
+   "lines": [
+    "All characters now cost 2,000 coins. · ตัวละครทุกตัวราคา 2,000 เหรียญ",
+    "Buying a KD deck gives you every card in that deck. · ซื้อเด็ค KD ได้การ์ดครบทั้งเด็ค",
+    "CC and ODY packs move to the new Special tab. · ซอง CC และ ODY ย้ายไปแท็บ Special ใหม่",
+    "Online casual duels now run at 1.5x speed. · ดวลออนไลน์แบบ casual เร็วขึ้นเป็น 1.5 เท่า"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "Pay GEM from Hell · จ่าย GEM จากนรก",
    "lines": [
     "แม่นางลิ and อุยเอี๋ยน: on the pay screen, a bubble pops up from your Hell pile. Click it to choose which Hell cards pay GEM (they are exiled). · แม่นางลิ และ อุยเอี๋ยน: ตอนจ่าย GEM จะมีบับเบิลขึ้นที่กองนรก กดแล้วเลือกการ์ดในนรกมาจ่าย GEM ได้ (การ์ดที่จ่ายจะถูกเนรเทศ)",

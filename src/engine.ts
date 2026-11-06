@@ -65,6 +65,9 @@ export function humanDeciding(g: Game) { return !!ASK && !g.sim && humanTop(); }
 export function humanLand(g: Game, p: number, c: Card) { return c.def.type === 'Magic' && c.def.subtype === 'Land' && humanSeat(g, p); } // bugfix4 (user): also over our own Land
 /** bugfix2: p is a human seat in the real game (also inside quiet(), e.g. while the Main menu is listed). */
 export function humanSeat(g: Game, p: number) { return !!ASK && !g.sim && HUMANS.has(p); }
+/** bugfix14 (user: ซีกรุน can't ธรณีสูบ with under 10 cards): 'keep n cards in the Deck' is the bot's own caution; a human
+ *  may use the ability while the Deck has any card. */
+export function deckRoom(g: Game, p: number, n: number) { const d = g.p[p].deck.length; return humanSeat(g, p) ? d > 0 : d > n; }
 // optional: the human may also choose none (returns null); the bot's default is dflt.
 /** Run fn with p as the deciding player (the human is asked only in the real game, never in a look-ahead copy). */
 export function decide<T>(g: Game, p: number, fn: () => T): T { return withDecider(g.sim ? -1 : p, fn); }
@@ -113,7 +116,7 @@ const TEXT = new Map<string, string>();
 export function registerText(name: string, effect: string) { if (!TEXT.has(name)) TEXT.set(name, effect || ''); }
 export const cardText = (c: Card) => TEXT.get(c.def.name) || '';
 const SRC: Card[] = [];
-export function withSource<T>(c: Card, fn: () => T): T { SRC.push(c); try { return fn(); } finally { SRC.pop(); tagTemps(c); if (MILLS.length) flushMills(); if (DISCARDS.length) flushDiscards(); } } // v14b: FX.onDiscard; v14d: POWER sources
+export function withSource<T>(c: Card, fn: () => T): T { SRC.push(c); try { return fn(); } finally { SRC.pop(); tagTemps(c); if (MILLS.length) flushMills(); if (DISCARDS.length) flushDiscards(); if (!SRC.length) deckOutCheck(gameOf(c)); } } // v14b: FX.onDiscard; v14d: POWER sources
 const MAYRE = /(?<!ความ)(?<!ไม่)(?<!ไม่ )สามารถ|กี่ใบก็ได้|ได้สูงสุด|ได้มากสุด|สูงสุด \d ใบ/;
 /** Does the text of the ability being resolved match re? (used to make "สามารถ ..." picks optional) */
 export function sourceSays(re: RegExp): boolean { const c = SRC[SRC.length - 1]; return !!c && re.test(cardText(c).replace(/\s+/g, ' ')); }
@@ -418,16 +421,19 @@ function withOnceCard<T>(c: Card, learn: boolean, fn: () => T): T {
 // ---------- power ----------
 export function power(g: Game, c: Card): number {
   const imm = unaffected(g, c); // v14: unaffected = no temporary changes, auras of other cards or Land bonuses
-  let v = c.def.power + c.bonus;
+  // bugfix14 (user 2026-11-06): an Avatar that lost its abilities (เชาว์ปัญญาลิง - ชิงปัญญาเรา ...) also loses the POWER its own
+  // abilities gave it (back to its printed POWER, or lower when other cards lower it)
+  const lostOwn = c.silencedTurn === g.turn && !imm;
+  let v = c.def.power + (lostOwn ? Math.min(0, c.bonus) : c.bonus);
   const shield = withHook('shieldFrom').size > 0; // v14d: POWER changes from sources c ignores (unaffectedBy)
-  for (const t of c.temp) if (tempCounts(g, c, t, imm, shield)) v += t.power;
+  for (const t of c.temp) if (tempCounts(g, c, t, imm, shield) && !(lostOwn && t.src === c.uid && t.power > 0)) v += t.power;
   for (const m of c.mods) { const f = fx(m); if (f && f.modPower) v += f.modPower(g, m, c); }
   const f = fx(c);
-  if (f && f.staticPower && !contOff(g, c)) v += f.staticPower(g, c);
+  if (f && f.staticPower && !contOff(g, c)) { const sp = f.staticPower(g, c); v += lostOwn ? Math.min(0, sp) : sp; }
   for (const l of lands(g)) { const lf = fx(l); if (lf && lf.landPower && (!(imm || shield) || !unaffectedBy(g, c, l))) v += lf.landPower(g, l, c); }
   for (const q of g.p) for (const s of q.avatars.concat(q.mz)) {
     const sf = fx(s);
-    if (sf && sf.aura && !contOff(g, s) && (s === c || !(imm || shield) || !unaffectedBy(g, c, s))) v += sf.aura(g, s, c);
+    if (sf && sf.aura && !contOff(g, s) && (s === c || !(imm || shield) || !unaffectedBy(g, c, s))) { const av = sf.aura(g, s, c); v += lostOwn && s === c ? Math.min(0, av) : av; }
   }
   return Math.max(0, v);
 }
@@ -650,6 +656,12 @@ export function mulligan(g: Game, p: PID, cards: Card[]) {
 // ---------- basic moves ----------
 export function lose(g: Game, p: PID, why: string) {
   if (g.winner === null) { g.winner = opp(p); log(g, `P${p} loses: ${why}`); }
+}
+/** bugfix14 (user 2026-11-06): a player whose Deck is empty loses at once (milled / scouted / sent away to 0 cards),
+ *  checked when an action or a whole ability has finished (not in the middle of one). */
+export function deckOutCheck(g: Game | null | undefined) {
+  if (!g || g.winner !== null) return;
+  for (const q of [g.active, opp(g.active)] as PID[]) if (P(g, q).deck.length === 0) { lose(g, q, 'no cards left in the deck'); return; }
 }
 export function draw(g: Game, p: PID, n: number) {
   const pl = P(g, p);
@@ -1265,7 +1277,12 @@ function castBody(g: Game, p: PID, c: Card, opt: number, f: any, pl: Player, kin
   // simplify1: FX.onCastToHell(g, self): this Magic went to Hell straight from its cast (cancelled, or a Modification
   // with no legal wearer left); a resolved Normal Magic is reported too
   const castToHell = () => { pl.hell.push(c); const hf = fx(c); if (hf && hf.onCastToHell && pl.hell.includes(c)) decide(g, p, () => withSource(c, () => hf.onCastToHell!(g, c))); };
-  if (ev.cancelled) { prePaidDone(g, c); castToHell(); return true; }
+  if (ev.cancelled) {
+    // bugfix14 (user 2026-11-06): a Land cast over the Land in play and cancelled (ชายจากอนาคต): the old Land was already
+    // being replaced, so it goes to Hell too and no Land is left
+    if (kind === 'Land' && g.land && g.land !== c && !partitionOn(g)) { const old = g.land; g.land = null; P(g, old.owner).hell.push(old); log(g, `${old.def.name} goes to Hell (replaced by a cancelled Land)`); }
+    prePaidDone(g, c); castToHell(); return true;
+  }
   try { castResolve(g, p, c, opt, f, pl, kind, castToHell); } finally { prePaidDone(g, c); } // other-team audit Q9
   stateCheck(g);
   return true;
@@ -1370,6 +1387,7 @@ export function pileActs(g: Game, p: PID, k: 'hell' | 'exile'): Act[] {
 export function doAct(g: Game, p: PID, a: Act): boolean {
   const r = doActBody(g, p, a);
   if (r && !g.sim && p === g.active) offTurnWindow(g, 'act'); // v14b
+  deckOutCheck(g); // bugfix14
   return r;
 }
 function doActBody(g: Game, p: PID, a: Act): boolean {

@@ -565,7 +565,7 @@ Object.assign(FX, {
       for (const a of all) if (!a.f[k]) { a.f[k] = 1; c.bonus += 1; log(g, `ราชา รด.: ${a.def.name} entered, POWER +1`); }
       return 0;
     },
-    fieldActs: (g, p, c) => [act('ราชา รด.: call ทหาร/รด. from top 2', (g2) => inMain(g2, p) && once(g2, p, 'raja:' + c.uid) && canPlaceAvatar(P(g2, p)) && P(g2, p).deck.length > 4,
+    fieldActs: (g, p, c) => [act('ราชา รด.: call ทหาร/รด. from top 2', (g2) => inMain(g2, p) && once(g2, p, 'raja:' + c.uid) && canPlaceAvatar(P(g2, p)) && deckRoom(g2, p, 4),
       (g2) => { markOnce(g2, P(g2, p), 'raja:' + c.uid); peek(g2, p, 2, (top) => { takeSummon(g2, p, top, (x) => isSoldier(g2, x) && hasSym(g2, x, 'คน') && x.def.name !== 'ราชา รด.'); }, 'shuffle'); })],
   },
   // v14: our green {คน} Avatars get the name "ทหาร" (view.ts namesFor: rules and the detail box)
@@ -593,7 +593,7 @@ Object.assign(FX, {
   // ===== BT08 Magic =====
   'ขายแดก !!!': {
     keep: 3,
-    canCast: (g, p, c) => P(g, p).hand.some((x) => x !== c && x.def.subtype === 'Modification') && P(g, p).deck.length > 4,
+    canCast: (g, p, c) => P(g, p).hand.some((x) => x !== c && x.def.subtype === 'Modification') && deckRoom(g, p, 4),
     resolve: (g, p, c) => {
       const d = worst(P(g, p).hand.filter((x) => x !== c && x.def.subtype === 'Modification'), (x) => keepValue(g, x));
       if (!d) return;
@@ -775,7 +775,7 @@ Object.assign(FX, {
   'เรือรบโบราณ': {
     keep: 3,
     fieldActs: (g, p, c) => [
-      act('เรือรบโบราณ: find พลเดินทัพ/ขุนพล from top 5', (g2) => inMain(g2, p) && once(g2, p, 'ship:' + c.uid) && P(g2, p).deck.length > 6,
+      act('เรือรบโบราณ: find พลเดินทัพ/ขุนพล from top 5', (g2) => inMain(g2, p) && once(g2, p, 'ship:' + c.uid) && deckRoom(g2, p, 6),
         (g2) => {
           markOnce(g2, P(g2, p), 'ship:' + c.uid);
           const ok = (x: Card) => isA(x) && x.def.power <= 2 && (named(x, 'พลเดินทัพ') || (named(x, 'ขุนพล') && hasSym(g2, x, 'ต่างชาติ')));
@@ -1057,7 +1057,7 @@ Object.assign(FX, {
     keep: 2.5,
     canCast: (g, p) => landFree(g, p),
     fieldActs: (g, p, c) => [
-      act('SD Plaza: discard 1, Avatar from top 3 to Magic Zone', (g2) => inMain(g2, p) && once(g2, p, 'sdplaza') && P(g2, p).hand.length >= 1 && P(g2, p).deck.length > 5,
+      act('SD Plaza: discard 1, Avatar from top 3 to Magic Zone', (g2) => inMain(g2, p) && once(g2, p, 'sdplaza') && P(g2, p).hand.length >= 1 && deckRoom(g2, p, 5),
         (g2) => {
           const pl = P(g2, p); markOnce(g2, pl, 'sdplaza');
           if (!discardWorst(g2, p, 1)) return;
@@ -1260,3 +1260,4 @@ costFirst('ขายแดก !!!', (g, p, c) => {
   if (!d) return false;
   discard(g, p, d); return true;
 }, (g, p) => { draw(g, p, 2); });
+import { deckRoom } from '../engine.ts'; // bugfix14

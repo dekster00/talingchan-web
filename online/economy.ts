@@ -224,13 +224,17 @@ function addCard(p: Prog, cat: Catalog, code: string, rarity: string): { code: s
 // Packs: BT01-BT12, KD01-KD04 and PROMO (series PRMO).
 export const ODDS = { top: { SCR: 0.025, UR: 0.075, SR: 0.2 }, pity: 40, cards: 6 };
 const bestOf = (rows: CardRow[]) => ['SCR', 'UR', 'SR', 'R', 'C'].find((r) => rows.some((x) => x.rarity === r)) || 'C';
+// shop tabs (user 2026-11-06): BT = 'booster', CC/ODY = 'special', KD = 'kd' (a whole deck, see buyKd), PRMO = 'promo'
+export const packKind = (set: string) => (set.startsWith('BT') ? 'booster' : /^(CC|ODY)/.test(set) ? 'special' : set.startsWith('KD') ? 'kd' : 'promo');
+export const RECOMMENDED = ['BT12', 'SD09', 'CC03'];
+const kdsOf = (p?: Prog): string[] => (p ? ((p as any).kds ??= []) : []);
 export const packName = (set: string) => (set === 'PRMO' ? 'PROMO' : set);
 export function packInfo(cat: Catalog, p?: Prog) {
   return [...cat.sets.keys()].sort().map((set) => ({
-    set, name: packName(set), kind: set.startsWith('BT') || set.startsWith('CC') || set.startsWith('ODY') ? 'booster' : set.startsWith('KD') ? 'kd' : 'promo',
+    set, name: packName(set), kind: packKind(set), owned: set.startsWith('KD') ? kdsOf(p).includes(set) : undefined,
     cards: cat.sets.get(set)!.length, perPack: ODDS.cards, price: packPrice(set), forSale: !SHOP_CLOSED.has(set), pity: ODDS.pity, sinceScr: p ? p.pity[set] || 0 : 0, best: bestOf(cat.sets.get(set)!),
     odds: { common: '4 cards', rare: '1 card R or better', top: 'SCR 2.5% · UR 7.5% · SR 20% · R 70% (a rarity the set lacks drops to the next one)', scrPity: `${bestOf(cat.sets.get(set)!)} guaranteed by pack ${ODDS.pity}` },
-  } as any)).concat(SOON_PACKS.filter((s) => !cat.sets.has(s)).map((set) => ({ set, name: set, kind: 'booster', soon: true, forSale: false, price: packPrice(set), cards: 0, perPack: ODDS.cards })));
+  } as any)).concat(SOON_PACKS.filter((s) => !cat.sets.has(s)).map((set) => ({ set, name: set, kind: packKind(set), soon: true, forSale: false, price: packPrice(set), cards: 0, perPack: ODDS.cards })));
 }
 function pickOf(rows: CardRow[], rarities: string[]): CardRow | null {
   for (const r of rarities) { const xs = rows.filter((x) => x.rarity === r); if (xs.length) return xs[rnd(xs.length)]; }
@@ -404,6 +408,7 @@ export function setBanner(a: { xp: number; wins: number; prog: any }, b: { title
 export const SHOP = { starterPrice: 600, starterSets: ['SD01', 'SD02', 'SD03', 'SD04', 'SD05', 'SD06', 'SD07', 'SD08', 'SD09'] };
 export function buyPacks(p: Prog, cat: Catalog, set: string, count: number, pay: 'coins' | 'ticket') {
   if (!cat.sets.has(set)) return { error: 'No such pack. · ไม่มีซองนี้' };
+  if (set.startsWith('KD')) return buyKd(p, cat, set, pay);
   if (SHOP_CLOSED.has(set)) return { error: 'This pack is a reward only. · ซองนี้ได้จากรางวัลเท่านั้น' };
   count = Math.max(1, Math.min(10, Math.floor(count) || 1));
   if (pay === 'ticket') { if (p.tickets < count) return { error: 'Not enough pack tickets. · ตั๋วไม่พอ' }; p.tickets -= count; }
@@ -411,6 +416,20 @@ export function buyPacks(p: Prog, cat: Catalog, set: string, count: number, pay:
   const inv = (p as any).inv ??= {};
   inv[set] = (inv[set] || 0) + count;
   return { ok: true, set, count, inv };
+}
+// KD decks (user 2026-11-06): buying one gives every card of that deck at full deck count (like a starter), once each.
+export function buyKd(p: Prog, cat: Catalog, set: string, pay: 'coins' | 'ticket' = 'coins') {
+  const rows = cat.sets.get(set);
+  if (!rows || !set.startsWith('KD')) return { error: 'No such deck. · ไม่มีเด็คนี้' };
+  const own = kdsOf(p);
+  if (own.includes(set)) return { error: 'You already have this deck. · มีแล้ว' };
+  if (pay === 'ticket') return { error: 'KD decks are bought with coins. · ซื้อด้วยเหรียญเท่านั้น' };
+  if (p.coins < packPrice(set)) return { error: 'Not enough coins. · เหรียญไม่พอ' };
+  p.coins -= packPrice(set);
+  const codes = [...new Set(rows.map((r) => r.code))];
+  for (const c of codes) p.cards[c] = Math.max(p.cards[c] || 0, Math.min(4, cat.byCode.get(c)?.limit || 4));
+  own.push(set);
+  return { ok: true, set, deck: true, cards: codes.length, kds: own };
 }
 export function buyStarter(a: { xp: number; prog: any }, cat: Catalog, raw: any[], set: string) {
   const p = prog(a);
@@ -449,29 +468,30 @@ export const FRIEND_MAX = 100;
 // (character number = strength, c01 strongest): c01-c10 3000, c11-c20 2500, c21-c30 2000, c31-c40 1500, c41-c50 1000,
 // c52-c54 2000. Profile pictures stay free; the character you play as in online rooms and Ranked must be owned.
 // (Same ids as godot/characters/characters.json.)
+// user 2026-11-06: every character costs 2,000 coins (c51 stays free).
 export const FREE_CHAR = 'c51';
 export const CHARACTERS: { id: string; name: string; price: number }[] = [
   { id: 'c51', name: "แก๊งSUPER CARD", price: 0 },
-  { id: 'c01', name: "สุครีพ", price: 3000 },
-  { id: 'c02', name: "มณโฑ", price: 3000 },
-  { id: 'c03', name: "ชิโยเมะ", price: 3000 },
-  { id: 'c04', name: "นัท", price: 3000 },
-  { id: 'c05', name: "เมฟิสโต้", price: 3000 },
-  { id: 'c06', name: "รัททาทุย", price: 3000 },
-  { id: 'c07', name: "เป้อ", price: 3000 },
-  { id: 'c08', name: "วี", price: 3000 },
-  { id: 'c09', name: "โฟเบีย", price: 3000 },
-  { id: 'c10', name: "ขวัญตา", price: 3000 },
-  { id: 'c11', name: "คลีปเปอร์", price: 2500 },
-  { id: 'c12', name: "จอมเวทย์ กาลู", price: 2500 },
-  { id: 'c13', name: "Watson", price: 2500 },
-  { id: 'c14', name: "AI", price: 2500 },
-  { id: 'c15', name: "มีมมิ", price: 2500 },
-  { id: 'c16', name: "เพมมุ", price: 2500 },
-  { id: 'c17', name: "เนฟิเรีย", price: 2500 },
-  { id: 'c18', name: "สวีนนีย์", price: 2500 },
-  { id: 'c19', name: "ซีเวีย", price: 2500 },
-  { id: 'c20', name: "ซีเกิร์ด", price: 2500 },
+  { id: 'c01', name: "สุครีพ", price: 2000 },
+  { id: 'c02', name: "มณโฑ", price: 2000 },
+  { id: 'c03', name: "ชิโยเมะ", price: 2000 },
+  { id: 'c04', name: "นัท", price: 2000 },
+  { id: 'c05', name: "เมฟิสโต้", price: 2000 },
+  { id: 'c06', name: "รัททาทุย", price: 2000 },
+  { id: 'c07', name: "เป้อ", price: 2000 },
+  { id: 'c08', name: "วี", price: 2000 },
+  { id: 'c09', name: "โฟเบีย", price: 2000 },
+  { id: 'c10', name: "ขวัญตา", price: 2000 },
+  { id: 'c11', name: "คลีปเปอร์", price: 2000 },
+  { id: 'c12', name: "จอมเวทย์ กาลู", price: 2000 },
+  { id: 'c13', name: "Watson", price: 2000 },
+  { id: 'c14', name: "AI", price: 2000 },
+  { id: 'c15', name: "มีมมิ", price: 2000 },
+  { id: 'c16', name: "เพมมุ", price: 2000 },
+  { id: 'c17', name: "เนฟิเรีย", price: 2000 },
+  { id: 'c18', name: "สวีนนีย์", price: 2000 },
+  { id: 'c19', name: "ซีเวีย", price: 2000 },
+  { id: 'c20', name: "ซีเกิร์ด", price: 2000 },
   { id: 'c21', name: "ซันนี่", price: 2000 },
   { id: 'c22', name: "วาริช", price: 2000 },
   { id: 'c23', name: "เวหา", price: 2000 },
@@ -482,26 +502,26 @@ export const CHARACTERS: { id: string; name: string; price: number }[] = [
   { id: 'c28', name: "อินาริ", price: 2000 },
   { id: 'c29', name: "บ่าวจุ้ย", price: 2000 },
   { id: 'c30', name: "ไท", price: 2000 },
-  { id: 'c31', name: "อาเธอร์", price: 1500 },
-  { id: 'c32', name: "ครีเอเทีย", price: 1500 },
-  { id: 'c33', name: "ถัง จือหลิง", price: 1500 },
-  { id: 'c34', name: "เจมส์", price: 1500 },
-  { id: 'c35', name: "ภูติผลไม้ แตงกวา", price: 1500 },
-  { id: 'c36', name: "วอเตอร์แมน", price: 1500 },
-  { id: 'c37', name: "ฟรีแลนซ์", price: 1500 },
-  { id: 'c38', name: "อาจารย์", price: 1500 },
-  { id: 'c39', name: "หลิงฉี", price: 1500 },
-  { id: 'c40', name: "จีน", price: 1500 },
-  { id: 'c41', name: "โจโฉ", price: 1000 },
-  { id: 'c42', name: "เล่าปี่", price: 1000 },
-  { id: 'c43', name: "ซุนกวน", price: 1000 },
-  { id: 'c44', name: "Linux", price: 1000 },
-  { id: 'c45', name: "อลัน", price: 1000 },
-  { id: 'c46', name: "มินามิ โคทาโร่", price: 1000 },
-  { id: 'c47', name: "ลิโป้", price: 1000 },
-  { id: 'c48', name: "ตำรวจ", price: 1000 },
-  { id: 'c49', name: "แบงค์", price: 1000 },
-  { id: 'c50', name: "ซินแส", price: 1000 },
+  { id: 'c31', name: "อาเธอร์", price: 2000 },
+  { id: 'c32', name: "ครีเอเทีย", price: 2000 },
+  { id: 'c33', name: "ถัง จือหลิง", price: 2000 },
+  { id: 'c34', name: "เจมส์", price: 2000 },
+  { id: 'c35', name: "ภูติผลไม้ แตงกวา", price: 2000 },
+  { id: 'c36', name: "วอเตอร์แมน", price: 2000 },
+  { id: 'c37', name: "ฟรีแลนซ์", price: 2000 },
+  { id: 'c38', name: "อาจารย์", price: 2000 },
+  { id: 'c39', name: "หลิงฉี", price: 2000 },
+  { id: 'c40', name: "จีน", price: 2000 },
+  { id: 'c41', name: "โจโฉ", price: 2000 },
+  { id: 'c42', name: "เล่าปี่", price: 2000 },
+  { id: 'c43', name: "ซุนกวน", price: 2000 },
+  { id: 'c44', name: "Linux", price: 2000 },
+  { id: 'c45', name: "อลัน", price: 2000 },
+  { id: 'c46', name: "มินามิ โคทาโร่", price: 2000 },
+  { id: 'c47', name: "ลิโป้", price: 2000 },
+  { id: 'c48', name: "ตำรวจ", price: 2000 },
+  { id: 'c49', name: "แบงค์", price: 2000 },
+  { id: 'c50', name: "ซินแส", price: 2000 },
   { id: 'c54', name: "HHKP", price: 2000 },
   { id: 'c52', name: "agent smooth", price: 2000 },
 ];

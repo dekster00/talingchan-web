@@ -201,7 +201,7 @@ const NEW: Record<string, any> = {
   },
   'ความยุติธรรมสำหรับนนทก': {
     keep: 3.5,
-    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isTheos(x)) && P(g, p).deck.length > 3,
+    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isTheos(x)) && deckRoom(g, p, 3),
     resolve: (g: Game, p: PID) => { if (discardWorst(g, p, 1, isTheos)) draw(g, p, 2); },
   },
   'ฮ่า ฮ่า ฮ่า ผมได้เลื่อนขั้น': {
@@ -253,7 +253,7 @@ const NEW: Record<string, any> = {
   },
   'บำเพ็ญประโยชน์': {
     keep: 3.5,
-    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isGHN(x) && isA(x)) && P(g, p).deck.length > 3,
+    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isGHN(x) && isA(x)) && deckRoom(g, p, 3),
     resolve: (g: Game, p: PID) => { if (discardWorst(g, p, 1, (x) => isGHN(x) && isA(x))) draw(g, p, 2); },
   },
   'สละเพื่อนเพื่อช่วยเพื่อน': {
@@ -288,7 +288,7 @@ const NEW: Record<string, any> = {
   'สุวาน': { keep: 4.5, staticPower: (g: Game, c: Card) => distinct(hellAv(g, c.ctrl, (x) => named(x, 'นายนิรยบาล'))) },
   'กระทะทองแดง': {
     keep: 3.5,
-    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isHellSym(x)) && P(g, p).deck.length > 6,
+    canCast: (g: Game, p: PID, c: Card) => P(g, p).hand.some((x) => x !== c && isHellSym(x)) && deckRoom(g, p, 6),
     resolve: (g: Game, p: PID) => { if (!discardWorst(g, p, 1, isHellSym)) return; myMill(g, p, 2); draw(g, p, 2); },
   },
   'บัญชีหนังหมา': {
@@ -409,7 +409,7 @@ const NEW: Record<string, any> = {
   },
   'ใบดำใบแดง': {
     keep: 2.5,
-    canCast: (g: Game, p: PID) => P(g, p).deck.length > 3,
+    canCast: (g: Game, p: PID) => deckRoom(g, p, 3),
     resolve: (g: Game, p: PID) => {
       const pl = P(g, p); const top = pl.deck[0];
       if (!top) return;
@@ -523,7 +523,7 @@ const NEW: Record<string, any> = {
     // a Land (SD05-014 is fixed to subtype Land in sim.ts loadDefs; castMagic puts it in the Land Zone)
     canCast: (g: Game, p: PID) => !P(g, p).used.Land && !landIs(g, BT_LAND) && P(g, p).avatars.length > 0,
     fieldActs: (g: Game, p: PID, l: Card) => [act('บึงทมิฬ: sleep an Avatar, draw 1', (g2) => inMain(g2, p) && isLandOn(g2, l) && once(g2, p, 'bueng')
-      && P(g2, p).avatars.some((a) => !a.asleep) && P(g2, p).deck.length > 2,
+      && P(g2, p).avatars.some((a) => !a.asleep) && deckRoom(g2, p, 2),
     (g2) => {
       markOnce(g2, P(g2, p), 'bueng');
       const a = worst(P(g2, p).avatars.filter((x) => !x.asleep), (x) => power(g2, x));
@@ -729,7 +729,7 @@ const NEW: Record<string, any> = {
     noTarget: (g: Game, self: Card, t: Card, by: Card) => P(g, self.ctrl).avatars.includes(self) && t !== self && t.ctrl === self.ctrl
       && P(g, t.ctrl).avatars.includes(t) && isGen(t) && !t.def.name.includes('กวนอู') && by.ctrl !== self.ctrl,
   },
-  'เตียวหุย ขุนพลจอมบุกแห่งจ๊กก๊ก': { keep: 4, onAttack: (g: Game, c: Card) => { c.temp.push({ power: 1, until: 'battle' }); } }, // bugfix11 (user 2026-11-03): only for this attack, gone after the fight
+  'เตียวหุย ขุนพลจอมบุกแห่งจ๊กก๊ก': { keep: 4, onAttack: (g: Game, c: Card) => { addPowerB14(g, c, 1, 'perm', c); } }, // bugfix14 (user 2026-11-06): +1 every attack, and it stays (while on the field)
   'แฮหัวตุ้น ขุนพลตาเดียวแห่งวุยก๊ก': {
     keep: 4,
     // v14 ruling: works when summoned by the ability of any "ขุนพล" {ชาวต่างชาติ} Avatar (อ้วนเสี้ยว's จุติ, โจโฉ's จุติ /
@@ -826,7 +826,7 @@ const NEW: Record<string, any> = {
   },
   'เสบียงหลวง': {
     keep: 3.5,
-    canCast: (g: Game, p: PID) => P(g, p).deck.length > 3,
+    canCast: (g: Game, p: PID) => deckRoom(g, p, 3),
     resolve: (g: Game, p: PID) => {
       if (P(g, p).avatars.filter(isGen).length >= 2) draw(g, p, 2);
       else { draw(g, p, 1); draw(g, opp(p), 1); }
@@ -1021,7 +1021,7 @@ const NEW: Record<string, any> = {
   },
   'เลือกตั้งเจ้าป่า': {
     keep: 3.5,
-    canCast: (g: Game, p: PID) => P(g, p).avatars.some(isVan) && P(g, p).deck.length > 3,
+    canCast: (g: Game, p: PID) => P(g, p).avatars.some(isVan) && deckRoom(g, p, 3),
     resolve: (g: Game, p: PID) => {
       if (!sacrifice(g, p, P(g, p).avatars.filter(isVan), 1)) return;
       peek(g, p, 7, (top) => {
@@ -1149,3 +1149,5 @@ Object.assign(FX, {
 } as Record<string, any>);
 
 import { humanSeat as humanSeatB12 } from '../engine.ts';
+import { deckRoom } from '../engine.ts'; // bugfix14
+import { addPower as addPowerB14 } from '../engine.ts'; // bugfix14
