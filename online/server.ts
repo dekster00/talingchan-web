@@ -760,6 +760,7 @@ http.createServer(async (req, res) => {
       const b = await readBody(req);
       const id = 'test:' + cleanLine(b.name, 16);
       const a = (await STORE.get(id)) || (await STORE.create(id, cleanLine(b.name, 16), cleanAvatar(b.avatar)));
+      if (b.coins !== undefined) { Eco.prog(a).coins = Number(b.coins) || 0; await STORE.save(a); }
       const u = loginAccount(a, ip);
       return send(res, 200, { ok: true, token: u.token, id: u.id, name: u.name, avatar: u.avatar || '', acct: true });
     }

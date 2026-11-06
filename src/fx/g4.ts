@@ -1087,12 +1087,13 @@ Object.assign(FX, {
           if (!x) break; seen.add(x.def.name); toExile(g2, x);
         }
       };
+      // bugfix14 (user 2026-11-06): exiling the 3 ไมเกรน is the cost: it is paid even when the ability is negated (payCost)
       return [
-        act('คริติคอล ไมเกรน: exile 3 ไมเกรน, equip 2 weapons from hell', (g2) => can(g2) && P(g2, p).hell.some(weapon), (g2) => {
+        { ...act('คริติคอล ไมเกรน: exile 3 ไมเกรน, equip 2 weapons from hell', (g2) => can(g2) && P(g2, p).hell.some(weapon), (g2) => {
           pay(g2);
           for (const w of pickN(P(g2, p).hell.filter(weapon), 2, (x) => keepValue(g2, x), { optional: true, title: 'คริติคอล ไมเกรน: equip up to 2 weapons from Hell' })) if (P(g2, p).avatars.includes(c)) attach(g2, w, c);
-        }),
-        act('คริติคอล ไมเกรน: exile 3 ไมเกรน, LIFE damage on kills', can, (g2) => { pay(g2); c.f.crit = g2.turn; }),
+        }), payCost: pay },
+        { ...act('คริติคอล ไมเกรน: exile 3 ไมเกรน, LIFE damage on kills', can, (g2) => { pay(g2); c.f.crit = g2.turn; }), payCost: pay },
       ];
     },
     onKill: (g: Game, c: Card) => { if (c.f.crit === g.turn) hitLife(g, opp(c.ctrl), null); },

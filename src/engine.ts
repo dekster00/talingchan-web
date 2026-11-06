@@ -1419,7 +1419,7 @@ function runAct(g: Game, p: PID, a: Act, c: Card, x: HandAct): boolean {
     if (g.winner !== null) return true;
     if (ev.cancelled || (isAvatarDef(c.def) && silenced(g, c))) {
       log(g, `${c.def.name}: the ability is negated; its cost stays paid`);
-      decide(g, p, () => withSource(c, () => payActCost(g, p, c, a.opt)));
+      decide(g, p, () => withSource(c, () => (x.payCost ? x.payCost(g) : payActCost(g, p, c, a.opt)))); // bugfix14: FX cost (คริติคอล ไมเกรน)
       c.f['neg:' + a.opt] = g.turn;
       stateCheck(g);
       return true;

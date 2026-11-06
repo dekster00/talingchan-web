@@ -17,7 +17,7 @@ function vanaraPair(g: Game, c: Card, partner: string): boolean {
   return P(g, c.ctrl).avatars.some((a) => a.uid !== c.uid && a.def.name === partner && a.f.linkWith === c.uid && c.f && c.f.linkWith === a.uid);
 }
 
-export interface HandAct { label: string; can(g: Game): boolean; run(g: Game): void }
+export interface HandAct { label: string; can(g: Game): boolean; run(g: Game): void; payCost?(g: Game): void } // bugfix14: payCost = the text cost, paid even when the ability is negated
 export interface Fx {
   keep?: number; // how much the bot wants to keep this card in hand (vs pitching it as GEM)
   hellPayFor?(g: Game, self: Card, forCard: Card): ((x: Card) => boolean) | null; // BT12-039: Hell cards that may also pay GEM for forCard (exiled)

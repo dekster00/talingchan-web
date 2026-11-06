@@ -30,7 +30,8 @@ export const BOT = {
 export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (lv % 5 === 0 ? 2 : 0), packs: { PRMO: 1 } });
 // prices (user 2026-11-03): packs 100 coins, KD and BT11-BT12 200; the PROMO pack is not sold, it is a reward
 // (every level up, day 7 of the login calendar, tournaments). Starter decks 600, SD09 1000.
-export const packPrice = (set: string) => (/^(KD|CC|ODY)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
+// KD = a whole deck, 1,500 coins (user 2026-11-06)
+export const packPrice = (set: string) => set.startsWith('KD') ? 1500 : (/^(CC|ODY)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
 // packs announced without card data yet: listed as SOON, not sold
 export const SOON_PACKS = ['CC03'];
 export const SHOP_CLOSED = new Set(['PRMO']);
