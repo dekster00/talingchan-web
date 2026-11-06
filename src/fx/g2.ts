@@ -843,7 +843,7 @@ Object.assign(FX, {
   },
   'ซุปเปอร์สแน็ค !!': {
     keep: 2.5, options: 2,
-    canCast: (g, p, c, o) => o === 0 ? P(g, p).avatars.some((a) => symIs(a, 'สัตว์') && !a.asleep) : oppTargets(g, p, true).some((a) => symIs(a, 'สัตว์')),
+    canCast: (g, p, c, o) => o === 0 ? P(g, p).avatars.some((a) => symIs(a, 'สัตว์') && (!a.asleep || decideB13(g, p, () => humanDecidingB13(g)))) : oppTargets(g, p, true).some((a) => symIs(a, 'สัตว์')),
     resolve: (g, p, c, o) => {
       const t = o === 0
         ? best(P(g, p).avatars.filter((a) => symIs(a, 'สัตว์')), (a) => (a.asleep ? 0 : 5) - value(g, a) * 0.2)
@@ -1046,3 +1046,4 @@ costFirst('แมลงปอทอด', (g, p, c) => { c.f.turn = g.turn; retur
   const shirtHit = (g: Game, p: PID) => { const t = best(oppTargets(g, p, true).filter(isBug), (a) => value(g, a)); if (t) destroy(g, t, p, true); };
   costFirst('เอาเสื้อมาหมุนๆแล้วตบ', shirtPay, shirtHit, shirtPay, shirtHit);
 }
+import { decide as decideB13, humanDeciding as humanDecidingB13 } from '../engine.ts'; // bugfix13

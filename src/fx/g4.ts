@@ -1111,9 +1111,10 @@ Object.assign(FX, {
     // Avatar at once (approx: the main fight resolves first). Milled or scouted (FX.onScouted) by a
     // ไมเกรน Avatar's ability: back to hand.
     stayMz: true,
-    canCast: (g: Game, p: PID) => g.turn > 1 && P(g, p).avatars.some((a) => migraine(a) && !a.asleep) && P(g, opp(p)).avatars.length >= 2,
+    // bugfix13: the text only needs a ไมเกรน on our Avatar Zone (the bot still waits for a useful attack)
+    canCast: (g: Game, p: PID) => P(g, p).avatars.some(migraine) && (decideB13(g, p, () => humanDecidingB13(g)) || (g.turn > 1 && P(g, p).avatars.some((a) => migraine(a) && !a.asleep) && P(g, opp(p)).avatars.length >= 2)),
     resolve: (g: Game, p: PID, c: Card) => {
-      const t = best(P(g, p).avatars.filter((a) => migraine(a) && !a.asleep), (a) => power(g, a));
+      const t = best(P(g, p).avatars.filter(migraine), (a) => power(g, a) - (a.asleep ? 100 : 0));
       if (t) { t.f.theEnd = g.turn; c.f.theEndOn = t.uid; c.f.theEndT = g.turn; grantGet(g, t, 'THE END: ต่อสู้กับ Avatar ฝ่ายตรงข้ามทุกใบพร้อมกัน (จนจบเทิร์น)', g.turn); }
     },
     afterFight: (g: Game, c: Card, att: Card, target: Card | null) => {
@@ -1240,3 +1241,4 @@ Object.assign(FX, {
     aura: (g: Game, s: Card, t: Card) => (t !== s && t.ctrl === s.ctrl && P(g, s.ctrl).avatars.includes(s) && P(g, s.ctrl).avatars.includes(t) && named(t, 'มนุษย์ดาว R18') && !isServant(t) ? 1 : 0),
   },
 } as Record<string, Fx>);
+import { decide as decideB13, humanDeciding as humanDecidingB13 } from '../engine.ts'; // bugfix13

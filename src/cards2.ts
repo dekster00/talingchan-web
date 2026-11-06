@@ -6,6 +6,7 @@ import type { Ev } from './engine.ts';
 import { canChangeCtrl, takeControl, grantKw, landIs as landOn, isLandOn, placeLand, magicImmune, currentSource, lands, useShield } from './engine.ts';
 import { attach as attachCard, canWear, lifeDown } from './engine.ts'; // v14d
 import { addPower } from './engine.ts'; // v14 answers
+import { decide as decideB13, humanDeciding as humanDecidingB13 } from './engine.ts'; // bugfix13
 import { textCost } from './engine.ts'; // other-team audit Q9
 import { fieldAvatars } from './cards.ts'; // other-team audit Q12
 import { addToHand, ctrlUntilOwnerDraw, loseText, noAbilityNow } from './engine.ts'; // simplify1
@@ -1115,8 +1116,10 @@ const NEW: Record<string, Fx> = {
   'มอเดรด อัศวินโต๊ะกลมแห่งการทรยศ': { keep: 3.5 }, // its เตะไข่ comes from ดาบศักดิ์สิทธิ์ คาเรนต์ (a grant); its ability: mordred()
   'ความกล้าหาญ': {
     keep: 3,
-    canCast: (g, p) => P(g, p).avatars.some((a) => !a.asleep) && g.turn > 1,
-    resolve: (g, p, c) => { const t = best(P(g, p).avatars.filter((a) => !a.asleep), (a) => power(g, a)); if (t) { addPower(g, t, 4, 'perm', c); t.f.endDestroy = g.turn; t.f.endDestroyM = g.turn; } }, // other-team audit: the End Phase destroy is this Magic's effect (endDestroyM); v14 answer: +4 stays while it stays on the field
+    // bugfix13 (user 2026-11-06): the text has no turn or awake condition: a human may cast it on turn 1 on any of its
+    // Avatars (resting or just summoned) and picks the target; the bot still only uses it when it can attack
+    canCast: (g, p) => P(g, p).avatars.length > 0 && (decideB13(g, p, () => humanDecidingB13(g)) || (P(g, p).avatars.some((a) => !a.asleep) && g.turn > 1)),
+    resolve: (g, p, c) => { const t = best(P(g, p).avatars, (a) => power(g, a) - (a.asleep ? 100 : 0)); if (t) { addPower(g, t, 4, 'perm', c); t.f.endDestroy = g.turn; t.f.endDestroyM = g.turn; } }, // other-team audit: the End Phase destroy is this Magic's effect (endDestroyM); v14 answer: +4 stays while it stays on the field
   },
   'เตรียมเสบียง': {
     keep: 1,

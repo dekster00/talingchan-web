@@ -1030,16 +1030,10 @@ Object.assign(FX, {
   },
   'อุยเอี๋ยน ขุนพลคนเถื่อนแห่งจ๊กก๊ก': {
     keep: 3,
-    gemAs: (g: Game, c: Card, forCard: Card | null) => {
-      if (!forCard || !isA(forCard) || !named(forCard, 'ขุนพล') || !symIs(forCard, 'ต่างชาติ')) return c.def.gem;
-      const x = best(P(g, c.owner).hell.filter((y) => isA(y) && named(y, 'ขุนพล') && colorIs(y, 'เขียว') && symIs(y, 'ต่างชาติ')), (y) => y.def.gem);
-      return c.def.gem + (x ? x.def.gem : 0);
-    },
-    usedAsCost: (g: Game, p: PID, c: Card, summoned: Card) => {
-      if (!isA(summoned) || !named(summoned, 'ขุนพล') || !symIs(summoned, 'ต่างชาติ')) return;
-      const x = best(P(g, p).hell.filter((y) => y !== c && isA(y) && named(y, 'ขุนพล') && colorIs(y, 'เขียว') && symIs(y, 'ต่างชาติ')), (y) => y.def.gem);
-      if (x && toExile(g, x)) log(g, `${c.def.name}: ${x.def.name} is exiled from Hell, its GEM is added`);
-    },
+    // bugfix13 (user 2026-11-06): paid as Cost for a ต่างชาติ "ขุนพล", the player MAY also exile 1 green ต่างชาติ "ขุนพล"
+    // Avatar from Hell and add its GEM: it is an option of the pay screen (Hell bubble), not automatic (engine hellPayOptions)
+    hellPayWith: (g: Game, self: Card, forCard: Card) => (isA(forCard) && named(forCard, 'ขุนพล') && symIs(forCard, 'ต่างชาติ')
+      ? (y: Card) => y !== self && isA(y) && named(y, 'ขุนพล') && colorIs(y, 'เขียว') && symIs(y, 'ต่างชาติ') : null),
   },
   'หมบ': { keep: 1.5, alias: ['หมา', 'กบ'], vanilla: true } as any,
   'ฉันทิ้งชื่อตัวเองไปแล้ว': {

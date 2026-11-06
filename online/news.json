@@ -3,6 +3,15 @@
  "updates": [
   {
    "date": "2026-11-06",
+   "title": "Pay GEM from Hell · จ่าย GEM จากนรก",
+   "lines": [
+    "แม่นางลิ and อุยเอี๋ยน: on the pay screen, a bubble pops up from your Hell pile. Click it to choose which Hell cards pay GEM (they are exiled). · แม่นางลิ และ อุยเอี๋ยน: ตอนจ่าย GEM จะมีบับเบิลขึ้นที่กองนรก กดแล้วเลือกการ์ดในนรกมาจ่าย GEM ได้ (การ์ดที่จ่ายจะถูกเนรเทศ)",
+    "อุยเอี๋ยน no longer picks the Hell card by itself. ลิโป้ counts as playable when your Hell GEM covers it. · อุยเอี๋ยน ไม่เลือกการ์ดในนรกเองแล้ว และ ลิโป้ ขึ้นว่าลงได้ถ้า GEM ในนรกพอ",
+    "ความกล้าหาญ can be used on turn 1 and on a resting Avatar (same fix for THE END and ซุปเปอร์สแน็ค). · ความกล้าหาญ ใช้ได้ตั้งแต่เทิร์น 1 และใช้กับ Avatar ที่นอนอยู่ได้ (แก้ THE END และ ซุปเปอร์สแน็ค แบบเดียวกัน)"
+   ]
+  },
+  {
+   "date": "2026-11-06",
    "title": "Web game loading fixed · แก้ปัญหาเกมเว็บโหลดไม่ขึ้น",
    "lines": [
     "Fixed 'Failed loading file index.pck' after updates. If you still see it, refresh once (Ctrl+F5). · แก้ข้อความ 'Failed loading file index.pck' หลังอัปเดต ถ้ายังเจอ กดรีเฟรชหนึ่งครั้ง (Ctrl+F5)"

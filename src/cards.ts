@@ -21,6 +21,7 @@ export interface HandAct { label: string; can(g: Game): boolean; run(g: Game): v
 export interface Fx {
   keep?: number; // how much the bot wants to keep this card in hand (vs pitching it as GEM)
   hellPayFor?(g: Game, self: Card, forCard: Card): ((x: Card) => boolean) | null; // BT12-039: Hell cards that may also pay GEM for forCard (exiled)
+  hellPayWith?(g: Game, self: Card, forCard: Card): ((x: Card) => boolean) | null; // BT12-051: paid from hand, lets 1 Hell card pay with it (exiled)
   // Avatar hooks
   jutsu?(g: Game, c: Card): void; // จุติ (summoned by paying cost)
   onOwnSummon?(g: Game, c: Card): void; // summoned by its own ability

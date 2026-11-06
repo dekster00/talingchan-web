@@ -7,6 +7,7 @@
 // (pass / default pick), so a game can never hang on a player who left.
 import { workerData, parentPort, receiveMessageOnPort, type MessagePort } from 'node:worker_threads';
 import type { Card, Game, PID } from '../src/types.ts';
+import { hellPayInfo as hellPayInfoW } from '../src/engine.ts'; // bugfix13
 import type { Brain, Ev, Act } from '../src/engine.ts';
 import {
   newGame, playGame, mulligan, rand, setPhaseHook, setPay, gemOf, setBrains, setAskSeats, askSeat, setLogHook, withDecider, quiet, mainActs, doAct, legalTargets, pileActs,
@@ -458,7 +459,7 @@ setPay((g, p, cost, cands, dflt, forCard) => {
     cost, for: forCard ? forCard.uid : null, def,
     forColor: forCard ? colorsEn(forCard).join('/') : '', // bugfix1 item 1: "#" extra colours (เตียวเลี้ยว is blue + purple)
     req: reqOf(g, forCard),
-    options: cands.map((c) => ({ ...brief(g, c), gem: gemOf(g, c, forCard), gemColor: gemColorOf(g, c, forCard), label: `${c.def.name} · GEM ${gemOf(g, c, forCard)} ${gemColorOf(g, c, forCard)}` })),
+    options: cands.map((c) => ({ ...brief(g, c), gem: gemOf(g, c, forCard), gemColor: gemColorOf(g, c, forCard), label: `${c.def.name} · GEM ${gemOf(g, c, forCard)} ${gemColorOf(g, c, forCard)}`, ...(hellPayInfoW(g, p, forCard, c) || {}) })), // bugfix13: zone 'hell' = behind the Hell bubble
     pass: 'Cancel',
   });
   if (mask <= 0) return null;
