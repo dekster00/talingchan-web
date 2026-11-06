@@ -155,3 +155,17 @@ alter table reports enable row level security;
   (ONLINE MODE logs in again with the saved token) rejoins the same duel.
 - Tests: `node --experimental-strip-types --no-warnings qa/online_test.ts 12` (two scripted players, hidden-info checks;
   `IDLE=1 TIMER=1 TURN_SEC=2 REACT_SEC=1` tests the timer; `ACCOUNTS=1` tests accounts, cloud decks and restart restore).
+
+## Backups (2026-11-06)
+
+With Supabase set, the server backs up `accounts` (profile, coins, cards, decks, progress), `matches` and `reports`
+(without screenshots) once a day to the private Storage bucket `backups` as `YYYY-MM-DD.json.gz` (Thai date), and
+keeps the newest 14. It also runs once a minute after start when today's file is missing. `BACKUP=0` turns it off.
+
+- Download: Supabase dashboard → Storage → backups, or `GET /online/admin/backup/latest?key=ADMIN_KEY` (needs the
+  ADMIN_KEY env). Run one now: `POST /online/admin/backup/run?key=ADMIN_KEY`.
+- File: `{v:1, at, tables:{accounts:[rows], matches:[rows], reports:[rows]}}`, gzipped.
+- Restore one player: copy their row from `tables.accounts` and upsert it in the SQL editor
+  (`update accounts set prog = '<prog json>'::jsonb, xp = .., wins = .. where id = '<id>';`), then restart the server
+  (it caches accounts in memory). Restore everything: stop the server (suspend in Render), `truncate accounts;` and
+  insert all rows (a short node script with the service key: POST /rest/v1/accounts with `prefer: resolution=merge-duplicates`), then resume.

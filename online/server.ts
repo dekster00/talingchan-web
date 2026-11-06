@@ -21,6 +21,7 @@ import { Worker, MessageChannel } from 'node:worker_threads';
 import { CARDS, loadDefs, loadDeck, validateDeck, banlistErrors } from '../src/sim.ts';
 import { Store, levelOf, usingSupabase, type Account, type DeckMap } from './accounts.ts';
 import * as Eco from './economy.ts';
+import * as Backup from './backup.ts';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..');
@@ -453,7 +454,8 @@ function duelView(d: Duel, seat: number, from: number) {
 }
 
 // ---------------------------------------------------------------- sweeps: leave rooms / forfeit after a disconnect
-const AWAY_LOBBY = 45000, AWAY_FORFEIT = 120000;
+// 2026-11-06 reconnect: a refresh or Wi-Fi drop keeps the seat; the duel waits 3 minutes before it counts as a loss
+const AWAY_LOBBY = 45000, AWAY_FORFEIT = Number(process.env.AWAY_FORFEIT || 180000);
 setInterval(() => {
   const now = Date.now();
   for (const d of DUELS.values()) {
@@ -755,6 +757,12 @@ http.createServer(async (req, res) => {
       await STORE.addReport({ at: new Date().toISOString(), acct: who?.acct ? keyOf(who.acct) : '', name: who?.name || cleanLine(b.name, 16) || '', text, log: String(b.log || '').slice(-60000), shot, version: (cleanLine(b.version, 40) + (b.platform ? ' ' + cleanLine(b.platform, 20) : '')).trim() });
       return send(res, 200, { ok: true });
     }
+    if (p === '/admin/backup/latest' && ADMIN_KEY && url.searchParams.get('key') === ADMIN_KEY) { // restore source (backup.ts)
+      const f = await Backup.latestBackup();
+      if (!f) return send(res, 404, { error: 'No backup yet.', last: Backup.lastBackup });
+      res.writeHead(200, { 'content-type': 'application/gzip', 'content-disposition': `attachment; filename="${f.name}"` }); return res.end(f.data);
+    }
+    if (p === '/admin/backup/run' && req.method === 'POST' && ADMIN_KEY && url.searchParams.get('key') === ADMIN_KEY) return send(res, 200, await Backup.runBackup());
     if (p === '/reports' && ADMIN_KEY && url.searchParams.get('key') === ADMIN_KEY) return send(res, 200, { reports: await STORE.reports(100) });
     if (p === '/test/account' && req.method === 'POST' && process.env.TEST_ACCOUNTS === '1') { // tests only: an account without Google
       const b = await readBody(req);
@@ -852,6 +860,11 @@ http.createServer(async (req, res) => {
     const dd = duelOf(u);
     if (dd) dd.d.seen[dd.seat] = Date.now();
 
+    // reconnect (2026-11-06): HOME asks this after a refresh; a live duel -> the game offers REJOIN
+    if (p === '/active') {
+      if (!dd || dd.d.ended) return send(res, 200, { duel: null });
+      return send(res, 200, { duel: { id: dd.d.id, seat: dd.seat, opponent: dd.d.names[1 - dd.seat], room: u.room || '', ranked: !!dd.d.room?.ranked } });
+    }
     if (p === '/poll') {
       const since = Number(url.searchParams.get('v') ?? -1), chatFrom = Number(url.searchParams.get('chat') || 0);
       if (since >= LV) await new Promise<void>((ok) => { const t = setTimeout(ok, 20000); waiters.push(() => { clearTimeout(t); ok(); }); });
@@ -869,6 +882,13 @@ http.createServer(async (req, res) => {
       const b = req.method === 'POST' ? await readBody(req) : {};
       const done = async (out: any, code = 200) => { if (!out.error) await STORE.save(a); return send(res, out.error ? 400 : code, out); };
       if (p === '/me/home') { await STORE.save(a); return send(res, 200, homeView(a, { seasonReward: season, gift })); }
+      // 2026-11-06 approved upgrades: wishlist, free season pass, guided first week
+      if (p === '/me/wishlist') return req.method === 'POST' ? done({ ...Eco.setWish(pr, CAT, String(b.code || ''), b.on !== false) }) : send(res, 200, Eco.wishView(pr, CAT));
+      if (p === '/me/pass') return send(res, 200, { ok: true, ...Eco.passView(pr) });
+      if (p === '/me/pass/claim' && req.method === 'POST') return done({ ...Eco.claimPass(pr, Number(b.lv)), pass: Eco.passView(pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, inventory: (pr as any).inv || {} });
+      if (p === '/me/firstweek') return send(res, 200, Eco.firstWeekView(pr, a.created));
+      if (p === '/me/firstweek/done' && req.method === 'POST') { if (['tutorial', 'deck'].includes(String(b.id))) Eco.firstWeekDone(pr, String(b.id)); return done(Eco.firstWeekView(pr, a.created)); }
+      if (p === '/me/firstweek/claim' && req.method === 'POST') return done({ ...Eco.claimFirstWeek(pr, a.created, String(b.id || '')), firstweek: Eco.firstWeekView(pr, a.created), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, inventory: (pr as any).inv || {} });
       if (p === '/me/login-reward' && req.method === 'POST') return done({ ...Eco.claimLogin(pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
       if (p === '/me/missions/claim' && req.method === 'POST') return done({ ...Eco.claimMission(pr, Number(b.i)), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
       if (p === '/me/missions/reroll' && req.method === 'POST') return done({ ...Eco.rerollMission(pr, Number(b.i)), missions: Eco.missionsView(pr) });
@@ -950,7 +970,7 @@ http.createServer(async (req, res) => {
       const wallet = () => ({ coins: pr.coins, tickets: pr.tickets, dust: pr.dust });
       if (p === '/me/shop') return send(res, 200, {
         packs: Eco.packInfo(CAT, pr), price: Eco.PRICE, inv: (pr as any).inv || {}, inventory: (pr as any).inv || {}, freePack: !pr.daily.freePack,
-        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.starterPrice(set), owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), recommended: Eco.RECOMMENDED, kds: (pr as any).kds || [], wallet: wallet(),
+        starters: Eco.SHOP.starterSets.map((set) => ({ set, price: Eco.starterPrice(set), owned: pr.starters.includes(set) })), characters: Eco.charShop(pr), recommended: Eco.RECOMMENDED, promoSources: Eco.PROMO_SOURCES, kds: (pr as any).kds || [], wallet: wallet(),
       });
       if (p === '/me/shop/packs' && req.method === 'POST') return done({ ...Eco.buyPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, b.pay === 'ticket' ? 'ticket' : 'coins'), wallet: wallet() });
       if (p === '/me/shop/buy' && req.method === 'POST') { // one-call form (Game modes client)
@@ -1177,4 +1197,4 @@ http.createServer(async (req, res) => {
     console.error(e);
     return send(res, 500, { error: String(e) });
   }
-}).listen(PORT, () => console.log(`Battle of Talingchan online server ${VERSION} on http://localhost:${PORT}/online (data: ${DATA})`));
+}).listen(PORT, () => console.log(`backups: ${Backup.startBackups() ? 'daily to Supabase Storage' : 'off (no Supabase)'}`) || console.log(`Battle of Talingchan online server ${VERSION} on http://localhost:${PORT}/online (data: ${DATA})`));

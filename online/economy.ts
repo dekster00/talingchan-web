@@ -318,6 +318,8 @@ export function gameReward(a: { xp: number; prog: any }, e: GameEvent & { coinsO
   give(p, { coins });
   const done = progress(p, e);
   const ups = addXp(a, xp);
+  passXp(p, xp); // free season pass (2026-11-06)
+  if (e.pvp && !(e as any).ranked) firstWeekDone(p, 'casual');
   return { xp, coins, firstWin, levelUps: ups, missionsDone: done, level: levelOf(a.xp), coinsNote: e.coinsOk ? '' : 'No coins: this deck has cards you don\'t own yet. · เด็คมีการ์ดที่ยังไม่มี' };
 }
 
@@ -544,3 +546,76 @@ export function usableChar(p: Prog | null, want: string): string {
   if (want === FREE_CHAR) return want;
   return p && charsOf(p).includes(want) ? want : FREE_CHAR;
 }
+
+// ---------------------------------------------------------------- 2026-11-06 approved upgrades: wishlist, free season pass, first week
+// Wishlist: prog.wish = card codes (max 200). best = the packs on sale holding the most wished cards you still lack.
+export const WISH_MAX = 200;
+const wishOf = (p: Prog): string[] => ((p as any).wish ??= []);
+export function setWish(p: Prog, cat: Catalog, code: string, on: boolean) {
+  const w = wishOf(p);
+  if (!cat.byCode.has(code)) return { error: 'No such card.' };
+  const i = w.indexOf(code);
+  if (on && i < 0) { if (w.length >= WISH_MAX) return { error: `Wishlist is full (${WISH_MAX}). · วิชลิสต์เต็ม` }; w.push(code); }
+  if (!on && i >= 0) w.splice(i, 1);
+  return { ok: true, codes: w };
+}
+export function wishView(p: Prog, cat: Catalog) {
+  const w = wishOf(p), count = new Map<string, number>();
+  for (const code of w) {
+    const row = cat.byCode.get(code);
+    if (!row || (p.cards[code] || 0) >= row.limit) continue;
+    for (const [set, rows] of cat.sets) if (!SHOP_CLOSED.has(set) && rows.some((r) => r.code === code)) count.set(set, (count.get(set) || 0) + 1);
+  }
+  const best = [...count.entries()].sort((x, y) => y[1] - x[1] || x[0].localeCompare(y[0])).slice(0, 3).map(([set, n]) => ({ set, name: packName(set), kind: packKind(set), count: n }));
+  return { ok: true, codes: w, best };
+}
+
+// Free season pass (no real money): one track per month (seasonOf), 30 levels, 200 pass XP each. Pass XP = the EXP
+// every game gives (bot, casual, Ranked). Rewards are claimed one by one.
+export const PASS = { levels: 30, xpPer: 200 };
+export const PASS_REWARD = (lv: number): Gain =>
+  lv === 30 ? { coins: 500, tickets: 5, packs: { PRMO: 1 } } : lv % 10 === 0 ? { coins: 300, packs: { PRMO: 1 } } : lv % 5 === 0 ? { tickets: 2 } : lv % 2 ? { coins: 100 } : { dust: 50 };
+function passOf(p: Prog, now = Date.now()) {
+  const pp = p as any, s = seasonOf(now);
+  if (!pp.pass || pp.pass.season !== s) pp.pass = { season: s, xp: 0, claimed: [] };
+  return pp.pass as { season: string; xp: number; claimed: number[] };
+}
+export function passXp(p: Prog, xp: number) { const ps = passOf(p); ps.xp = Math.min(PASS.levels * PASS.xpPer, ps.xp + Math.max(0, Math.floor(xp))); }
+export function passView(p: Prog) {
+  const ps = passOf(p), level = Math.floor(ps.xp / PASS.xpPer);
+  return {
+    season: ps.season, level, xp: ps.xp - level * PASS.xpPer, xpNext: level >= PASS.levels ? 0 : PASS.xpPer, totalXp: ps.xp, levels: PASS.levels,
+    rewards: Array.from({ length: PASS.levels }, (_, i) => ({ lv: i + 1, gain: PASS_REWARD(i + 1), claimed: ps.claimed.includes(i + 1), ready: level >= i + 1 && !ps.claimed.includes(i + 1) })),
+  };
+}
+export function claimPass(p: Prog, lv: number) {
+  const ps = passOf(p), level = Math.floor(ps.xp / PASS.xpPer);
+  if (!(lv >= 1 && lv <= PASS.levels)) return { error: 'No such level.' };
+  if (lv > level) return { error: 'Not reached yet. · ยังไม่ถึงเลเวลนี้' };
+  if (ps.claimed.includes(lv)) return { error: 'Already claimed. · รับแล้ว' };
+  ps.claimed.push(lv); give(p, PASS_REWARD(lv));
+  return { ok: true, lv, gain: PASS_REWARD(lv) };
+}
+
+// Guided first week: day 1 tutorial duel, "build your first deck", "play a casual game", day 7 big reward.
+export const FIRST_WEEK: { id: string; text: string; gain: Gain; day?: number }[] = [
+  { id: 'tutorial', text: 'Finish the tutorial duel · เล่นบทเรียนให้จบ', gain: { coins: 200 } },
+  { id: 'deck', text: 'Build and save your first deck · สร้างและบันทึกเด็คแรก', gain: { coins: 200, tickets: 1 } },
+  { id: 'casual', text: 'Play a casual game with a friend · เล่นแคชชวลกับเพื่อน', gain: { coins: 300, tickets: 1 } },
+  { id: 'day7', text: 'Come back on day 7 · กลับมาในวันที่ 7', gain: { coins: 500, packs: { PRMO: 1 } }, day: 7 },
+];
+const fwOf = (p: Prog) => ((p as any).fw ??= { done: [], claimed: [] }) as { done: string[]; claimed: string[] };
+export function firstWeekDone(p: Prog, id: string) { const f = fwOf(p); if (FIRST_WEEK.some((s) => s.id === id && !s.day) && !f.done.includes(id)) f.done.push(id); }
+export function firstWeekView(p: Prog, created: string, now = Date.now()) {
+  const f = fwOf(p), day = Math.max(1, Math.floor((now - (Date.parse(created) || now)) / 864e5) + 1);
+  return { ok: true, day, steps: FIRST_WEEK.map((s) => ({ id: s.id, text: s.text, gain: s.gain, done: s.day ? day >= s.day : f.done.includes(s.id), claimed: f.claimed.includes(s.id) })) };
+}
+export function claimFirstWeek(p: Prog, created: string, id: string, now = Date.now()) {
+  const st = firstWeekView(p, created, now).steps.find((s) => s.id === id);
+  if (!st) return { error: 'No such step.' };
+  if (!st.done) return { error: 'Not done yet. · ยังไม่สำเร็จ' };
+  if (st.claimed) return { error: 'Already claimed. · รับแล้ว' };
+  fwOf(p).claimed.push(id); give(p, st.gain);
+  return { ok: true, id, gain: st.gain };
+}
+export const PROMO_SOURCES = ['Every level up · ทุกครั้งที่เลเวลอัป', 'Login day 7 · ล็อกอินวันที่ 7', 'Season pass levels 10, 20, 30 · พาสระดับ 10, 20, 30', 'First week day 7 · สัปดาห์แรกวันที่ 7', 'Tournaments · ทัวร์นาเมนต์'];
