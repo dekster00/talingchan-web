@@ -18,7 +18,9 @@
     manifestText() {
       if (manText === null) {
         const x = new XMLHttpRequest();
-        x.open('GET', 'assets/manifest.json', false);
+        // bugfix16: never a cached manifest (a stale one hides pictures added since: แม่นางลิ BT12-039 showed "No picture")
+        x.open('GET', 'assets/manifest.json?t=' + Date.now(), false);
+        x.setRequestHeader('Cache-Control', 'no-cache');
         try { x.send(); manText = x.status === 200 ? x.responseText : '[]'; } catch (e) { manText = '[]'; }
       }
       return manText;
