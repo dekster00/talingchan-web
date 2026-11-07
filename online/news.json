@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-07",
+   "title": "New sounds, animated Scout, B2S pack · เสียงใหม่ สอดแนมแบบแอนิเมชัน ซอง B2S",
+   "lines": [
+    "New sounds for draws, summons, Magic, LIFE flips, turn change and buying. Scout (สอดแนม) is animated: drag to choose and reorder. Decks look like real card stacks, field cards stay still, and the B2S booster is in the Shop's Special tab. · เสียงใหม่ตอนจั่ว อัญเชิญ ใช้ Magic เปิด LIFE เปลี่ยนเทิร์น และซื้อของ สอดแนมมีแอนิเมชัน ลากเลือกและเรียงได้ เด็คเป็นกองการ์ดจริง การ์ดบนสนามไม่ขยับ และซอง B2S อยู่ในแท็บ Special ของร้าน"
+   ]
+  },
+  {
+   "date": "2026-11-07",
    "title": "New cards and picture fixes · การ์ดใหม่และแก้รูปการ์ด",
    "lines": [
     "Back to School sets B2SA and B2SB plus new promos. BT12/SD09 names, GEM and text match the printed cards. แม่นางลิ's picture is back, alt arts show in the web deck editor, and โกเอมอน's POWER is 3. · ชุด Back to School B2SA และ B2SB พร้อมโปรโมใหม่ แก้ชื่อ GEM และข้อความ BT12/SD09 ให้ตรงการ์ดจริง รูปแม่นางลิกลับมา การ์ดอาร์ตพิเศษแสดงในหน้าจัดเด็คบนเว็บ และ POWER โกเอมอนเป็น 3"
