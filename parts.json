@@ -1,1 +1,1 @@
-{"index.pck": {"size": 40452996, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.efc0e8856c.pck.0", "parts/index.efc0e8856c.pck.1"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.616f7ba942.wasm.0"]}}
+{"index.pck": {"size": 40680716, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.e8994678ee.pck.0", "parts/index.e8994678ee.pck.1"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.0dcb5e453e.wasm.0"]}}
