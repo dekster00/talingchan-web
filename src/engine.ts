@@ -1607,6 +1607,31 @@ function killed(g: Game, winner: Card, loser: Card, by: PID) {
   if (f && f.onKill && !silenced(g, winner)) decide(g, winner.ctrl, () => f.onKill!(g, winner, loser, lpow, lp));
   for (const m of [...winner.mods]) { const mf = fx(m); if (mf && mf.onWearerKill) decide(g, winner.ctrl, () => mf.onWearerKill!(g, m, winner, lpow, lp)); }
 }
+/** bugfix17: a fight forced by an effect (โคกอีสานนูน): a and b fight without attacking or resting (no React windows,
+ *  no LIFE). POWER decides as in battle (ลูกฮึด wins a tie); the winner's "on kill" (FX.onKill) runs as after a battle.
+ *  Returns the winner, null for a tie (both destroyed) or when nothing was fought. */
+export function forcedFight(g: Game, a: Card, b: Card): Card | null {
+  if (!fieldZone(g, a) || !fieldZone(g, b)) return null;
+  log(g, `${a.def.name} and ${b.def.name} fight`);
+  emit(g, { ev: 'attack', who: a.ctrl, from: a.uid, to: b.uid });
+  const pairs = [[a, b], [b, a]] as [Card, Card][];
+  for (const [x, y] of pairs) for (const m of x.mods) { const mf = fx(m); if (mf && mf.wearerBattle) decide(g, x.ctrl, () => mf.wearerBattle!(g, m, x, y)); }
+  for (const [x, y] of pairs) { const f = fx(x); if (f && f.battle && !silenced(g, x)) decide(g, x.ctrl, () => f.battle!(g, x, y)); }
+  let won: Card | null = null;
+  if (fieldZone(g, a) && fieldZone(g, b)) {
+    emit(g, { ev: 'hit', who: b.ctrl, kind: 'avatar', uid: b.uid, by: a.uid });
+    const pa = power(g, a), pb = power(g, b), ta = hasKw(g, a, 'tieWin'), tb = hasKw(g, b, 'tieWin');
+    FIGHT++;
+    try {
+      if (pa > pb || (pa === pb && ta && !tb)) { killed(g, a, b, a.ctrl); won = a; }
+      else if (pb > pa || (pa === pb && tb && !ta)) { killed(g, b, a, b.ctrl); won = b; }
+      else { destroy(g, b, a.ctrl); destroy(g, a, b.ctrl); }
+    } finally { FIGHT--; }
+  }
+  endBattleTemps(g);
+  stateCheck(g);
+  return won;
+}
 function endBattleTemps(g: Game) {
   for (const pl of g.p) for (const a of pl.avatars) {
     a.temp = a.temp.filter((t) => t.until !== 'battle');
@@ -2546,6 +2571,9 @@ export function attach(g: Game, mod: Card, wearer: Card, runHook = true): boolea
   mod.wearer = wearer.uid; wearer.mods.push(mod);
   const f = fx(mod);
   if (runHook && f && f.onAttach) f.onAttach(g, mod, wearer);
+  // bugfix17: equipped by an ability (not cast: castBody already ran onOwnMagic) -> FX.onOwnEquip of the wearer's side
+  if (runHook && mod.def.subtype === 'Modification' && !(P(g, wearer.ctrl).resolving || []).includes(mod))
+    for (const s of [...P(g, wearer.ctrl).avatars, ...P(g, wearer.ctrl).mz]) { const sf = fx(s); if (sf && sf.onOwnEquip && !silenced(g, s)) decide(g, s.ctrl, () => withSource(s, () => sf.onOwnEquip!(g, s, mod, wearer))); }
   return true;
 }
 

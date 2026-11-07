@@ -50,6 +50,7 @@ export function hashStats(effect: string): Partial<Def> {
       continue;
     }
     for (const m of t.matchAll(/(?:ถือว่ามีชื่อ|นับเป็นชื่อ)\s*(?:"([^"]+)"?|(\S+))/g)) (out.aka ||= []).push((m[1] || m[2]).trim());
+    for (const m of t.matchAll(/(?:นับว่าเป็น|ถือว่าเป็น)\s*"([^"]+)"/g)) (out.aka ||= []).push(m[1].trim()); // bugfix17: ดวงจันทร์วันเพ็ญ = ค่ายบางระจัน
     if (/[Ss]ymbol/.test(t)) for (const m of t.matchAll(/\{?\s*[Ss]ymbol\s+([^}\s]+)\s*\}?/g)) (out.syms ||= []).push(m[1].replace(/ด้วย$/, ''));
     if (t.includes('ทุกสี')) out.allColors = true;
     else if (/สี(แดง|เขียว|ฟ้า|ม่วง|เหลือง)/.test(t)) for (const col of TH_COLORS) if (t.includes('สี' + col)) (out.colors ||= []).push(col);

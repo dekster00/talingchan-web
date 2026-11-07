@@ -8,6 +8,7 @@ import { attach as attachCard, canWear, lifeDown } from './engine.ts'; // v14d
 import { addPower } from './engine.ts'; // v14 answers
 import { decide as decideB13, humanDeciding as humanDecidingB13 } from './engine.ts'; // bugfix13
 import { textCost } from './engine.ts'; // other-team audit Q9
+import { forcedFight as forcedFightB17, askPick } from './engine.ts'; // bugfix17
 import { fieldAvatars } from './cards.ts'; // other-team audit Q12
 import { addToHand, ctrlUntilOwnerDraw, loseText, noAbilityNow } from './engine.ts'; // simplify1
 import { effectTargetable as effectTargetableE } from './engine.ts'; // other-team audit
@@ -352,12 +353,19 @@ const NEW: Record<string, Fx> = {
         && onZone(g2, p, 'อีสานสลิงเกอร์').length > 0 && P(g2, opp(p)).avatars.length > 0,
       (g2) => {
         markOnce(g2, P(g2, p), 'kok2');
-        const s = best(onZone(g2, p, 'อีสานสลิงเกอร์'), (a) => power(g2, a));
-        const t = best(P(g2, opp(p)).avatars.filter((a) => power(g2, a) < power(g2, s!) || (power(g2, a) === power(g2, s!) && FX[s!.def.name]?.tieWin)), (a) => value(g2, a));
-        if (!s || !t) return;
+        // bugfix17 (user 2026-11-07): a real fight (POWER decides, ลูกฮึด wins ties); the human chooses both Avatars;
+        // the winner's "on kill" runs (อีสานสลิงเกอร์ เปอร์ flips the opponent's LIFE)
+        const mine = onZone(g2, p, 'อีสานสลิงเกอร์'), theirs = P(g2, opp(p)).avatars;
+        const wins = (a: Card, t: Card) => power(g2, t) < power(g2, a) || (power(g2, t) === power(g2, a) && !!FX[a.def.name]?.tieWin);
+        const s0 = best(mine, (a) => (theirs.some((t) => wins(a, t)) ? 100 : 0) + (a.def.name.includes('เปอร์') ? 10 : 0) + power(g2, a));
+        const s = s0 ? decideB13(g2, p, () => askPick(mine, s0, { title: 'โคกอีสานนูน: choose your อีสานสลิงเกอร์ to fight' })) : null;
+        if (!s) return;
+        const t0 = best(theirs.filter((t) => wins(s, t)), (t) => value(g2, t)) || worst(theirs, (t) => power(g2, t));
+        const t = t0 ? decideB13(g2, p, () => askPick(theirs, t0, { title: `โคกอีสานนูน: choose the opponent's Avatar that fights ${s.def.name}` })) : null;
+        if (!t) return;
         // other-team audit: a fight in which neither player may use React Magic
         c.f.kokFight = g2.turn;
-        try { if (destroy(g2, t, p, false, { battle: true }) && s.def.name.includes('เปอร์')) flipLife(g2, opp(p)); } finally { delete c.f.kokFight; }
+        try { forcedFightB17(g2, s, t); } finally { delete c.f.kokFight; }
       }),
     ],
   },
@@ -430,6 +438,9 @@ const NEW: Record<string, Fx> = {
   },
   'อีสานสลิงเกอร์ เปอร์': {
     keep: 3.5,
+    // bugfix17: "เมื่อ Avatar ใบนี้ทำลาย Avatar ของฝ่ายตรงข้ามในช่วง Main Phase และบน Land มี โคกอีสานนูน : หงาย LIFE ใบบนสุด"
+    // (a fight in the Main Phase: โคกอีสานนูน's forced fight)
+    onKill: (g: Game, c: Card) => { if (g.phase === 'Main' && landOn(g, 'โคกอีสานนูน')) { log(g, 'อีสานสลิงเกอร์ เปอร์: the opponent flips their top LIFE card'); flipLife(g, opp(c.ctrl)); } },
     fieldActs: (g, p, c) => [act('เปอร์: mill 3, +2', (g2) => inMain(g2, p) && once(g2, p, 'per:' + c.uid) && !!landOn(g2, 'โคกอีสานนูน') && deckRoom(g2, p, 8),
       (g2) => { markOnce(g2, P(g2, p), 'per:' + c.uid); mill(g2, p, 3); boost(c, 2); })],
   },

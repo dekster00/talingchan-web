@@ -44,6 +44,7 @@ export interface Fx {
   onBackstab?(g: Game, c: Card, attacker: Card): void; // this card just used แทงหลัง for attacker
   onMilled?(g: Game, c: Card, p: PID, byVirus: boolean, info?: MillInfo): void; // this card was milled (v14: info = who / which card milled)
   onOwnMagic?(g: Game, src: Card, magic: Card): void; // controller cast a Magic
+  onOwnEquip?(g: Game, src: Card, mod: Card, wearer: Card): void; // bugfix17: an ability put a Modification on one of the controller's Avatars (not a cast)
   drawPhase?(g: Game, c: Card): void;
   aura?(g: Game, src: Card, target: Card): number; // power given to any Avatar
   grant?(g: Game, src: Card, target: Card, kw: string): boolean; // keyword given to any Avatar (read from every card in play: Avatars, Magic Zone, attached cards, Lands, face-up LIFE)

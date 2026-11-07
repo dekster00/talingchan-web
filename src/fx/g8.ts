@@ -1323,6 +1323,7 @@ function vodkaWake(g: Game, s: Card, u: Card) {
 const THRONE_F = 'บัลลังก์ตั๊กแตนศตวรรษ';
 const LIPO = 'ลิโป้ ขุนพลเทพสงคราม';
 const CAMP_F = 'ค่ายบางระจัน';
+const isCampF = (x: Card) => x.def.name === CAMP_F || !!(x.def.aka && x.def.aka.includes(CAMP_F)); // bugfix17: ดวงจันทร์วันเพ็ญ counts as ค่ายบางระจัน
 const CHID = 'ไอ้ชิด อโยธยา Express';
 
 // card texts (text box) from the card data, for "has X in its Text Box" checks
@@ -1338,7 +1339,7 @@ const namesWhere = (pred: (name: string, text: string) => boolean, fallback: str
 };
 const BANG_AV = new Set(BANG);
 const isBRJ = (c: Card) => isA(c) && (BANG_AV.has(c.def.name) || textHas(c, CAMP_F));
-const bangCamp = (g: Game, p: PID) => P(g, p).mz.some((x) => x.def.type === 'Construct' && x.def.name === CAMP_F);
+const bangCamp = (g: Game, p: PID) => P(g, p).mz.some((x) => x.def.type === 'Construct' && isCampF(x));
 const chid = (g: Game, p: PID) => P(g, p).avatars.some((a) => a.def.name === CHID && !silenced(g, a));
 const grasshopper = (c: Card) => isA(c) && (nameHas(c, 'ตั๊กแตน') || textHas(c, 'ตั๊กแตน'));
 
@@ -1466,7 +1467,7 @@ for (const n of namesWhere((n, t) => TYPE.get(n) === 'Avatar' && t.includes(CAMP
 }
 FX['เมือง ช่างใหญ่'] && (FX['เมือง ช่างใหญ่'].jutsu = (g, c) => {
   const p = c.ctrl, pl = P(g, p);
-  const k = pl.deck.find((x) => x.def.name === CAMP_F);
+  const k = pl.deck.find((x) => x.def.name === CAMP_F) || pl.deck.find(isCampF);
   if (!k || pl.mz.filter((x) => x.def.type === 'Construct').length >= 3 || bangCamp(g, p) || (!chid(g, p) && pl.hand.length < 2)) return;
   if (!payDiscard(g, p, 2)) return;
   if (summon(g, p, k, 'effect')) { k.f.built = 1; const bf: any = FX[k.def.name]; if (bf && bf.onBuild) bf.onBuild(g, p, k); }
@@ -1502,7 +1503,7 @@ if (FX['กำแพงด่านสุดท้าย']) {
 }
 // น้าเอี๊ยด BT08-004: our Construct ค่ายบางระจัน POWER +2
 patchFx('น้าเอี๊ยด นักบรรเลง', {
-  aura: (g: Game, s: Card, t: Card) => (t.def.type === 'Construct' && t.def.name === CAMP_F && P(g, s.ctrl).mz.includes(t) && P(g, s.ctrl).avatars.includes(s) ? 2 : 0),
+  aura: (g: Game, s: Card, t: Card) => (t.def.type === 'Construct' && isCampF(t) && P(g, s.ctrl).mz.includes(t) && P(g, s.ctrl).avatars.includes(s) ? 2 : 0),
 });
 // เนียจัง BT08-029: the taken Avatar is renamed "โอตะ" (shown in the detail box); renamed ones count as โอตะ later
 if (FX['เนียจัง ไอดอลอินฟลูเอนเซอร์']) FX['เนียจัง ไอดอลอินฟลูเอนเซอร์'].fieldActs = (g, p, c) => {
@@ -1557,7 +1558,7 @@ if (FX['ทองเหม็น ขวานคลั่ง']) {
 // under the Deck instead (once per turn, optional)
 patchFx('อาจารย์ธรรมโชติ', {
   leaveGuard: (g: Game, self: Card, t: Card, info: any) => {
-    if (t.def.name !== CAMP_F || t.def.type !== 'Construct' || info.how !== 'destroy' || info.battle || info.cost || !info.src) return null;
+    if (!isCampF(t) || t.def.type !== 'Construct' || info.how !== 'destroy' || info.battle || info.cost || !info.src) return null;
     if (!(isA(info.src) || info.src.def.type === 'Magic')) return null;
     const pl = P(g, t.ctrl), inHand = pl.hand.includes(self);
     if (!inHand && !pl.avatars.includes(self)) return null;

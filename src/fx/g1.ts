@@ -106,7 +106,8 @@ const BRJ_NAMES = ['จัน หนวดเขี้ยว', 'อิน สไ
   'พ่อแท่น ผู้นำอาวุโส', 'อาจารย์ธรรมโชติ', 'บุญช่วย ควายรักชาติ', 'ไอ้ชิด อโยธยา Express', 'เณรคู ศิษย์เอกพระอาจารย์', 'น้าเอี๊ยด นักบรรเลง'];
 const isBRJ = (c: Card) => isA(c) && BRJ_NAMES.includes(c.def.name); // Avatars with "ค่ายบางระจัน" in their text box
 const CAMP = 'ค่ายบางระจัน';
-const camp = (g: Game, p: PID) => P(g, p).mz.some((x) => x.def.name === CAMP);
+const isCampB17 = (x: Card) => x.def.name === CAMP || !!(x.def.aka && x.def.aka.includes(CAMP)); // bugfix17: ดวงจันทร์วันเพ็ญ counts as ค่ายบางระจัน
+const camp = (g: Game, p: PID) => P(g, p).mz.some(isCampB17);
 const isGen = (c: Card) => isA(c) && nameHas(c, 'ขุนพล') && symIs(c, 'ต่างชาติ'); // v14: "#ถือว่ามีชื่อ ขุนพล" counts (โจโฉ)
 const isRat = (c: Card) => c.def.type !== 'Magic' && symIs(c, 'รัททาทุย');
 const rat111 = (c: Card) => isA(c) && symIs(c, 'รัททาทุย') && c.def.cost === 1 && c.def.gem === 1 && c.def.power === 1;
@@ -610,7 +611,7 @@ const NEW: Record<string, any> = {
     keep: 4,
     jutsu: (g: Game, c: Card) => {
       const p = c.ctrl, pl = P(g, p);
-      const k = pl.deck.find((x) => x.def.name === CAMP);
+      const k = pl.deck.find((x) => x.def.name === CAMP) || pl.deck.find(isCampB17);
       if (!k || !canBuild(g, p, k) || pl.hand.length < 2) return;
       if (!discardWorst(g, p, 2)) return;
       build(g, p, k); shuffle(g, pl.deck);

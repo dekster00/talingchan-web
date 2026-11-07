@@ -121,7 +121,7 @@ const isQueen = (g: Game, c: Card) => nameHas(c, 'รัททาทุย น�
 const isSoldier = (g: Game, c: Card) => named(c, 'ทหาร') || named(c, 'รด.') || nameHas(c, 'ทหาร') || nameHas(c, 'รด.');
 // แมวนิค: its controller can't take cards from Deck to hand by abilities (v14c FX.blockToHand; this check also stops the bot trying)
 function deckToHandOK(g: Game, p: PID) { return !P(g, p).avatars.some((a) => a.def.name === 'แมวนิค' && !silenced(g, a)); }
-const hasBangCamp = (g: Game, p: PID) => P(g, p).mz.some((x) => x.def.type === 'Construct' && x.def.name === 'ค่ายบางระจัน');
+const hasBangCamp = (g: Game, p: PID) => P(g, p).mz.some((x) => x.def.type === 'Construct' && (x.def.name === 'ค่ายบางระจัน' || !!(x.def.aka && x.def.aka.includes('ค่ายบางระจัน')))); // bugfix17
 
 // Flip n face-down LIFE of p face up (never loses the game; stops when none is face down).
 const CAO = 'โจโฉ ผู้นำเบ็ดเสร็จแห่งวุยก๊ก';
@@ -232,14 +232,10 @@ Object.assign(FX, {
       mill(g, p, 5);
       search(g, p, (x) => named(x, 'อาวุธหุ่นนักรบผู้กล้า'), 'hell');
     },
-    onOwnMagic: (g, s, m) => {
-      const p = s.ctrl;
-      if (m.def.subtype !== 'Modification' || !named(m, 'อาวุธหุ่นนักรบผู้กล้า') || !once(g, p, 'evil:' + s.uid)) return;
-      markOnce(g, P(g, p), 'evil:' + s.uid);
-      const od = P(g, opp(p)); const top = od.deck[0]; if (!top) return;
-      od.deck.shift();
-      if (top.def.type === 'Magic') { od.hell.push(top); log(g, `${top.def.name} to hell`); } else od.deck.push(top);
-    },
+    // bugfix17 (user 2026-11-07): automatic, once per turn, whenever we use (cast, or an ability equips) an
+    // "อาวุธหุ่นนักรบผู้กล้า" Modification: สอดแนม the top of the opponent's Deck (shown), a Magic to Hell, else to the bottom
+    onOwnMagic: (g, s, m) => evilScout(g, s, m),
+    onOwnEquip: (g, s, m) => evilScout(g, s, m),
   },
   // approx: only this file's ค่ายบางระจัน discard costs (เณรคู) are waived
   'ไอ้ชิด อโยธยา Express': { keep: 2.5 },
@@ -1261,3 +1257,15 @@ costFirst('ขายแดก !!!', (g, p, c) => {
   discard(g, p, d); return true;
 }, (g, p) => { draw(g, p, 2); });
 import { deckRoom } from '../engine.ts'; // bugfix14
+
+function evilScout(g: Game, s: Card, m: Card) {
+  const p = s.ctrl;
+  if (m.def.subtype !== 'Modification' || !named(m, 'อาวุธหุ่นนักรบผู้กล้า') || !P(g, p).avatars.includes(s) || !once(g, p, 'evil:' + s.uid)) return;
+  markOnce(g, P(g, p), 'evil:' + s.uid);
+  const o = opp(p);
+  withSource(s, () => scoutDeck(g, o, 1, (top) => {
+    const x = top[0]; if (!x) return;
+    if (x.def.type === 'Magic') { P(g, o).hell.push(x); log(g, `อีวิลไมเกรน: ${x.def.name} (Magic) goes to Hell`); }
+    else log(g, `อีวิลไมเกรน: ${x.def.name} goes to the bottom of the Deck`);
+  }, 'bottom', 'อีวิลไมเกรน'));
+}
