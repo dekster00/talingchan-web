@@ -8,3 +8,4 @@ import './g6.ts';
 import './g7.ts';
 import './g8.ts';
 import './g9.ts';
+import './g10.ts';

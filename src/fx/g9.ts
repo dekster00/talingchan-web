@@ -100,8 +100,8 @@ const redGeneral = (c: Card) => isA(c) && named(c, 'ขุนพล') && colorIs
 // Symbol: the unicorn icon = สัตว์มหัศจรรย์ (the user's "Mythical Beast"; v13 main.gd icon 24).
 const TOKEN_GULOO: Def = { print: 'BT12-076', name: 'สัตว์ในตำนาน', type: 'Token', subtype: '', cost: 2, gem: 0, power: 2, symbol: 'สัตว์มหัศจรรย์', color: 'เขียว', only: false, vanilla: true };
 
-// ชาร์อึก BT12-009: "ในเกมนี้ทั้งเกม เราจะสามารถอัญเชิญได้เพียง Avatar "ผู้ฝึกมังกร" หรือ Avatar {symbol มังกร}"
-RULES['ชาร์อึก'] = { label: 'ชาร์อึก: only "ผู้ฝึกมังกร" or {มังกร} Avatars can be summoned', summon: (g, r, c) => named(c, 'ผู้ฝึกมังกร') || beast(c) };
+// ซาร์อึก BT12-009: "ในเกมนี้ทั้งเกม เราจะสามารถอัญเชิญได้เพียง Avatar "ผู้ฝึกมังกร" หรือ Avatar {symbol มังกร}"
+RULES['ซาร์อึก'] = { label: 'ซาร์อึก: only "ผู้ฝึกมังกร" or {มังกร} Avatars can be summoned', summon: (g, r, c) => named(c, 'ผู้ฝึกมังกร') || beast(c) };
 
 function charCands(g: Game, p: PID, self: Card) {
   return P(g, p).hand.filter((x) => x !== self && x.def.type === 'Avatar' && beast(x) && canPlaceAvatar(P(g, p), false, x) && !uniqueBlocked(g, p, x)
@@ -216,7 +216,7 @@ const armsMod = (c: Card) => c.def.type === 'Magic' && c.def.subtype === 'Modifi
 
 Object.assign(FX, {
   // ===== BT12 red =====
-  'นานาโอชิ นานะ เทพธิดากาชาและที่จอดรถ': {
+  'นานาโฮชิ นานะ เทพธิดากาชาและที่จอดรถ': {
     keep: 4.5,
     staticPower: (g, c) => distinctSyms(g, c.ctrl),
     onAttack: (g, c) => withSource(c, () => {
@@ -229,10 +229,10 @@ Object.assign(FX, {
       if (t) destroy(g, t, p);
     }),
   },
-  'ชาร์อึก ผู้ฝึกมังกร': {
+  'ซาร์อึก ผู้ฝึกมังกร': {
     keep: 4,
     costMod: (g: Game, self: Card, t: Card) => (t !== self && P(g, self.ctrl).avatars.includes(self) && P(g, self.ctrl).hand.includes(t) && t.def.type === 'Avatar' && beast(t) ? -1 : 0),
-    handActs: (g, p, c) => [act('ชาร์อึก: discard this, summon a {มังกร} from hand (Cost -6)', (g2) => inMain(g2, p) && P(g2, p).hand.includes(c) && charCands(g2, p, c).length > 0,
+    handActs: (g, p, c) => [act('ซาร์อึก: discard this, summon a {มังกร} from hand (Cost -6)', (g2) => inMain(g2, p) && P(g2, p).hand.includes(c) && charCands(g2, p, c).length > 0,
       (g2) => {
         const x = best(charCands(g2, p, c), (y) => value(g2, y) + y.def.cost);
         if (!x) return;
@@ -240,7 +240,7 @@ Object.assign(FX, {
         const cost = Math.max(0, costOf(g2, p, x) - 6);
         const pay = choosePayment(g2, p, cost, [x], x);
         if (pay) summon(g2, p, x, 'jutsu', pay, cost);
-        if (!(g2.rules || []).some((r) => r.key === 'ชาร์อึก' && r.p === p)) addRule(g2, { p, key: 'ชาร์อึก', until: RULE_GAME });
+        if (!(g2.rules || []).some((r) => r.key === 'ซาร์อึก' && r.p === p)) addRule(g2, { p, key: 'ซาร์อึก', until: RULE_GAME });
       })],
   },
   // image: the badge before ":" is เลือกปฏิบัติ (choose one), the data text says "เนรเทศ" (data report §2.3)
@@ -381,7 +381,7 @@ Object.assign(FX, {
     },
     aura: (g, s, t) => (P(g, s.ctrl).mz.includes(s) && P(g, s.ctrl).avatars.includes(t) && multiSym(g, t) ? 1 : 0),
   },
-  'ชุนฮก กุนซือพรสวรรค์แห่งวุยก๊ก': {
+  'ซุนฮก กุนซือพรสวรรค์แห่งวุยก๊ก': {
     keep: 3,
     usedAsCost: (g, p, c, summoned) => {
       if (!(named(summoned, 'ขุนพล') && colorIs(summoned, 'ฟ้า') && symIs(summoned, 'ต่างชาติ'))) return;
@@ -485,7 +485,7 @@ Object.assign(FX, {
       && once(g2, p, 'kamai:' + c.uid) && P(g2, p).hand.length > 0 && P(g2, opp(p)).avatars.length > 0,
     (g2) => { use(g2, p, 'kamai:' + c.uid); kamaiAdvent(g2, c, false); })],
   },
-  'บัช อัศวินตลิ่งชันมือหนึ่ง': {
+  'บัซ อัศวินตลิ่งชันมือหนึ่ง': {
     keep: 4, shield: true,
     staticPower: (g, c) => (g.active === c.ctrl && P(g, c.ctrl).avatars.some((a) => a !== c && a.def.name !== c.def.name && named(a, 'อัศวินตลิ่งชัน')) ? 2 : 0),
     getActive: (g: Game, self: Card) => g.active === self.ctrl && P(g, self.ctrl).avatars.some((a) => a !== self && a.def.name !== self.def.name && named(a, 'อัศวินตลิ่งชัน')) && 'อัศวินตลิ่งชัน: POWER +2',
@@ -520,12 +520,12 @@ Object.assign(FX, {
       search(g2, p, liMagic, 'deck'); // shuffles the Deck
     }))],
   },
-  'เช็กเราว์ ยอดอาชาแห่งขุนพล': {
+  'เซ็กเธาว์ ยอดอาชาแห่งขุนพล': {
     keep: 3,
     costOnlyFor: (forCard) => named(forCard, 'ขุนพล') && symIs(forCard, 'ต่างชาติ'),
-    // "เราสามารถควบคุม เช็กเราว์ ในสนาม ได้เพียง 1 ใบ"
+    // "เราสามารถควบคุม เซ็กเธาว์ ในสนาม ได้เพียง 1 ใบ"
     summonIf: (g, p, c) => !P(g, p).avatars.some((a) => a.def.name === c.def.name || a.mods.some((m) => m.def.name === c.def.name)),
-    handActs: (g, p, c) => [act('เช็กเราว์: wear it on "กวนอู" / "ลิโป้"', (g2) => inMain(g2, p) && P(g2, p).hand.includes(c)
+    handActs: (g, p, c) => [act('เซ็กเธาว์: wear it on "กวนอู" / "ลิโป้"', (g2) => inMain(g2, p) && P(g2, p).hand.includes(c)
       && !P(g2, p).avatars.some((a) => a.def.name === c.def.name || a.mods.some((m) => m.def.name === c.def.name))
       && P(g2, p).avatars.some((a) => (named(a, 'กวนอู') || named(a, 'ลิโป้')) && !a.def.noWear),
     (g2) => { const w = best(P(g2, p).avatars.filter((a) => (named(a, 'กวนอู') || named(a, 'ลิโป้')) && !a.def.noWear), (a) => value(g2, a)); if (w) attach(g2, c, w); })],
@@ -535,7 +535,7 @@ Object.assign(FX, {
       if (named(w, 'ลิโป้')) return 1 + lowered(g, w);
       return 0;
     },
-    getFor: (g: Game, self: Card, t: Card) => t.mods.includes(self) && (named(t, 'กวนอู') ? 'เช็กเราว์: POWER +1 ต่อ "จ๊กก๊ก" ใบอื่น' : named(t, 'ลิโป้') ? 'เช็กเราว์: POWER +1, ไม่รับผลลด POWER' : false),
+    getFor: (g: Game, self: Card, t: Card) => t.mods.includes(self) && (named(t, 'กวนอู') ? 'เซ็กเธาว์: POWER +1 ต่อ "จ๊กก๊ก" ใบอื่น' : named(t, 'ลิโป้') ? 'เซ็กเธาว์: POWER +1, ไม่รับผลลด POWER' : false),
   },
   // BT12-024 (added 2026-10-20 from the user's picture): exile a {กะปอม} from Hell, summon another {กะปอม} Cost <= 5 from
   // Hell; discarding 1 more card makes it a จุติ summon. The summoned Avatar gets "คำสั่งเสีย : เนรเทศ การ์ดใบนี้" (c.f.dcExile).
@@ -594,7 +594,7 @@ Object.assign(FX, {
       takeHand(g, c.ctrl, top, (x) => isA(x) && (word(x, 'กุ่ย') || word(x, 'ฮอล') || word(x, 'นาย') || named(x, 'แบงค์')));
     }, 'shuffle'),
   },
-  'บันบัน คุณนายกระต่ายนักดาบเฟอรี่': {
+  'บันบัน คุณนายกระต่ายนักดาบเฟอร์รี่': {
     keep: 4,
     jutsu: (g, c) => placeToken(g, c.ctrl, TOKEN_GULOO, 1),
     getActive: (g: Game, self: Card) => distinctSyms(g, self.ctrl) >= 5 && '5 Symbol: โจมตี LIFE สำเร็จ = ทำความเสียหาย LIFE 2 ใบ',
@@ -792,9 +792,9 @@ Object.assign(FX, {
       withSource(c, () => { if (toExile(g, c)) draw(g, owner, 1); });
     },
   },
-  'กองทัพปีศาจ ฟรีซเชอร์': {
+  'กองทัพปีศาจ ฟรีซเซอร์': {
     keep: 2,
-    hellActs: (g, p, c) => [act('ฟรีซเชอร์: exile from Hell, scout 4, take a กองทัพปีศาจ', (g2) => inMain(g2, p) && P(g2, p).hell.includes(c) && bossNear(g2, p) && P(g2, p).deck.length > 0,
+    hellActs: (g, p, c) => [act('ฟรีซเซอร์: exile from Hell, scout 4, take a กองทัพปีศาจ', (g2) => inMain(g2, p) && P(g2, p).hell.includes(c) && bossNear(g2, p) && P(g2, p).deck.length > 0,
       (g2) => withSource(c, () => {
         if (!toExile(g2, c)) return;
         peek(g2, p, 4, (cs) => { takeHand(g2, p, cs, army); }, 'bottom');
@@ -1000,7 +1000,7 @@ Object.assign(FX, {
     fieldActs: (g, p, c) => [act('ไอ้หนึ่ง: สอดแนม 1, top or bottom', (g2) => inMain(g2, p) && P(g2, p).avatars.includes(c) && once(g2, p, 'ohnueng:' + c.uid) && P(g2, p).deck.length > 0,
     (g2) => withSource(c, () => { use(g2, p, 'ohnueng:' + c.uid); peek(g2, p, 1, () => {}, 'either'); }))],
   },
-  'เกตุ ฮีโร่วัยเยาว์': {
+  'เกดุ ฮีโร่วัยเยาว์': {
     keep: 4,
     jutsu: (g: Game, c: Card) => {
       const p = c.ctrl;
@@ -1082,7 +1082,7 @@ Object.assign(FX, {
       },
     },
   },
-  'มือเปรี้ยะ': {
+  'มือเปรี๊ยะ': {
     keep: 2.5,
     react: {
       on: ['toHand' as any],
@@ -1092,7 +1092,7 @@ Object.assign(FX, {
         const h = P(g, ev.actor).hand;
         if (!h.length) return;
         const t = h[Math.floor(rand(g) * h.length)];
-        if (toExile(g, t)) log(g, `มือเปรี้ยะ: ${t.def.name} is exiled from the opponent's hand`);
+        if (toExile(g, t)) log(g, `มือเปรี๊ยะ: ${t.def.name} is exiled from the opponent's hand`);
       },
     },
   },

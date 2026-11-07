@@ -15,7 +15,7 @@ export interface Act { k: 'summon' | 'cast' | 'hand' | 'field' | 'land' | 'hell'
 // player who caused it, or the opponent of its controller when nobody did); targeted = an effect of source (actor's card)
 // picked ev.target; a React may cancel it (the pick becomes null) or set ev.target to redirect it.
 export type EvKind = 'magic' | 'summon' | 'attack' | 'ability' | 'fight' | 'destroy' | 'battleStart'
-  | 'partner' | 'endTurn' | 'lifeHit' | 'destroyed' | 'left' | 'targeted' | 'toHand'; // toHand: a card went from Deck to hand outside the Draw Phase (มือเปรี้ยะ)
+  | 'partner' | 'endTurn' | 'lifeHit' | 'destroyed' | 'left' | 'targeted' | 'toHand'; // toHand: a card went from Deck to hand outside the Draw Phase (มือเปรี๊ยะ)
 export interface Ev {
   kind: EvKind; // battleStart: start of actor's Battle Phase
   actor: PID;
@@ -2310,7 +2310,7 @@ export function addToHand(g: Game, c: Card, p: PID = c.owner, o: HandOpts = {}):
 }
 /** FX.onToHand of c, for code that moved c into a hand itself (scout picks: handWatch(g, c, 'deck')). */
 export function handWatch(g: Game, c: Card, from: HandFrom, o: HandOpts = {}) {
-  if (from === 'deck' && g.phase !== 'Draw' && g.winner === null) { // bugfix8: React window (มือเปรี้ยะ)
+  if (from === 'deck' && g.phase !== 'Draw' && g.winner === null) { // bugfix8: React window (มือเปรี๊ยะ)
     const h = g.p.findIndex((q) => q.hand.includes(c));
     if (h >= 0) respond(g, { kind: 'toHand', actor: h as PID, source: null, cancelled: false, depth: 0 });
   }

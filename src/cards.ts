@@ -587,6 +587,8 @@ export const FX: Record<string, Fx> = {
       const pl = P(g, c.ctrl);
       const top = pl.deck[0];
       if (!top) return false;
+      if (onceUsed(g, pl, 'hanuLeave' + c.uid)) return false; // bottcg 2026-11-07: เทิร์นละครั้ง
+      markOnce(g, pl, 'hanuLeave' + c.uid);
       detach(g, top); pl.hell.push(top);
       const saved = top.def.type === 'Avatar' && isVanara(top);
       if (saved) log(g, 'หนุมาน stays (สอดแนม hit วานร)');
