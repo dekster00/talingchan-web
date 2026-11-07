@@ -47,7 +47,7 @@ const DECIDER: number[] = [];
 export function withDecider<T>(p: number, fn: () => T): T { DECIDER.push(p); try { return fn(); } finally { DECIDER.pop(); } }
 export const quiet = <T>(fn: () => T): T => withDecider(-1, fn);
 // context: all cards revealed by the current สอดแนม (the screen shows them; only xs are choosable); none: nothing to choose
-export interface AskOpts { optional?: boolean; title?: string; context?: Card[]; none?: boolean }
+export interface AskOpts { optional?: boolean; title?: string; context?: Card[]; none?: boolean; rest?: string; arrange?: 'top' } // ui39: rest = where a สอดแนม's other cards go (the screen arranges them); arrange = an either-scout 'put on TOP' pick
 type AskFn = (xs: Card[], dflt: Card | null, o: AskOpts) => Card | null;
 let ASK: AskFn | null = null, ASK_FOR = -1;
 export function setAsk(p: PID, fn: AskFn | null) { ASK_FOR = fn ? p : -1; ASK = fn; HUMANS.clear(); if (fn) HUMANS.add(p); }
@@ -104,7 +104,7 @@ function askPick0<T>(xs: T[], dflt: T | null, o: AskOpts = {}): T | null {
   if (!ASK || !humanTop()) return dflt;
   // inside a สอดแนม: the human always sees the revealed cards and picks (even with one candidate)
   const sc = SCOUTS[SCOUTS.length - 1];
-  if (sc && !o.context && xs.length && xs.every((x: any) => sc.cards.includes(x))) { sc.asked = true; o = { ...o, context: sc.cards, title: o.title || sc.title, optional: o.optional || sc.optional }; }
+  if (sc && !o.context && xs.length && xs.every((x: any) => sc.cards.includes(x))) { sc.asked = true; o = { ...o, context: sc.cards, title: o.title || sc.title, optional: o.optional || sc.optional, rest: sc.rest }; }
   else if (o.optional ? xs.length < 1 : (dflt === null || (xs.length < 2 && !fromPile(xs)))) return dflt; // bugs7 item 2: a card from a Deck / Hell is always shown
   if (!xs.every((x: any) => x && typeof x.uid === 'number' && x.def)) return dflt;
   const r = quiet(() => ASK!(xs as any, dflt as any, o)) as any;
@@ -134,7 +134,7 @@ function scoutOptional(c: Card | undefined): boolean {
 // Reveal the top n of p's Deck to both players, let pick() take cards (its choices ask the human over the revealed
 // cards), then the rest go: 'bottom' in the order the owner picks (order ask), 'shuffle' back, 'top' back in order,
 // or 'hell' (one mill event per card).
-const SCOUTS: { cards: Card[]; asked: boolean; title: string; optional?: boolean }[] = [];
+const SCOUTS: { cards: Card[]; asked: boolean; title: string; optional?: boolean; rest?: string }[] = [];
 type OrderFn = (cards: Card[], title: string, where: 'bottom' | 'top') => Card[] | null;
 let ORDER: OrderFn | null = null;
 export function setOrder(fn: OrderFn | null) { ORDER = fn; }
@@ -159,7 +159,7 @@ export function arrangeTopBottom(g: Game, p: PID, cs: Card[], title: string, bot
     for (;;) {
       const rest = cs.filter((c) => !top.includes(c));
       if (!rest.length) break;
-      const r = quiet(() => ASK!(rest, null, { optional: true, title: `${title}: choose a card to put on TOP of your Deck (Skip: the rest go to the bottom)` }));
+      const r = quiet(() => ASK!(rest, null, { optional: true, arrange: 'top', title: `${title}: choose a card to put on TOP of your Deck (Skip: the rest go to the bottom)` }));
       if (!r || !rest.includes(r)) break;
       top.push(r);
     }
@@ -184,14 +184,14 @@ export function scoutDeck(g: Game, p: PID, n: number, pick: (cs: Card[]) => void
     log(g, s);
     emit(g, { ev: 'reveal', who: p, cards: top.map((c) => ({ uid: c.uid, print: c.def.print, name: c.def.name })), s });
   }
-  const ctx = { cards: [...top], asked: false, title: title + ' · choose a card', optional: scoutOptional(SRC[SRC.length - 1]) };
+  const ctx = { cards: [...top], asked: false, title: title + ' · choose a card', optional: scoutOptional(SRC[SRC.length - 1]), rest };
   SCOUTS.push(ctx);
   try { pick(top); } finally { SCOUTS.pop(); }
   let left = top.filter((c) => !findCard(g, c.uid));
   if (left.length && withHook('onScouted').size) { scoutWatch(g, p, left, s0scout); left = left.filter((c) => !findCard(g, c.uid)); } // v14c: FX.onScouted
   if (top.length && !ctx.asked && ASK && !g.sim && p === topDecider() && humanTop()) {
     const took = top.filter((c) => !left.includes(c));
-    quiet(() => ASK!([], null, { none: true, optional: true, context: ctx.cards, title: `${title}: ${took.length ? 'took ' + took.map((c) => c.def.name).join(', ') : 'nothing can be taken'}` }));
+    quiet(() => ASK!([], null, { none: true, optional: true, context: ctx.cards, rest, title: `${title}: ${took.length ? 'took ' + took.map((c) => c.def.name).join(', ') : 'nothing can be taken'}` }));
   }
   if (rest === 'hell') {
     left.forEach((c, i) => { pl.hell.push(c); emit(g, { ev: 'mill', who: p, uid: c.uid, print: c.def.print, name: c.def.name, i: i + 1, n: left.length }); });

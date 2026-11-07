@@ -378,8 +378,10 @@ function makeHuman(seat: PID): Brain { return {
     const opts: { label: string; uid: number; card: Card | null; shield?: Card }[] = [];
     quiet(() => {
       // โล่มนุษย์ (v13): also against attacks on your LIFE (เตะไข่)
-      if (!SHIELDED.has(ev)) for (const a of shieldOptions(g, me, ev)) // bugs7 item 4: one โล่มนุษย์ per attack, then React
-        opts.push({ label: `โล่มนุษย์: ${a.def.name} takes the attack instead${ev.target ? '' : ' (protects your LIFE)'}`, uid: a.uid, card: null, shield: a });
+      if (!SHIELDED.has(ev)) { // bugs7 item 4: one โล่มนุษย์ per attack, then React
+        const sh = shieldOptions(g, me, ev); // ui39 (user): the button says just "โล่มนุษย์" (the name only when there are several)
+        for (const a of sh) opts.push({ label: sh.length > 1 ? `โล่มนุษย์: ${a.def.name}` : 'โล่มนุษย์', uid: a.uid, card: null, shield: a });
+      }
       for (const c of reactCands(g, me)) if (canUseReact(g, me, c, ev)) // v14: also attached / Magic Zone / Land cards
         opts.push({ label: `${pl.hand.includes(c) ? 'React' : 'Use ability'}: ${c.def.name}`, uid: c.uid, card: c });
     });
@@ -430,7 +432,7 @@ setAskSeats([0, 1], (xs, dflt, o) => {
   if (o.context) {
     const ctx = o.context;
     const q: any = {
-      type: 'pick', title: textLabel(o.title || 'สอดแนม'), scout: true,
+      type: 'pick', title: textLabel(o.title || 'สอดแนม'), scout: true, rest: o.rest || 'shuffle', // ui39: the screen arranges the rest
       options: ctx.map((c) => ({ ...brief(G, c), label: `${c.def.name} · revealed`, disabled: o.none || !xs.includes(c) })),
       def: dflt && !o.none ? ctx.indexOf(dflt) : -1,
     };
@@ -444,6 +446,7 @@ setAskSeats([0, 1], (xs, dflt, o) => {
   const q: any = {
     type: 'pick', title: o.title ? textLabel(o.title) : `Choose a card${LAST[me] ? ' for ' + LAST[me] : ''}`,
     options: xs.map((c) => ({ ...brief(G, c), label: `${c.def.name} · ${zoneOf(G, c)}` })), def: dflt ? xs.indexOf(dflt) : -1,
+    ...(o.arrange ? { arrange: o.arrange } : {}), // ui39: an either-scout 'put on TOP' pick
   };
   if (o.optional) q.pass = 'Skip';
   const k = ask(me, q);

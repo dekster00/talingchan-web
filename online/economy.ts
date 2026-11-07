@@ -31,7 +31,7 @@ export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (l
 // prices (user 2026-11-03): packs 100 coins, KD and BT11-BT12 200; the PROMO pack is not sold, it is a reward
 // (every level up, day 7 of the login calendar, tournaments). Starter decks 600, SD09 1000.
 // KD = a whole deck, 1,500 coins (user 2026-11-06)
-export const packPrice = (set: string) => set.startsWith('KD') ? 1500 : (/^(CC|ODY)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
+export const packPrice = (set: string) => set.startsWith('KD') ? 1500 : (/^(CC|ODY|B2S)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
 // packs announced without card data yet: listed as SOON, not sold
 export const SOON_PACKS = ['CC03'];
 export const SHOP_CLOSED = new Set(['PRMO']);
@@ -78,9 +78,11 @@ export function catalog(raw: any[]): Catalog {
     const lo = lowest.get(row.code);
     if (!lo || RARITY_RANK[r] < RARITY_RANK[lo]) lowest.set(row.code, r);
     // packs: the BT sets, every printed rarity is a separate pull (the same code in SR and SCR = two slots)
-    if (/^(BT\d\d|KD0[1-4]|PRMO|CC0\d|ODY1)$/.test(row.series) && row.type !== 'Life' && row.type !== 'Token') {
-      if (!sets.has(row.series)) sets.set(row.series, []);
-      sets.get(row.series)!.push(row);
+    // B2S01 (2026-11-07, Back to School pack) = the B2SA + B2SB cards in one pack
+    const pset = /^B2S[AB]$/.test(row.series) ? 'B2S01' : row.series;
+    if (/^(BT\d\d|KD0[1-4]|PRMO|CC0\d|ODY1|B2S01)$/.test(pset) && row.type !== 'Life' && row.type !== 'Token') {
+      if (!sets.has(pset)) sets.set(pset, []);
+      sets.get(pset)!.push(row);
     }
   }
   return { byCode, sets, nameOf, lowest };
@@ -226,7 +228,7 @@ function addCard(p: Prog, cat: Catalog, code: string, rarity: string): { code: s
 export const ODDS = { top: { SCR: 0.025, UR: 0.075, SR: 0.2 }, pity: 40, cards: 6 };
 const bestOf = (rows: CardRow[]) => ['SCR', 'UR', 'SR', 'R', 'C'].find((r) => rows.some((x) => x.rarity === r)) || 'C';
 // shop tabs (user 2026-11-06): BT = 'booster', CC/ODY = 'special', KD = 'kd' (a whole deck, see buyKd), PRMO = 'promo'
-export const packKind = (set: string) => (set.startsWith('BT') ? 'booster' : /^(CC|ODY)/.test(set) ? 'special' : set.startsWith('KD') ? 'kd' : 'promo');
+export const packKind = (set: string) => (set.startsWith('BT') ? 'booster' : /^(CC|ODY|B2S)/.test(set) ? 'special' : set.startsWith('KD') ? 'kd' : 'promo');
 export const RECOMMENDED = ['BT12', 'SD09', 'CC03'];
 const kdsOf = (p?: Prog): string[] => (p ? ((p as any).kds ??= []) : []);
 export const packName = (set: string) => (set === 'PRMO' ? 'PROMO' : set);
