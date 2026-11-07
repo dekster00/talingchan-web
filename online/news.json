@@ -3,19 +3,12 @@
  "updates": [
   {
    "date": "2026-11-07",
-   "title": "Reconnect, rematch and backups · กลับเข้าดวล รีแมตช์ และสำรองข้อมูล",
+   "title": "Big update: duel help, Season Pass, deck codes · อัปเดตใหญ่: ช่วยเหลือในการดวล, Season Pass, โค้ดแชร์เด็ค",
    "lines": [
-    "Lost Wi-Fi or refreshed the page in an online duel? The duel waits 3 minutes for you, and HOME shows REJOIN. · เน็ตหลุดหรือรีเฟรชระหว่างดวลออนไลน์ การดวลจะรอ 3 นาที และหน้าหลักมีปุ่ม REJOIN กลับไปดวลต่อ",
-    "REMATCH after an online game readies you up again with the same deck. · ปุ่ม REMATCH หลังจบเกมออนไลน์ กดพร้อมให้อัตโนมัติด้วยเด็คเดิม",
-    "New: free season pass (30 levels each month), first week rewards and a wishlist that shows the best pack for your cards. · ใหม่: ซีซันพาสฟรี 30 เลเวลทุกเดือน รางวัลสัปดาห์แรก และวิชลิสต์บอกซองที่มีการ์ดที่อยากได้มากที่สุด",
-    "Player data is backed up every day. · ข้อมูลผู้เล่นสำรองทุกวัน"
-   ]
-  },
-  {
-   "date": "2026-11-07",
-   "title": "Share your decks · แชร์เด็คด้วยโค้ด",
-   "lines": [
-    "Press \"Share code\" in the deck editor to copy a short code. A friend pastes it in Import to get the same deck, and sees which cards they don't own yet. In Collection, star cards to add them to your wishlist. · กด \"Share code\" ในหน้าจัดเด็คเพื่อคัดลอกโค้ดสั้นๆ เพื่อนวางโค้ดในหน้า Import แล้วจะได้เด็คเดียวกัน พร้อมบอกว่ายังขาดการ์ดใบไหน และในคอลเลกชันกดดาวเพื่อเพิ่มการ์ดลงวิชลิสต์ได้"
+    "Hover keywords for tips, click a greyed card to see why it can't be played, card pictures in the log, opponent turn summary, Language option. · ชี้คีย์เวิร์ดดูคำอธิบาย, คลิกการ์ดสีเทาดูเหตุผล, รูปการ์ดในบันทึก, สรุปเทิร์นคู่แข่ง, เลือกภาษาได้",
+    "MISSIONS First Week + free 30-level Season Pass; GUIDE/TRY for starter and KD decks; wishlist; NEW/+dust in pack openings. · ภารกิจสัปดาห์แรก + พาสฟรี 30 เลเวล; ปุ่มวิธีเล่น/ลองเล่น; การ์ดที่อยากได้; การ์ดใหม่/dust ตอนเปิดซอง",
+    "Online: rejoin after a refresh, REMATCH, take-backs in casual rooms. Deck share codes. Voice slider. · ออนไลน์: กลับเข้าดวลหลังรีเฟรช, REMATCH, ย้อนการเล่นในห้องแคชชวล; โค้ดแชร์เด็ค; แถบเสียงพากย์",
+    "Faster first load, and a fix for the web loading error. · โหลดครั้งแรกเร็วขึ้น และแก้ปัญหาเว็บโหลดไม่ขึ้น"
    ]
   },
   {
