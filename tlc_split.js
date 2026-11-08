@@ -6,7 +6,7 @@
 // "Failed loading file 'index.pck'"), it asks parts.json for the current list and uses that; failing that, it loads the
 // page again once.
 (function () {
-  const PARTS = {"index.pck": {"size": 40680716, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.e8994678ee.pck.0", "parts/index.e8994678ee.pck.1"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.0dcb5e453e.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
+  const PARTS = {"index.pck": {"size": 77809996, "type": "application/octet-stream", "gzip": false, "parts": ["parts/index.aadd8bfcb1.pck.0", "parts/index.aadd8bfcb1.pck.1", "parts/index.aadd8bfcb1.pck.2", "parts/index.aadd8bfcb1.pck.3"]}, "index.wasm": {"size": 39514754, "type": "application/wasm", "gzip": true, "parts": ["parts/index.2cfd825ece.wasm.0"]}}; // "index.pck" -> {size, type, gzip, parts: [urls]}
   const orig = window.fetch.bind(window);
   window.fetch = function (input, init) {
     const url = typeof input === 'string' ? input : (input && input.url) || '';
