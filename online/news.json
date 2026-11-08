@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-08",
+   "title": "Card and pack updates · อัปเดตการ์ดและซอง",
+   "lines": [
+    "เรือรบโบราณ picks once and asks to summon, like เรือรบโบราณฉวน; ships powered by กำเหลง show GET. Packs in ITEM and the pack opening show the real pack art, and the deck editor's card view matches the duel. · เรือรบโบราณเลือกการ์ดครั้งเดียวแล้วถามว่าจะอัญเชิญไหม เรือที่ได้พลังจากกำเหลงแสดง GET ซองในไอเทมและตอนเปิดซองใช้ภาพซองจริง และหน้าดูการ์ดในหน้าจัดเด็คเหมือนในเกม"
+   ]
+  },
+  {
+   "date": "2026-11-08",
    "title": "New HOME menu, holo cards, duel polish · เมนูใหม่ การ์ดโฮโล ปรับการดวล",
    "lines": [
     "HOME is now BATTLE, CARDS, SHOP, ITEM, CHARACTER (packs in ITEM, missions on the round icon). Rare cards have a holographic shine. Decks fit the board, the card being summoned glows green, and Scout uses the payment look. Deck Recipe boxes can pick their cover cards. Card fixes: อีวิลไมเกรน, อีสานสลิงเกอร์ เปอร์, ดวงจันทร์วันเพ็ญ; PRMO-120 to 152 are Common (129/130 UR). · เมนูหลักเป็น ต่อสู้ การ์ด ร้านค้า ไอเทม ตัวละคร (ซองอยู่ในไอเทม ภารกิจอยู่ที่ไอคอนกลม) การ์ดหายากมีเอฟเฟกต์โฮโลแกรม เด็คพอดีสนาม การ์ดที่กำลังอัญเชิญมีออร่าเขียว หน้าสอดแนมใช้หน้าตาแบบหน้าจ่าย GEM เลือกการ์ดหน้ากล่องเด็คได้ แก้การ์ด อีวิลไมเกรน อีสานสลิงเกอร์ เปอร์ ดวงจันทร์วันเพ็ญ และ PRMO-120 ถึง 152 เป็น Common (129/130 UR)"

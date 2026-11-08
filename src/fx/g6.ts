@@ -21,7 +21,7 @@ import {
 import {
   nameHas, flipLifeCard, turnLog, fieldZone, contOff, isAvatarDef, toDeck, toExile, refreshHooks, currentFight, abilityWindow,
 } from '../engine.ts';
-import { withSource, type AbilityPart, drawPhaseNo, addToHand } from '../engine.ts';
+import { withSource, type AbilityPart, drawPhaseNo, addToHand, summonAllowed as summonAllowedB18 } from '../engine.ts';
 import { gameOf as gameOfCard } from '../view.ts';
 import { ensureWear } from './g5.ts';
 
@@ -775,14 +775,12 @@ Object.assign(FX, {
         (g2) => {
           markOnce(g2, P(g2, p), 'ship:' + c.uid);
           const ok = (x: Card) => isA(x) && x.def.power <= 2 && (named(x, 'พลเดินทัพ') || (named(x, 'ขุนพล') && hasSym(g2, x, 'ต่างชาติ')));
-          peek(g2, p, 5, (top) => {
-            const x = best(top.filter(ok), (y) => value(g2, y));
-            if (!x) return;
-            const can = canPlaceAvatar(P(g2, p), false, x) && !uniqueBlocked(g2, p, x);
-            const m = can ? chooseMode(g2, c, [`Add ${x.def.name} to your hand`, `Summon ${x.def.name} to your Avatar Zone`], 1) : 0;
-            if (m === 1 && takeSummon(g2, p, top, (y) => y === x)) return;
-            takeHand(g2, p, top, (y) => y === x);
-          }, 'bottom');
+          // bugfix18 (user 2026-11-08): like เรือรบโบราณฉวน: one scout pick (to hand), then "summon it?" (no second window)
+          let got: Card | null = null;
+          peek(g2, p, 5, (top) => { got = takeHand(g2, p, top, ok); }, 'bottom');
+          const x = got as Card | null;
+          if (x && P(g2, p).hand.includes(x) && canPlaceAvatar(P(g2, p), false, x) && !uniqueBlocked(g2, p, x) && summonAllowedB18(g2, p, x, 'effect')
+            && mayDo(g2, c, `summon ${x.def.name} · อัญเชิญ ${x.def.name} ลงบน Avatar Zone`, true)) summon(g2, p, x, 'effect');
         }),
       act('เรือรบโบราณ: พลเดินทัพ from hell to deck', (g2) => inMain(g2, p) && once(g2, p, 'ship:' + c.uid) && hellAvatars(g2, p, (x) => named(x, 'พลเดินทัพ')).length > 0,
         (g2) => {

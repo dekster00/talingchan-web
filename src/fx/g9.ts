@@ -275,6 +275,8 @@ Object.assign(FX, {
     staticPower: (g, c) => (P(g, c.ctrl).mz.some((x) => x.def.type === 'Construct' && named(x, 'เรือรบโบราณ')) ? 2 : 0),
     aura: (g, s, t) => (P(g, s.ctrl).avatars.includes(s) && t.def.type === 'Construct' && P(g, s.ctrl).mz.includes(t) && named(t, 'เรือรบโบราณ') ? 1 : 0),
     getActive: (g: Game, self: Card) => P(g, self.ctrl).mz.some((x) => x.def.type === 'Construct' && named(x, 'เรือรบโบราณ')) && 'เรือรบโบราณ: POWER +2',
+    // bugfix18 (user): the เรือรบโบราณ it powers up show GET too
+    getFor: (g: Game, s: Card, t: Card) => P(g, s.ctrl).avatars.includes(s) && t.def.type === 'Construct' && P(g, s.ctrl).mz.includes(t) && named(t, 'เรือรบโบราณ') && 'กำเหลง: POWER +1',
   },
   'อิกนิส มังกรไฟโซลฮอต': {
     keep: 4,
