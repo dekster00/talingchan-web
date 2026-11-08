@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-08",
+   "title": "Holo cards and drag to attack · การ์ดโฮโลและลากเพื่อโจมตี",
+   "lines": [
+    "SR, UR and SEC cards have their own holo shine everywhere (SR glow, UR rainbow, SEC rainbow + stars). Drag your Avatar onto an enemy to attack, then CONFIRM; bigger CONFIRM/CANCEL in the Battle Phase. · การ์ด SR, UR และ SEC มีเอฟเฟกต์โฮโลแยกกันทุกหน้าจอ (SR เรืองแสง, UR สีรุ้ง, SEC สีรุ้งพร้อมดาว) ลาก Avatar ไปที่ศัตรูเพื่อโจมตีแล้วกด CONFIRM ปุ่มในช่วงต่อสู้ใหญ่ขึ้น"
+   ]
+  },
+  {
+   "date": "2026-11-08",
    "title": "Card and pack updates · อัปเดตการ์ดและซอง",
    "lines": [
     "เรือรบโบราณ picks once and asks to summon, like เรือรบโบราณฉวน; ships powered by กำเหลง show GET. Packs in ITEM and the pack opening show the real pack art, and the deck editor's card view matches the duel. · เรือรบโบราณเลือกการ์ดครั้งเดียวแล้วถามว่าจะอัญเชิญไหม เรือที่ได้พลังจากกำเหลงแสดง GET ซองในไอเทมและตอนเปิดซองใช้ภาพซองจริง และหน้าดูการ์ดในหน้าจัดเด็คเหมือนในเกม"
