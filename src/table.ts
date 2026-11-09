@@ -1,7 +1,7 @@
 // v11 play-table helpers (used by play/worker.ts, tested in tools/unit.ts):
 // whyNot = why a hand card can't be played now (tooltip on a greyed hand card); copyGame / restoreGame = Main Phase Undo.
 import type { Card, Game, PID } from './types.ts';
-import { magicSlotFree, cardText, opp, canWear } from './engine.ts'; // simplify1; bugfix15: condWhy
+import { magicSlotFree, cardText, opp, canWear, humanModTargets } from './engine.ts'; // simplify1; bugfix15: condWhy
 import {
   P, fx, costOf, reqOf, gemOf, gemColorOf, gemFits, colorsEn, bestPayment, isAvatarDef, canPlaceAvatar, uniqueBlocked, ratSix, realAvatars, power, hasKw, exactLand, lands,
 } from './engine.ts';
@@ -40,8 +40,9 @@ export function condWhy(g: Game, p: PID, c: Card): string {
     const only = om ? [om[0], om[1].replace(/""/g, '"').replace(/"\s*([^"]*?)\s*"/g, '"$1"')] : null;
     let anyWear = pl.avatars.some((a) => { try { return canWear(g, c, a); } catch { return true; } });
     if (anyWear && f && f.modTarget) { try { anyWear = !!f.modTarget(g, p, c); } catch { /* keep */ } }
+    if (!anyWear && humanModTargets(g, p, c).length) anyWear = true; // bugfix19: either side's Avatar
     if (only && !anyWear) return `Only ${CLIP(only[1], 50)} can wear it, none on your field · สวมใส่ได้เฉพาะ ${CLIP(only[1], 50)} (ไม่มีบนสนามเรา)`;
-    if (!pl.avatars.length) return 'Needs an Avatar on your field to wear it · ต้องมี Avatar บนสนามเราให้สวมใส่';
+    if (!pl.avatars.length && !humanModTargets(g, p, c).length) return 'Needs an Avatar on the field to wear it · ต้องมี Avatar บนสนามให้สวมใส่';
     if (!anyWear) return 'None of your Avatars can wear it now · ไม่มี Avatar ของเราที่สวมใส่ได้ตอนนี้';
   }
   const cond = t.match(/(?:สามารถ)?ใช้(?:การ์ดใบนี้)?ได้(?:เฉพาะ)?(?:เมื่อ|ถ้า|ก็ต่อเมื่อ)\s*([^:]+?)\s*:/) || t.match(/^(?:เมื่อ|ถ้า|หาก)\s*([^:]+?)\s*:/)

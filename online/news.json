@@ -2,6 +2,13 @@
  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
  "updates": [
   {
+   "date": "2026-11-09",
+   "title": "Card fixes · แก้การ์ด",
+   "lines": [
+    "Modifications without a wear limit can go on your Avatar or the opponent's. ไอ นีด เมดิก works with 1+ LIFE up. ไบโพล่า ชิลด์ works once every turn. ไต้ฝุ่น used as a React counts as your React for the turn. · Modification ที่ไม่จำกัดผู้สวมใส่ ใส่ให้ Avatar ฝ่ายเราหรือฝ่ายตรงข้ามได้ / ไอ นีด เมดิก ใช้ได้เมื่อ LIFE หงาย 1 ใบขึ้นไป / ไบโพล่า ชิลด์ ใช้ได้เทิร์นละครั้งทุกเทิร์น / ไต้ฝุ่นที่ใช้แบบ React นับเป็นการใช้ React ของเทิร์นนั้น"
+   ]
+  },
+  {
    "date": "2026-11-08",
    "title": "Holo cards and drag to attack · การ์ดโฮโลและลากเพื่อโจมตี",
    "lines": [

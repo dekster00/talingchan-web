@@ -126,11 +126,11 @@ function cageTrim(g: Game, c: Card) {
 // ไบโพล่า ชิลด์ (BT04-053 / KD04-014): the wearer would leave the field because of an opponent's card
 function bipolaGuard(g: Game, self: Card, t: Card, info: any) {
   if (t.uid !== self.wearer || info.by === null || info.by === t.ctrl || info.cost) return null;
-  const mine = t.mods.filter((m) => m.def.name.includes('ไบโพล่า') && !m.f.bipolaUsed);
+  const mine = t.mods.filter((m) => m.def.name.includes('ไบโพล่า') && m.f.bipolaUsed !== g.turn); // bugfix19 (user): once per TURN
   if (!mine.length || mine[0] !== self) return null; // the first unused copy rolls for all of them
   return { optional: false, run: () => {
     let even = false;
-    const rolls = mine.map((m) => { m.f.bipolaUsed = 1; const r = d6(g); if (r % 2 === 0) even = true; return r; });
+    const rolls = mine.map((m) => { m.f.bipolaUsed = g.turn; const r = d6(g); if (r % 2 === 0) even = true; return r; });
     log(g, `ไบโพล่า ชิลด์ rolls ${rolls.join(', ')}: ${even ? t.def.name + ' stays on the field' : 'no even number'}`);
     return even;
   } };
@@ -1141,7 +1141,7 @@ Object.assign(FX, {
   'อาวุธนักรบผู้กล้า " ไบโพล่า ชิลด์ "': {
     keep: 2.5,
     // v14 ruling: เครื่องจักร = หุ่นยนต์ too. Any way of leaving caused by an opponent's card (destroy, hand, hell, exile,
-    // deck; not control changes) -> roll; several attached copies roll together; once a copy rolled it can't be used again.
+    // deck; not control changes) -> roll; several attached copies roll together; each copy once per turn (bugfix19).
     canCast: (g: Game, p: PID) => wearers(g, p, (a) => named(a, 'ผู้กล้า') && symAny(a, ['เครื่องจักร', 'หุ่นยนต์'])).length > 0,
     modTarget: (g: Game, p: PID) => best(wearers(g, p, (a) => named(a, 'ผู้กล้า') && symAny(a, ['เครื่องจักร', 'หุ่นยนต์'])), (a) => value(g, a)),
     leaveGuard: (g: Game, self: Card, t: Card, info: any) => bipolaGuard(g, self, t, info),

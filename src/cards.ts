@@ -485,7 +485,7 @@ export const FX: Record<string, Fx> = {
   },
   'ไอ นีด เมดิก': {
     keep: 3,
-    canCast: (g, p) => flippedLife(P(g, p)) >= 2,
+    canCast: (g, p) => flippedLife(P(g, p)) >= 1 && flippedLife(P(g, p)) < 5 && !critical(P(g, p)), // bugfix19 (user): 1+ LIFE up, not at 5 (critical)
     resolve: (g, p) => { const up = P(g, p).life.filter((l) => l.faceUp); if (up.length) lifeDown(g, p, up[Math.floor(rand(g) * up.length)]); }, // other-team audit: "สุ่มคว่ำ" = a random face-up LIFE
   },
   'เลือกมันสำหรับพวก จน !!!': {

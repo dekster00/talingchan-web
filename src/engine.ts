@@ -62,6 +62,25 @@ export function askSeat(): number { for (let i = DECIDER.length - 1; i >= 0; i--
 export function humanDeciding(g: Game) { return !!ASK && !g.sim && humanTop(); }
 /** bugfix2 item 4 (user, แอสการ์ด): a Land's canCast is mostly the bot's "is it worth it" check; a human may always place a
  *  Land while they do not already own the one in the Land zone. */
+/** bugfix19 (user 2026-11-09, ไต้ฝุ่น): a Normal Magic whose text says "...โดยถือว่าเป็นการใช้ {react}" uses this turn's React
+ *  slot (not the Normal one) when it is used as a React (answer window) or in our Battle Phase. */
+export function countsAsReact(g: Game, c: Card): boolean {
+  return c.def.type === 'Magic' && c.def.subtype !== 'React' && /ถือว่าเป็นการใช้\s*\{?\s*react/i.test(cardText(c));
+}
+export function asReactNow(g: Game, p: number, c: Card): boolean { return countsAsReact(g, c) && (g.active !== p || g.phase === 'Battle'); }
+/** bugfix19 (user 2026-11-09): a Modification with no wear limit in its text ("สวมใส่ได้เฉพาะ ...") may be worn by any
+ *  Avatar on either side (แผนการ : แกงส้มตะปูเสียบ on your own Avatar, so POWER 0 destroys it, or on the opponent's); the
+ *  human chooses. Returns the Avatars the human may choose ([] for the bot or a limited Modification). */
+export function humanModTargets(g: Game, p: number, c: Card): Card[] {
+  if (c.def.type !== 'Magic' || c.def.subtype !== 'Modification' || !humanSeat(g, p) || /สวมใส่(?:ได้)?เฉพาะ/.test(cardText(c))) return [];
+  return [...g.p[p].avatars, ...g.p[1 - p].avatars].filter((a) => canWear(g, c, a));
+}
+/** canCast failed only for want of a wearer the bot would pick (modTarget null), and the human has one */
+function humanModOk(g: Game, p: number, c: Card): boolean {
+  const f = fx(c);
+  if (!humanModTargets(g, p, c).length) return false;
+  return !f || !f.modTarget || !quiet(() => f.modTarget!(g, p as PID, c));
+}
 export function humanLand(g: Game, p: number, c: Card) { return c.def.type === 'Magic' && c.def.subtype === 'Land' && humanSeat(g, p); } // bugfix4 (user): also over our own Land
 /** bugfix2: p is a human seat in the real game (also inside quiet(), e.g. while the Main menu is listed). */
 export function humanSeat(g: Game, p: number) { return !!ASK && !g.sim && HUMANS.has(p); }
@@ -1070,7 +1089,7 @@ function respondIn(g: Game, ev: Ev) {
     detach(g, choice);
     (pl.resolving ||= []).push(choice);
     // bugfix1 item 6 (user): อย่าให้มีครั้งที่ 2 is only free as the 2nd React; used first it takes this turn's React slot
-    if (!f.react.ignoreLimit || !pl.used.React) { if (!f.react.noLimit) useMagicSlot(g, r, choice); else pl.used.React = true; } // simplify1
+    if (!f.react.ignoreLimit || !pl.used.React) { if (countsAsReact(g, choice)) pl.used.React = true; else if (!f.react.noLimit) useMagicSlot(g, r, choice); else pl.used.React = true; } // simplify1; bugfix19: ไต้ฝุ่น takes the React slot
     if (f.react.onceKey) markOnce(g, pl, f.react.onceKey);
     log(g, `P${r} reacts with ${choice.def.name}`);
     // "when we use a Magic" abilities also see React Magic used in a response window
@@ -1255,15 +1274,16 @@ export function castMagic(g: Game, p: PID, c: Card, opt: number): boolean {
   const f = fx(c);
   const pl = P(g, p);
   const kind = c.def.subtype as MagicKind;
-  if (!f || !magicSlotFree(g, p, c) || !castAllowed(g, p, c)) return false; // v14: cast rules; simplify1: RuleDef.extraMagic
-  if (f.canCast && !quiet(() => f.canCast!(g, p, c, opt)) && !humanLand(g, p, c)) return false;
+  const asR = asReactNow(g, p, c); // bugfix19: ไต้ฝุ่น in our Battle Phase = a React use
+  if (!f || (asR ? !!P(g, p).used.React : !magicSlotFree(g, p, c)) || !castAllowed(g, p, c)) return false; // v14: cast rules; simplify1: RuleDef.extraMagic
+  if (f.canCast && !quiet(() => f.canCast!(g, p, c, opt)) && !humanLand(g, p, c) && !humanModOk(g, p, c)) return false;
   const cost = costOf(g, p, c);
   const pay = choosePayment(g, p, cost, [c], c);
   if (!pay) return false;
   if (pay.length) emitPay(g, p, c, cost, pay);
   for (const pc of pay) payCard(g, p, pc, null);
   detach(g, c);
-  useMagicSlot(g, p, c); // = pl.used[kind] = true (simplify1: or uses up an extra-Magic rule)
+  if (asR) pl.used.React = true; else useMagicSlot(g, p, c); // = pl.used[kind] = true (simplify1: or uses up an extra-Magic rule)
   (pl.resolving ||= []).push(c);
   try { return castBody(g, p, c, opt, f, pl, kind); } finally { pl.resolving = pl.resolving!.filter((x) => x !== c); }
 }
@@ -1291,7 +1311,9 @@ function castResolve(g: Game, p: PID, c: Card, opt: number, f: any, pl: Player, 
   if (kind === 'Land') {
     placeLand(g, p, c);
   } else if (kind === 'Modification') {
-    const w = f.modTarget ? f.modTarget(g, p, c) : null;
+    let w = f.modTarget ? f.modTarget(g, p, c) : null;
+    const hm = humanModTargets(g, p, c); // bugfix19: the human chooses any Avatar (either side) for an unlimited Modification
+    if (hm.length) w = decide(g, p, () => askPick(hm, w && hm.includes(w) ? w : hm[0], { title: `${c.def.name}: choose the Avatar that wears it (yours or the opponent's) · เลือก Avatar ที่จะสวมใส่ (ฝ่ายเราหรือฝ่ายตรงข้าม)` }));
     if (w && findCard(g, w.uid) && canWear(g, c, w)) { c.wearer = w.uid; w.mods.push(c); // v14d: canWear
       if (f.onAttach) f.onAttach(g, c, w); } else castToHell();
   } else {
@@ -1339,7 +1361,7 @@ export function mainActs(g: Game, p: PID): Act[] {
       if (kind === 'Land' && lands(g).some((l) => fx(l)?.lockLand)) continue;
       if (bestPayment(g, p, costOf(g, p, c), [c], c) === null) continue;
       const n = f.options || 1;
-      for (let o = 0; o < n; o++) if (!f.canCast || f.canCast(g, p, c, o) || humanLand(g, p, c)) acts.push({ k: 'cast', uid: c.uid, opt: o, label: `cast ${c.def.name} ${o}` });
+      for (let o = 0; o < n; o++) if (!f.canCast || f.canCast(g, p, c, o) || humanLand(g, p, c) || humanModOk(g, p, c)) acts.push({ k: 'cast', uid: c.uid, opt: o, label: `cast ${c.def.name} ${o}` });
     }
   }
   const fieldCards: Card[] = [...pl.avatars];

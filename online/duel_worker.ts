@@ -7,6 +7,7 @@
 // (pass / default pick), so a game can never hang on a player who left.
 import { workerData, parentPort, receiveMessageOnPort, type MessagePort } from 'node:worker_threads';
 import type { Card, Game, PID } from '../src/types.ts';
+import { countsAsReact } from '../src/engine.ts'; // bugfix19
 import { hellPayInfo as hellPayInfoW } from '../src/engine.ts'; // bugfix13
 import type { Brain, Ev, Act } from '../src/engine.ts';
 import {
@@ -323,7 +324,7 @@ function makeHuman(seat: PID): Brain { return {
       quiet(() => {
         for (const c of pl.hand) {
           const f = fx(c);
-          if (f && f.battleUse && c.def.type === 'Magic' && !pl.used[c.def.subtype as 'React'] &&
+          if (f && f.battleUse && c.def.type === 'Magic' && !pl.used[(countsAsReact(g, c) ? 'React' : c.def.subtype) as 'React'] && // bugfix19
               (!f.canCast || f.canCast(g, me, c, 0)) && bestPayment(g, me, costOf(g, me, c), [c], c))
             opts.push({ label: `Use ${c.def.name}`, uid: c.uid, kind: 'use', ak: 'cast', run: () => castMagic(g, me, c, 0) });
           if (f && f.handActs) f.handActs(g, me, c).forEach((x, i) => { if (x.can(g)) opts.push({ label: cardLabel(c.def.print, c.def.name, 'hand:' + i, x.label), uid: c.uid, kind: 'use', ak: 'hand', run: () => x.run(g) }); });
