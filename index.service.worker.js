@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1794113902|7865646';
+const CACHE_VERSION = '1794236412|6340501';
 /** @type {string} */
 const CACHE_PREFIX = 'Battle of Taling-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
