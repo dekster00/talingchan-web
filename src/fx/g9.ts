@@ -452,6 +452,15 @@ Object.assign(FX, {
     // bugfix2 item 1 (user): "นำการ์ดใบนี้กลับเข้า Deck แทนการถูกทำลาย" = this card goes back into the Deck instead of to
     // Hell; the wearer is still destroyed (ฮิมไลน์ is saved only once per summon, by its own ability).
     // bugfix14: any destruction of the wearer counts (also เซ่นไหว้ as a cost and unprotected kills); destroy() marks f.destroyed
+    // bugfix20 (user 2026-11-12): "นำการ์ดใบนี้กลับเข้า Deck แทนการถูกทำลาย" = this card goes back into the Deck INSTEAD of
+    // the wearer being destroyed: any wearer (not only ฮิมไลน์) stays on the field. A destruction that can't be stopped
+    // (เซ่นไหว้ as a cost, protections off) still sends this card to the Deck (onWearerLeave below).
+    leaveGuard: (g: Game, self: Card, t: Card, info: any) => (t.uid === self.wearer && t.mods.includes(self) && info.how === 'destroy'
+      ? { optional: false, label: `${self.def.name} goes back into the Deck instead of ${t.def.name} being destroyed`, run: () => {
+          const pl = P(g, self.owner); detach(g, self); self.wearer = -1; pl.deck.push(self); shuffle(g, pl.deck);
+          log(g, `${self.def.name} goes back into the Deck (shuffled) instead of ${t.def.name} being destroyed`);
+          return true;
+        } } : null),
     onWearerLeave: (g: Game, m: Card, w: Card) => {
       if (!w || w.f.destroyed !== g.turn) return false;
       const pl = P(g, m.owner); pl.deck.push(m); shuffle(g, pl.deck);

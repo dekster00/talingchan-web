@@ -405,7 +405,13 @@ const NEW: Record<string, Fx> = {
     (g2) => {
       markOnce(g2, P(g2, p), 'kalu:act');
       discardWorst(g2, p, 1);
-      if (!search(g2, p, kata, 'deck')) search(g2, p, kata, 'hell');
+      // bugfix20 (user 2026-11-12): the player chooses the คาถา, from the Deck or from Hell
+      const pl = P(g2, p), pool = [...pl.hell.filter(kata), ...pl.deck.filter(kata)];
+      const x = pickN(pool, 1, (y) => keepValue(g2, y) + (pl.hell.includes(y) ? 0.1 : 0), { title: 'กาลู: take a "คาถา" from your Deck or Hell · เลือก "คาถา" จาก Deck หรือ นรก ขึ้นมือ' })[0];
+      if (!x) return;
+      const fromDeck = pl.deck.includes(x);
+      detach(g2, x); pl.hand.push(x); log(g2, `กาลู: ${x.def.name} to hand from ${fromDeck ? 'the Deck' : 'Hell'}`);
+      if (fromDeck) shuffle(g2, pl.deck);
     })],
   },
   'จอมเวทย์ อะปัด': {
@@ -622,7 +628,7 @@ const NEW: Record<string, Fx> = {
       kataUsed(g, p, c);
       const t = best(oppTargets(g, p, true), (a) => value(g, a) + (power(g, a) <= 3 ? 5 : 0));
       if (!t) return;
-      boost(t, -3);
+      addPowerB20(g, t, -3, 'turn', c); // bugfix20 (user): POWER -3 until the end of this turn, not for good
       if (power(g, t) === 0) destroy(g, t, p, true);
     },
   },
@@ -1059,3 +1065,5 @@ costFirst('พลังแห่งควางสิริมงคง', (g, p)
     afterLeave: (g, self, info) => { if (info.cost && wonder(info.src, self)) fetchFlare(g, self.owner); },
   } as Fx;
 }
+
+import { addPower as addPowerB20 } from '../engine.ts'; // bugfix20

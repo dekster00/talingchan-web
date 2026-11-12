@@ -1210,14 +1210,15 @@ export function summonExact<T>(fn: () => T): T { EXACT_SUMMON++; try { return fn
 // who summoned it, and it can't put itself back onto the field.
 function offField(g: Game, p: PID, c: Card, fn: () => void) {
   const owner = P(g, c.owner);
-  const home = [owner.hell, owner.exile, owner.hand, owner.deck].find((z) => z.includes(c));
+  const home = [owner.hell, owner.exile, owner.hand, owner.deck, owner.mz].find((z) => z.includes(c)); // 2026-11-12: mz = moved there by its own คำสั่งเสีย (ภาคีมะม่วง)
   if (!home) return; // gone for good (token) or already somewhere odd
+  const asMagic = home === owner.mz;
   log(g, `${c.def.name} left the field, but its ability still resolves`);
   const ctrl = c.ctrl; c.ctrl = p;
   try { fn(); } finally {
     if (c.ctrl === p && home.includes(c)) c.ctrl = ctrl;
     const onField = g.p.some((q) => q.avatars.includes(c) || q.mz.includes(c) || q.avatars.some((a) => a.mods.includes(c)));
-    if (onField) { detach(g, c); resetOnLeave(c); home.push(c); log(g, `${c.def.name} stays off the field`); }
+    if (onField && !(asMagic && owner.mz.includes(c))) { detach(g, c); resetOnLeave(c); home.push(c); log(g, `${c.def.name} stays off the field`); }
   }
 }
 export function placeToken(g: Game, p: PID, def: Def, n: number) {

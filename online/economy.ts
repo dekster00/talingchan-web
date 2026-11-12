@@ -621,3 +621,13 @@ export function claimFirstWeek(p: Prog, created: string, id: string, now = Date.
   return { ok: true, id, gain: st.gain };
 }
 export const PROMO_SOURCES = ['Every level up · ทุกครั้งที่เลเวลอัป', 'Login day 7 · ล็อกอินวันที่ 7', 'Season pass levels 10, 20, 30 · พาสระดับ 10, 20, 30', 'First week day 7 · สัปดาห์แรกวันที่ 7', 'Tournaments · ทัวร์นาเมนต์'];
+
+// 2026-11-12 (user): winning against an NPC/bot gives a 20% chance of one random Common promo card (PRMO, rarity C)
+export const BOT_PROMO_CHANCE = Number(process.env.BOT_PROMO_CHANCE ?? 0.2);
+export function botPromo(p: Prog, cat: Catalog, chance = BOT_PROMO_CHANCE) {
+  if (Math.random() >= chance) return null;
+  const rows = (cat.sets.get('PRMO') || []).filter((r) => r.rarity === 'C');
+  if (!rows.length) return null;
+  const r = rows[rnd(rows.length)];
+  return addCard(p, cat, r.code, r.rarity);
+}

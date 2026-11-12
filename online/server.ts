@@ -905,7 +905,9 @@ http.createServer(async (req, res) => {
         if (!t || t.acct !== a.id) return send(res, 400, { error: 'This game was not started for rewards.' });
         BOT_TICKETS.delete(String(b.ticket));
         if (Date.now() - t.at < Eco.BOT.minSecs * 1000 || Number(b.turns) < 3) return send(res, 200, { xp: 0, coins: 0, note: 'Too short for rewards. · เกมสั้นเกินไป' });
-        return done(Eco.gameReward(a, { pvp: false, won: !!b.won, bot: t.level, color: t.color, coinsOk: t.coinsOk }));
+        const gr: any = Eco.gameReward(a, { pvp: false, won: !!b.won, bot: t.level, color: t.color, coinsOk: t.coinsOk });
+        if (b.won) { const pc = Eco.botPromo(pr, CAT); gr.promos = pc ? [pc] : []; } // 20% Common promo per bot win
+        return done(gr);
       }
       if ((p === '/me/packs/open' || p === '/me/packs/open_owned') && req.method === 'POST') return done({ ...Eco.openPacks(pr, CAT, String(b.set || ''), Number(b.count) || 1, p === '/me/packs/open_owned' || b.pay === 'inv' || b.pay === 'inventory' ? 'inv' : b.pay === 'ticket' ? 'ticket' : b.pay === 'free' ? 'free' : 'coins'), inventory: (pr as any).inv || {}, inv: (pr as any).inv || {}, wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust } });
       if (p === '/me/packs' ) return send(res, 200, { packs: Eco.packInfo(CAT, pr), wallet: { coins: pr.coins, tickets: pr.tickets, dust: pr.dust }, freePack: !pr.daily.freePack });
@@ -933,10 +935,11 @@ http.createServer(async (req, res) => {
         // a Bo3 match sends its games together: {games:[true,false,true]} (up to 3), each paid like one game
         const games: boolean[] = Array.isArray(b.games) && b.games.length ? b.games.slice(0, 3).map((g: any) => !!g) : [!!(b.win ?? b.won)];
         const color = c.deck ? deckColor(c.deck) : '', coinsOk = !!c.deck && Eco.missingCards(pr, CAT, c.deck).length === 0;
-        let r: any = null; const sum = { xp: 0, coins: 0, firstWin: false, levelUps: [] as any[], missionsDone: [] as any[] };
+        let r: any = null; const sum = { xp: 0, coins: 0, firstWin: false, levelUps: [] as any[], missionsDone: [] as any[], promos: [] as any[] };
         for (const won of games) {
           if (pr.bot.games >= Eco.BOT.maxGames) break;
           r = Eco.gameReward(a, { pvp: false, won, bot: level, color, coinsOk });
+          if (won) { const pc = Eco.botPromo(pr, CAT); if (pc) sum.promos.push(pc); } // 20% Common promo per bot win
           sum.xp += r.xp; sum.coins += r.coins; sum.firstWin ||= r.firstWin; sum.levelUps.push(...(r.levelUps || [])); sum.missionsDone.push(...(r.missionsDone || []));
         }
         await STORE.save(a);

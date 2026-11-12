@@ -421,12 +421,20 @@ Object.assign(FX, {
   // ===== จอมเวทย์ / คาถา =====
   'จอมเวทย์ เดสสึหวา': {
     keep: 3.5,
-    jutsu: (g, c) => { const p = c.ctrl; if (discardWorst(g, p, 1, [], (x) => kata(x) || wizard(x))) draw(g, p, 2); },
+    // bugfix20 (user 2026-11-12): the human chooses the card to discard (optional cost); the คาถา buff is permanent;
+    // the draw when attacked works (user ruling: also outside the Link)
+    jutsu: (g, c) => {
+      const p = c.ctrl, pool = P(g, p).hand.filter((x) => x !== c && (kata(x) || wizard(x)));
+      if (!pool.length) return;
+      const d = pickN(pool, 1, (x) => -keepValue(g, x), { optional: true, title: 'เดสสึหวา จุติ: discard a "คาถา" or "จอมเวทย์" to draw 2 · ทิ้ง "คาถา" หรือ Avatar "จอมเวทย์" 1 ใบ : จั่ว 2 ใบ' })[0];
+      if (!d || !P(g, p).hand.includes(d)) return;
+      discard(g, p, d); draw(g, p, 2);
+    },
     // v14: any คาถา used by either player, in either turn
-    onAnyMagic: (g, s, m) => { if (kata(m) && P(g, s.ctrl).avatars.includes(s)) { const t = best(P(g, s.ctrl).avatars.filter(wizard), (a) => power(g, a) + (a.asleep ? 0 : 2)); if (t) boost(t, 1); } },
+    onAnyMagic: (g, s, m) => { if (kata(m) && P(g, s.ctrl).avatars.includes(s)) { const ws = P(g, s.ctrl).avatars.filter(wizard); const t = ws.length ? pickN(ws, 1, (a) => power(g, a) + (a.asleep ? 0 : 2), { title: 'เดสสึหวา: a จอมเวทย์ gets POWER +1 · เลือก Avatar "จอมเวทย์" POWER +1' })[0] : null; if (t) addPower(g, t, 1, 'perm', s); } },
     // linkbot: the Construct on entering [Link] is โกลเด้น's own text (its onLink); below [Link]: taunt + draw when targeted
     taunt: (g, c) => linked(g, c, 'จอมเวทย์ โกลเด้น'),
-    onTargeted: (g, c) => { if (linked(g, c, 'จอมเวทย์ โกลเด้น') && once(g, c.ctrl, 'dessu:' + c.uid)) { use(g, c.ctrl, 'dessu:' + c.uid); draw(g, c.ctrl, 1); } },
+    onTargeted: (g, c) => { if (once(g, c.ctrl, 'dessu:' + c.uid)) { use(g, c.ctrl, 'dessu:' + c.uid); log(g, 'เดสสึหวา: attacked, draw 1'); draw(g, c.ctrl, 1); } }, // bugfix20 (user): draw whenever it is attacked
   },
   'จอมเวทย์ โกลเด้น': {
     keep: 3,
