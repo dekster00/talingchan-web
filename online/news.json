@@ -2,6 +2,13 @@
  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
  "updates": [
   {
+   "date": "2026-11-13",
+   "title": "Card fixes, EXP and promo rewards · แก้การ์ด EXP และรางวัลโปรโม",
+   "lines": [
+    "Card fixes: เดสสึหวา (Advent discard choice, permanent POWER, draw when attacked), กาลู picks from Hell, ปลดอาวุสสิวะ lasts one turn, ผู้คุมกฎแห่งภาคีมะม่วง Advent works vs อุบัติเหตุ, แอสคาลอน wearer is never destroyed, สยามโมไทรันนัส POWER 7. EXP, level and coins now update right after a bot duel, owned decks earn coins vs bots, and winning vs a bot has a 20% chance of a free Common PROMO card (shown on the results screen). HOME updates your coins and level as soon as you come back from any screen. · แก้การ์ด: เดสสึหวา (เลือกทิ้งตอนจุติได้, พลังเพิ่มถาวร, ถูกโจมตีได้จั่ว), กาลูเลือกหยิบจากนรกได้, ปลดอาวุสสิวะลดพลังแค่เทิร์นเดียว, จุติผู้คุมกฎแห่งภาคีมะม่วงทำงานแม้โดนอุบัติเหตุ, ผู้สวมแอสคาลอนไม่ถูกทำลาย, สยามโมไทรันนัส พลัง 7 / EXP เลเวล และเหรียญอัปเดตทันทีหลังดวลบอท เด็คที่มีการ์ดครบได้เหรียญจากบอท ชนะบอทมีโอกาส 20% ได้การ์ดโปรโม Common ฟรี (แสดงในหน้าผลการดวล) / หน้าหลักอัปเดตเหรียญกับเลเวลทันทีเมื่อกลับมา"
+   ]
+  },
+  {
    "date": "2026-11-09",
    "title": "Card fixes · แก้การ์ด",
    "lines": [
