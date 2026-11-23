@@ -698,7 +698,7 @@ export const FX: Record<string, Fx> = {
       // other-team audit: not on an Avatar that can't be chosen (กวนอู) or that ignores opposing Magic (วีรชนชีวภาพ)
       on: ['ability'], can: (g, p, c, ev) => ev.actor !== p && !!ev.source && P(g, ev.actor).avatars.includes(ev.source) && magicOk(g, p, ev.source) && effectTargetable(ev.source, c),
       want: (g, p, c, ev) => !!ev.source && (keepValue(g, ev.source) >= 5 || ev.source.def.only),
-      resolve: (g, p, c, ev) => { if (ev.source) ev.source.silencedTurn = g.turn; ev.cancelled = true; },
+      resolve: (g, p, c, ev) => { if (ev.source) { ev.source.silencedTurn = g.turn; ev.source.f.monkey = g.turn; } ev.cancelled = true; }, // user 2026-11-23: f.monkey = back to base POWER (power()); its สามัคคี / แทงหลัง gift is lost
     },
   },
   'ทุ่งนาแดนนี้(ไม่มีความหมาย)': {

@@ -52,6 +52,7 @@ export interface Temp {
   power: number;
   until: 'turn' | 'battle' | number; // v14c: a turn number = until the End Phase of that turn is over
   src?: number; // v14d: uid of the card whose effect made it (withSource tags it; addPower)
+  assist?: number; // 2026-11-23: uid of the สามัคคี / แทงหลัง helper that gave it (lost when เชาว์ปัญญาลิง hits the helper)
   buff?: number; // v14 features item 9: pending สามัคคี / แทงหลัง buff from this helper uid (Battle Phase, before the attack)
 }
 

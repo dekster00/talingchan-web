@@ -58,6 +58,16 @@ const topDecider = () => (DECIDER.length ? DECIDER[DECIDER.length - 1] : -1);
 const humanTop = () => HUMANS.has(topDecider());
 /** The human seat a question is for: the nearest human on the decider stack (callbacks run under quiet(), i.e. -1). */
 export function askSeat(): number { for (let i = DECIDER.length - 1; i >= 0; i--) if (HUMANS.has(DECIDER[i])) return DECIDER[i]; return ASK_FOR; }
+// user 2026-11-23 (ลิลิธ): choose n cards together and confirm once (the screen's multi-pick). Worker: setAskMany.
+type AskManyFn = (xs: Card[], n: number, dflt: Card[], o: AskOpts) => Card[] | null;
+let ASK_MANY: AskManyFn | null = null;
+export function setAskMany(fn: AskManyFn | null) { ASK_MANY = fn; }
+/** The human picks exactly n of xs at once (bot / no multi-pick screen: null, the caller falls back to pickN). */
+export function askMany(xs: Card[], n: number, dflt: Card[], o: AskOpts = {}): Card[] | null {
+  if (!ASK_MANY || !ASK || !humanTop() || !LIVE || LIVE.sim || xs.length > 30 || n < 2 || xs.length < n) return null;
+  const r = ASK_MANY(xs, n, dflt, o);
+  return r && r.length === n && r.every((x) => xs.includes(x)) && new Set(r).size === n ? r : dflt.length === n ? dflt : null;
+}
 /** True when the human player is the one deciding right now (play mode). */
 export function humanDeciding(g: Game) { return !!ASK && !g.sim && humanTop(); }
 /** bugfix2 item 4 (user, แอสการ์ด): a Land's canCast is mostly the bot's "is it worth it" check; a human may always place a
@@ -438,14 +448,17 @@ function withOnceCard<T>(c: Card, learn: boolean, fn: () => T): T {
 }
 
 // ---------- power ----------
+/** user 2026-11-23: a สามัคคี / แทงหลัง helper hit by เชาว์ปัญญาลิง this turn lost that ability: its POWER gift is gone. */
+function assistLost(g: Game, uid: number): boolean { const u = findCard(g, uid); return !!u && u.f.monkey === g.turn; }
 export function power(g: Game, c: Card): number {
   const imm = unaffected(g, c); // v14: unaffected = no temporary changes, auras of other cards or Land bonuses
   // bugfix14 (user 2026-11-06): an Avatar that lost its abilities (เชาว์ปัญญาลิง - ชิงปัญญาเรา ...) also loses the POWER its own
   // abilities gave it (back to its printed POWER, or lower when other cards lower it)
   const lostOwn = c.silencedTurn === g.turn && !imm;
+  if (c.f.monkey === g.turn && !imm) return Math.max(0, c.def.power); // user 2026-11-23: เชาว์ปัญญาลิง -> back to its base POWER
   let v = c.def.power + (lostOwn ? Math.min(0, c.bonus) : c.bonus);
   const shield = withHook('shieldFrom').size > 0; // v14d: POWER changes from sources c ignores (unaffectedBy)
-  for (const t of c.temp) if (tempCounts(g, c, t, imm, shield) && !(lostOwn && t.src === c.uid && t.power > 0)) v += t.power;
+  for (const t of c.temp) if (tempCounts(g, c, t, imm, shield) && !(lostOwn && t.src === c.uid && t.power > 0) && !(t.assist !== undefined && assistLost(g, t.assist))) v += t.power;
   for (const m of c.mods) { const f = fx(m); if (f && f.modPower) v += f.modPower(g, m, c); }
   const f = fx(c);
   if (f && f.staticPower && !contOff(g, c)) { const sp = f.staticPower(g, c); v += lostOwn ? Math.min(0, sp) : sp; }
@@ -1547,20 +1560,27 @@ function attackBody(g: Game, p: PID, att: Card, target: Card | null, unite: Card
     if (u === att || u.asleep || !P(g, p).avatars.includes(u)) continue;
     if (hasKw(g, u, 'unite')) {
       const amt = power(g, u);
-      u.asleep = true; att.temp.push({ power: amt, until: 'battle' });
+      u.asleep = true; att.temp.push({ power: amt, until: 'battle', assist: u.uid });
       emit(g, { ev: 'assist', kind: 'unity', who: p, from: u.uid, to: att.uid, amount: amt, s: `${u.def.name} สามัคคี: ${att.def.name} POWER +${amt}` });
       const f = fx(att); if (f && f.onUnited) f.onUnited(g, att, u);
       assistUsed(g, u, att, 'unity');
     } else if (hasKw(g, u, 'backstab')) {
       // แทงหลัง (user ruling 2026-10-12): rest this card, the attacker gets this card's POWER + 1 until the end of this fight
       const amt = power(g, u) + 1;
-      u.asleep = true; att.temp.push({ power: amt, until: 'battle' }); stabbers.push(u);
+      u.asleep = true; att.temp.push({ power: amt, until: 'battle', assist: u.uid }); stabbers.push(u);
       log(g, `${u.def.name} แทงหลัง: ${att.def.name} POWER +${amt}`);
       emit(g, { ev: 'assist', kind: 'backstab', who: p, from: u.uid, to: att.uid, amount: amt, s: `${u.def.name} แทงหลัง: ${att.def.name} POWER +${amt}` });
       const uf = fx(u); if (uf && uf.onBackstab && !silenced(g, u)) decide(g, p, () => uf.onBackstab!(g, u, att));
       assistUsed(g, u, att, 'backstab');
     }
   }
+  for (const u of [...stabbers]) { // user 2026-11-23: แทงหลัง is an ability: the opponent may answer it (เชาว์ปัญญาลิง)
+    if (g.winner !== null) break;
+    const ab: Ev = { kind: 'ability', actor: p, source: u, cancelled: false, depth: 1 };
+    respond(g, ab);
+    if (ab.cancelled || u.f.monkey === g.turn) { stabbers.splice(stabbers.indexOf(u), 1); log(g, `${u.def.name}: แทงหลัง is negated, ${att.def.name} loses its POWER`); }
+  }
+  if (g.winner !== null || !P(g, p).avatars.includes(att)) { endBattleTemps(g); stateCheck(g); return; }
   if (target === null && power(g, att) <= 0) {
     // linkbot item 4: POWER 0 (or less) at damage time (e.g. after ไปเลยมอนตี้ in the attack window): no damage, no LIFE flips
     log(g, `${att.def.name} has POWER ${power(g, att)}: the attack on LIFE deals no damage`);
@@ -2829,6 +2849,7 @@ function takeBuffs(g: Game, p: PID, att: Card): Card[] {
     const u = findCard(g, t.buff);
     delete t.buff; t.until = 'battle';
     if (!u) continue;
+    t.assist = u.uid;
     const kind = u.f.buffK === 1 ? 'unity' : 'backstab';
     delete u.f.buffTo; delete u.f.buffT; delete u.f.buffK;
     if (kind === 'unity') {

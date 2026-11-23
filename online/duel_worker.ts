@@ -11,7 +11,7 @@ import { countsAsReact } from '../src/engine.ts'; // bugfix19
 import { hellPayInfo as hellPayInfoW } from '../src/engine.ts'; // bugfix13
 import type { Brain, Ev, Act } from '../src/engine.ts';
 import {
-  newGame, playGame, mulligan, rand, setPhaseHook, setPay, gemOf, setBrains, setAskSeats, askSeat, setLogHook, withDecider, quiet, mainActs, doAct, legalTargets, pileActs,
+  newGame, playGame, mulligan, rand, setPhaseHook, setPay, gemOf, setBrains, setAskSeats, setAskMany, askSeat, setLogHook, withDecider, quiet, mainActs, doAct, legalTargets, pileActs,
   canAttack, attack, canUseReact, castMagic, bestPayment, costOf, fx, hasKw, power, P, opp, findCard, isAvatarDef,
   setEvHook, gemColorOf, reqOf, log, type GameEv, setOrder, setChoose, COLOR_EN, colorsEn, fullSilenced,
   CHAIN, ratSix, kwList, shieldOptions, useShield, magicImmune, attackDuty, dutyReason, reactCands, battleActs,
@@ -453,6 +453,16 @@ setAskSeats([0, 1], (xs, dflt, o) => {
   const k = ask(me, q);
   if (o.optional && (k < 0 || k >= xs.length)) return null;
   return xs[k] ?? dflt;
+});
+// user 2026-11-23 (ลิลิธ): choose several cards together, then Confirm. Answer = bitmask of the option indexes.
+setAskMany((xs, n, dflt, o) => {
+  let def = 0; xs.forEach((c, i) => { if (dflt.includes(c)) def |= 1 << i; });
+  const q: any = { type: 'pick', count: n, title: o.title ? textLabel(o.title) : `Choose ${n} cards`, options: xs.map((c) => ({ ...brief(G, c), label: `${c.def.name} · ${zoneOf(G, c)}` })), def: -1, defMask: def };
+  if (o.optional) q.pass = 'Skip';
+  const me = askSeat() as PID; VIEW = me;
+  const mask = ask(me, q);
+  if (!(mask > 0)) return null;
+  return xs.filter((_, i) => mask & (1 << i));
 });
 // Bottom order (scout leftovers): answer = sum(idx_k * 8^k), k = 0..n-1, idx_k = option index of the card at
 // depth k from the bottom: k = 0 is the card that ends up at the VERY BOTTOM of the Deck, k = 1 the one just above
