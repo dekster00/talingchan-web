@@ -582,7 +582,7 @@ const NEW: Record<string, Fx> = {
       const t = pickN(P(g, opp(c.ctrl)).avatars, 1, (a) => value(g, a), { optional: true, title: 'ท้าวเวสสุวรรณ: you may destroy 1 opposing Avatar' })[0];
       if (t) destroy(g, t, c.ctrl);
     },
-    aura: (g, s, t) => (g.phase === 'Battle' && t.ctrl === s.ctrl && symIs(t, 'ยักษ์') && onField(g, s) && P(g, t.ctrl).avatars.includes(t) ? 2 : 0),
+    aura: (g, s, t) => (g.phase === 'Battle' && g.active === s.ctrl && t.ctrl === s.ctrl && symIs(t, 'ยักษ์') && onField(g, s) && P(g, t.ctrl).avatars.includes(t) ? 2 : 0),
   },
 
   // ===== BT09 Magic =====

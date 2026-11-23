@@ -11,6 +11,7 @@ import { textCost } from './engine.ts'; // other-team audit Q9
 import { forcedFight as forcedFightB17, askPick } from './engine.ts'; // bugfix17
 import { fieldAvatars } from './cards.ts'; // other-team audit Q12
 import { addToHand, ctrlUntilOwnerDraw, loseText, noAbilityNow } from './engine.ts'; // simplify1
+import { askMany } from './engine.ts'; // 2026-11-23 ลิลิธ multi-pick
 import { effectTargetable as effectTargetableE } from './engine.ts'; // other-team audit
 import { gameOf as gameOfC } from './view.ts'; // other-team audit
 import type { Fx, HandAct } from './cards.ts';
@@ -203,10 +204,17 @@ const NEW: Record<string, Fx> = {
     fieldActs: (g, p, c) => [act('ลิลิธ: exile 2 from hell, take นรก card', (g2) => inMain(g2, p) && once(g2, p, 'lilith')
       && distinctNames(hellAvatars(g2, p, (x) => symIs(x, 'นรก'))) >= 4 && P(g2, p).hell.length >= 3,
     (g2) => {
+      // user 2026-11-23: pay the cost first: choose the 2 Hell cards to banish together (one Confirm), keeping a {นรก} card
+      // to take; then "choose a {นรก} card from your Hell to put into your hand"
       const pl = P(g2, p); markOnce(g2, pl, 'lilith');
-      const take = best(pl.hell.filter((x) => symIs(x, 'นรก')), (x) => keepValue(g2, x));
-      for (const x of worstN(pl.hell.filter((x) => x !== take), 2, (x) => keepValue(g2, x), { title: 'ลิลิธ: exile 2 from your Hell (cost)' })) toExile(g2, x);
-      if (take && pl.hell.includes(take)) { detach(g2, take); pl.hand.push(take); }
+      const keepBest = best(pl.hell.filter((x) => symIs(x, 'นรก')), (x) => keepValue(g2, x));
+      const botCost = pl.hell.filter((x) => x !== keepBest).sort((x, y) => keepValue(g2, x) - keepValue(g2, y)).slice(0, 2); // no ask
+      const cands = [...pl.hell];
+      const title = 'ลิลิธ (cost): choose 2 cards in your Hell to banish, then Confirm';
+      const cost = askMany(cands, 2, botCost, { title }) || (humanDecidingB13(g2) ? worstN(cands, 2, (x) => keepValue(g2, x), { title }) : botCost);
+      for (const x of cost) toExile(g2, x, { cost: true });
+      const take = pickN(pl.hell.filter((x) => symIs(x, 'นรก')), 1, (x) => keepValue(g2, x), { title: 'ลิลิธ: choose 1 {นรก} card in your Hell to put into your HAND' })[0];
+      if (take && pl.hell.includes(take)) { detach(g2, take); pl.hand.push(take); log(g2, `ลิลิธ: ${take.def.name} to hand`); }
     })],
   },
   // 'มฤตยูเทวี': group E entry at the end of this file

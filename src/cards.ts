@@ -459,13 +459,13 @@ export const FX: Record<string, Fx> = {
     keep: 3.5, options: 2,
     canCast: (g, p, c, o) => o === 0
       ? P(g, opp(p)).avatars.some((a) => a.mods.some((m) => m.owner === opp(p))) || P(g, p).avatars.some((a) => a.mods.some((m) => m.owner === opp(p)))
-        || P(g, opp(p)).mz.some((x) => x.def.type === 'Magic' || x.def.type === 'Construct')
+        || P(g, opp(p)).mz.some((x) => x.def.type === 'Magic') // user 2026-11-23: not Constructs (they are not Magic)
       : !!g.land && g.land.owner === opp(p),
     resolve: (g, p, c, o) => {
       if (o === 1) { if (g.land) { P(g, g.land.owner).hell.push(g.land); g.land = null; } return; }
       const mods = [...g.p[0].avatars, ...g.p[1].avatars].flatMap((a) => a.mods).filter((m) => m.owner === opp(p));
-      // also persistent Magic / Constructs in the opponent's Magic Zone
-      mods.push(...P(g, opp(p)).mz.filter((x) => x.def.type === 'Magic' || x.def.type === 'Construct'));
+      // also persistent Magic in the opponent's Magic Zone (user 2026-11-23: never a Construct, it is not a Magic card)
+      mods.push(...P(g, opp(p)).mz.filter((x) => x.def.type === 'Magic'));
       const m = best(mods, (x) => keepValue(g, x));
       if (m) toHell(g, m, { by: p, viaMagic: true }); // v14: through the leave path (สิงสู่เพื่อสู่สม / ริกกี้ react to it)
     },

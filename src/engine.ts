@@ -455,17 +455,19 @@ export function power(g: Game, c: Card): number {
   // bugfix14 (user 2026-11-06): an Avatar that lost its abilities (เชาว์ปัญญาลิง - ชิงปัญญาเรา ...) also loses the POWER its own
   // abilities gave it (back to its printed POWER, or lower when other cards lower it)
   const lostOwn = c.silencedTurn === g.turn && !imm;
-  if (c.f.monkey === g.turn && !imm) return Math.max(0, c.def.power); // user 2026-11-23: เชาว์ปัญญาลิง -> back to its base POWER
-  let v = c.def.power + (lostOwn ? Math.min(0, c.bonus) : c.bonus);
+  // user 2026-11-23: hit by เชาว์ปัญญาลิง -> back to its base POWER: every POWER change on it (its own, buffs, debuffs, permanent
+  // bonus) is gone this turn; continuous effects of OTHER cards in play (auras, the Land, Modifications) still apply
+  const monkey = c.f.monkey === g.turn && !imm;
+  let v = c.def.power + (monkey ? 0 : lostOwn ? Math.min(0, c.bonus) : c.bonus);
   const shield = withHook('shieldFrom').size > 0; // v14d: POWER changes from sources c ignores (unaffectedBy)
-  for (const t of c.temp) if (tempCounts(g, c, t, imm, shield) && !(lostOwn && t.src === c.uid && t.power > 0) && !(t.assist !== undefined && assistLost(g, t.assist))) v += t.power;
+  if (!monkey) for (const t of c.temp) if (tempCounts(g, c, t, imm, shield) && !(lostOwn && t.src === c.uid && t.power > 0) && !(t.assist !== undefined && assistLost(g, t.assist))) v += t.power;
   for (const m of c.mods) { const f = fx(m); if (f && f.modPower) v += f.modPower(g, m, c); }
   const f = fx(c);
-  if (f && f.staticPower && !contOff(g, c)) { const sp = f.staticPower(g, c); v += lostOwn ? Math.min(0, sp) : sp; }
+  if (f && f.staticPower && !contOff(g, c)) { const sp = f.staticPower(g, c); v += monkey ? 0 : lostOwn ? Math.min(0, sp) : sp; }
   for (const l of lands(g)) { const lf = fx(l); if (lf && lf.landPower && (!(imm || shield) || !unaffectedBy(g, c, l))) v += lf.landPower(g, l, c); }
   for (const q of g.p) for (const s of q.avatars.concat(q.mz)) {
     const sf = fx(s);
-    if (sf && sf.aura && !contOff(g, s) && (s === c || !(imm || shield) || !unaffectedBy(g, c, s))) { const av = sf.aura(g, s, c); v += lostOwn && s === c ? Math.min(0, av) : av; }
+    if (sf && sf.aura && !contOff(g, s) && (s === c || !(imm || shield) || !unaffectedBy(g, c, s))) { const av = sf.aura(g, s, c); v += monkey && s === c ? 0 : lostOwn && s === c ? Math.min(0, av) : av; }
   }
   return Math.max(0, v);
 }

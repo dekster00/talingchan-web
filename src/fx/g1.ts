@@ -7,6 +7,7 @@ import { canChangeCtrl, takeControl, grantKw, landIs as landOn, isLandOn, placeL
 import { attach as attachCard, canWear, lifeDown } from '../engine.ts'; // v14d
 import { castAllowed, nameHas, RULES, addRule, RULE_GAME } from '../engine.ts';
 import type { HandAct } from '../cards.ts';
+import { humanDeciding as humanDecidingG1 } from '../engine.ts'; // 2026-11-23 กรุงโรม
 import { FX, value, best, worst, pickN, worstN, mayDo, chooseMode, oppChoice, oppTargets, removeOpp, sacrifice, search, inMain, magicOk } from '../cards.ts';
 import { costFirst } from '../cards.ts'; // other-team audit Q9
 import {
@@ -924,6 +925,14 @@ const NEW: Record<string, any> = {
           const s = pool[i].def.cost + pool[j].def.cost;
           if (s <= 5 && pool[i].def.name !== pool[j].def.name && s + 0.5 > bv) { bv = s + 0.5; pick = [pool[i], pool[j]]; }
         }
+      }
+      // user 2026-11-23: the player chooses the Constructs (a pop-up), up to 2, total Cost 5 or less
+      if (humanDecidingG1(g) && pool.length > 1) {
+        const first = pickN(pool, 1, (x) => (pick.includes(x) ? 10 : 0) + x.def.cost, { title: 'กรุงโรมใน 1 วัน: choose a Construct in your Hell to build' })[0];
+        if (!first) return;
+        const rest = pool.filter((x) => x !== first && x.def.name !== first.def.name && x.def.cost + first.def.cost <= 5);
+        const second = rest.length ? pickN(rest, 1, (x) => x.def.cost, { optional: true, title: `กรุงโรมใน 1 วัน: choose a 2nd Construct (Cost ${5 - first.def.cost} or less), or Skip` })[0] : null;
+        pick = second ? [first, second] : [first];
       }
       for (const k of pick) build(g, p, k);
     },
