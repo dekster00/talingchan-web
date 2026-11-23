@@ -33,7 +33,7 @@ export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (l
 // KD = a whole deck, 1,500 coins (user 2026-11-06)
 export const packPrice = (set: string) => set.startsWith('KD') ? 1500 : (/^(CC|ODY|B2S)/.test(set) || set === 'BT11' || set === 'BT12' ? 200 : PRICE.pack); // CC01/CC02/ODY1 added 2026-11-06
 // packs announced without card data yet: listed as SOON, not sold
-export const SOON_PACKS = ['CC03'];
+export const SOON_PACKS: string[] = []; // CC03 card data added 2026-11-23
 export const SHOP_CLOSED = new Set(['PRMO']);
 export const starterPrice = (set: string) => (set === 'SD09' ? 1000 : 600);
 // duplicates beyond the copy limit become dust; crafting a card costs dust by its lowest rarity

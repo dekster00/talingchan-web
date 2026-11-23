@@ -24,6 +24,7 @@ export interface Fx {
   hellPayWith?(g: Game, self: Card, forCard: Card): ((x: Card) => boolean) | null; // BT12-051: paid from hand, lets 1 Hell card pay with it (exiled)
   // Avatar hooks
   jutsu?(g: Game, c: Card): void; // จุติ (summoned by paying cost)
+  hellEndPhase?(g: Game, c: Card): void; // CC03: in our Hell, during our End Phase ("สั่งใช้ ในนรก ในช่วง End Phase เรา")
   onOwnSummon?(g: Game, c: Card): void; // summoned by its own ability
   deathCry?(g: Game, c: Card, owner: PID): void; // คำสั่งเสีย
   battle?(g: Game, c: Card, other: Card): void; // when this fights

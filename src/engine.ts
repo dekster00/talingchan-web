@@ -566,7 +566,7 @@ export function canChangeCtrl(g: Game, c: Card, to: PID, by: Card | null = curre
   const pl = P(g, c.ctrl);
   if (!pl.avatars.includes(c) && !pl.mz.includes(c) && !pl.avatars.some((a) => a.mods.includes(c))) return true;
   const f = fx(c) as any; // its own "can't change control" (ไอ้นัท except by อีช่า, สว นาโนแมชชีน, ไมเกรน)
-  if (f?.noSteal && !contOff(g, c) && !(f.noStealExcept && by && by.def.name === f.noStealExcept)) return false;
+  if (f?.noSteal && !contOff(g, c) && !(f.noStealExcept && by && by.def.name === f.noStealExcept) && !(typeof f.noStealIf === 'function' && !f.noStealIf(g, c))) return false; // CC03: noStealIf = only while true
   if (c.mods.some((m) => (fx(m) as any)?.noSteal)) return false; // attached "can't change control" (ปลอกคอซื่อสัตย์)
   return !pl.mz.some((s) => { const lc = fx(s)?.lockCtrl; return !!lc && (typeof lc !== 'function' || lc(g, s)) && !contOff(g, s); });
 }
@@ -1620,6 +1620,7 @@ function killed(g: Game, winner: Card, loser: Card, by: PID) {
   let gone = false;
   try { gone = destroy(g, loser, by); } finally { KILL_FIRST = -1; }
   if (!gone) return;
+  if (winner.ctrl !== loser.owner && symIs(winner, 'เทพ')) P(g, winner.ctrl).once['godKill'] = g.turn; // CC03 พระอินทร์ ผู้ช่วยเหลือ
   if (!P(g, winner.ctrl).avatars.includes(winner)) return;
   // granted "เมื่อ Avatar ใบนี้ทำลาย Avatar ฝ่ายตรงข้ามจากการต่อสู้: หงาย LIFE Card ใบบนสุดของฝ่ายตรงข้าม 1 ใบ" (เซนเซไฮ), until end of turn
   if ((winner.f.gFlipOnKill || 0) >= g.turn && !fullSilenced(g, winner)) {
@@ -1719,6 +1720,8 @@ export function playTurn(g: Game) {
   for (const a of [...pl.avatars, ...pl.mz.filter((x) => !isLand(x))]) { const f = fx(a); if (f && f.endPhase && (pl.avatars.includes(a) || pl.mz.includes(a)) && !silenced(g, a)) f.endPhase(g, a); }
   for (const land of lands(g)) { const lf = fx(land); if (lf && lf.endPhase) decide(g, land.owner, () => lf.endPhase!(g, land)); }
   phaseWatch(g, 'eachEndPhase'); // v14: FX.eachEndPhase (both players' cards, every End Phase)
+  if (g.winner !== null) return;
+  for (const h of [...pl.hell]) { const hf = fx(h); if (hf && hf.hellEndPhase && pl.hell.includes(h) && g.winner === null) decide(g, p, () => withSource(h, () => hf.hellEndPhase!(g, h))); } // CC03: "สั่งใช้ ในนรก ในช่วง End Phase เรา" (พระอินทร์ ผู้ช่วยเหลือ)
   if (g.winner !== null) return;
   for (const q of g.p) for (const a of [...q.avatars]) if (a.f.endDestroy === g.turn) destroy(g, a, null, a.f.endDestroyM === g.turn); // other-team audit: ความกล้าหาญ = by a Magic (แกลลาติน)
   for (const q of g.p) for (const a of [...q.avatars]) if (a.f.endHell === g.turn) toHell(g, a);
