@@ -21,12 +21,13 @@ export const PRICE = { pack: 100 }; // coins per pack (or 1 ticket)
 export const LOGIN_DAYS = [
   { coins: 100 }, { coins: 150 }, { tickets: 1 }, { coins: 200 }, { dust: 50 }, { coins: 250 }, { tickets: 2, icon: 'login7', packs: { PRMO: 1 } },
 ];
-// user 2026-11-26: easier money: a player win pays 700 coins, a bot win 500 (owned deck), bot coins capped 5000/day
+// user 2026-11-26: easier money: a player win pays 700 coins, a bot win 500 (owned deck), duel coins capped 3000/day (bot + player together)
 export const PVP = { win: { xp: 100, coins: 700 }, loss: { xp: 40, coins: 20 }, draw: { xp: 50, coins: 30 } };
 export const BOT = {
   win: { hard: { xp: 60, coins: 500 }, normal: { xp: 40, coins: 500 }, easy: { xp: 20, coins: 500 } } as Record<string, { xp: number; coins: number }>,
   loss: { xp: 10, coins: 5 },
-  capXp: 400, capCoins: 5000, maxGames: 40, minSecs: Number(process.env.BOT_MIN_SECS ?? 60), // BOT_MIN_SECS: tests only
+  capXp: 400, capCoins: 3000, duelCoinsDay: 3000, maxGames: 40, // duelCoinsDay: user 2026-11-26, at most 3,000 coins a day from duels (bot + player)
+  minSecs: Number(process.env.BOT_MIN_SECS ?? 60), // BOT_MIN_SECS: tests only
 };
 export const LEVEL_REWARD = (lv: number): Gain => ({ coins: 100, tickets: 1 + (lv % 5 === 0 ? 2 : 0), packs: { PRMO: 1 } });
 // prices (user 2026-11-03): packs 100 coins, KD and BT11-BT12 200; the PROMO pack is not sold, it is a reward
@@ -316,6 +317,7 @@ export function gameReward(a: { xp: number; prog: any }, e: GameEvent & { coinsO
     p.bot.xp += xp; p.bot.coins += coins; p.bot.games++;
   }
   if (!e.coinsOk) coins = 0;
+  { const d = p.daily as any; d.duelCoins ??= 0; coins = Math.max(0, Math.min(coins, BOT.duelCoinsDay - d.duelCoins)); d.duelCoins += coins; }
   let firstWin = false;
   if (e.won && coins > 0 && !p.daily.firstWin) { p.daily.firstWin = true; firstWin = true; } // 2026-11-26: no x2 any more (wins pay 500 / 700 flat)
   give(p, { coins });
