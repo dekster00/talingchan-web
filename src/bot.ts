@@ -36,8 +36,8 @@ const TUNE: Record<string, Tune> = {
 };
 TUNE.hard0f = { ...TUNE.hard0, fair: true }; // tests: the old Hard without peeking
 TUNE.hard1 = { ...TUNE.hard, pro2: false }; // tests: the Hard of 2026-10-26 (before the user's 2026-11-06 list)
-// tests only: BOT_X='{"fair":true,...}' makes level hardx = hard0 plus those settings (node; never in the browser)
-try { const x = (globalThis as any).process?.env?.BOT_X; if (x) TUNE.hardx = { ...TUNE.hard0, ...JSON.parse(x) }; } catch { /* no env */ }
+// tests only: BOT_X='{"fair":true,...}' makes level hardx = hard (or BOT_XBASE=hard0) plus those settings (node; never in the browser)
+try { const x = (globalThis as any).process?.env?.BOT_X; if (x) TUNE.hardx = { ...((globalThis as any).process?.env?.BOT_XBASE === 'hard0' ? TUNE.hard0 : TUNE.hard), ...JSON.parse(x) }; } catch { /* no env */ }
 
 // Key units of the meta decks (what pros remove first) and how much more they are worth than their stats say.
 const THREAT: Record<string, number> = {

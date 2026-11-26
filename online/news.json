@@ -2,6 +2,13 @@
  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
  "updates": [
   {
+   "date": "2026-11-26",
+   "title": "More coins · เหรียญมากขึ้น",
+   "lines": [
+    "Win vs a player: 700 coins. Win vs a bot: 500 coins (with a deck of cards you own), up to 5,000 coins a day from bots. · ชนะผู้เล่น: 700 เหรียญ ชนะบอท: 500 เหรียญ (ใช้เด็คการ์ดที่มี) ได้จากบอทสูงสุด 5,000 เหรียญต่อวัน"
+   ]
+  },
+  {
    "date": "2026-11-23",
    "title": "New official ban list (Nov 69) · แบนลิสต์ใหม่ (พ.ย. 69)",
    "lines": [
