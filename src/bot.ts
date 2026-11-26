@@ -6,7 +6,7 @@ import type { Brain, Ev } from './engine.ts';
 import {
   P, opp, power, mainActs, doAct, cloneSim, legalTargets, canAttack, attack, fx, canUseReact,
   flippedLife, critical, castMagic, keepValue, findCard, toExile, hasKw, helpersFor, colorsEn, shieldOptions, useShield, reactCands, battleActs,
-  linkActs, buffActs, applyBuff, isConstruct, rand, quiet, withDecider,
+  linkActs, buffActs, applyBuff, isConstruct, rand, quiet, withDecider, costOf, isAvatarDef,
 } from './engine.ts';
 import { value } from './cards.ts';
 
@@ -27,15 +27,16 @@ export const LEVELS: Level[] = ['easy', 'normal', 'hard'];
 // then only push on for the kill), key-unit priorities for attacks and React cards, a small opening board (1-2 Avatars)
 // against one-turn kills, hand building, and fair look-ahead (its own draws and the opponent's hidden cards are
 // shuffled in every look-ahead copy, so it never plans with cards it could not know).
-interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean; pro: boolean; handW: number; fair?: boolean; samples?: number; curve?: boolean; threatW?: number; landW?: number; opening?: boolean; reactPro?: boolean; pro2?: boolean }
+interface Tune { depth: number; beam: number; lifeW: number; exposeW: number; noise: number; stopChance: number; reactHold: number; reactSkip: number; lifeGuard: boolean; pro: boolean; handW: number; fair?: boolean; samples?: number; curve?: boolean; threatW?: number; landW?: number; opening?: boolean; reactPro?: boolean; pro2?: boolean; bsamples?: number }
 const TUNE: Record<string, Tune> = {
   easy: { depth: 1, beam: 0, lifeW: 7, exposeW: 0.5, noise: 3, stopChance: 0.2, reactHold: 0, reactSkip: 0.5, lifeGuard: false, pro: false, handW: 0.6 },
   normal: { depth: 1, beam: 0, lifeW: 7, exposeW: 1, noise: 0, stopChance: 0, reactHold: 0, reactSkip: 0, lifeGuard: false, pro: false, handW: 0.6 },
-  hard: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: true, handW: 0.8, fair: true, curve: true, threatW: 1, landW: 1, opening: true, reactPro: true, samples: 3, pro2: true },
+  hard: { depth: 2, beam: 4, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: true, handW: 0.8, fair: true, curve: true, threatW: 1, landW: 1, opening: true, reactPro: true, samples: 5, pro2: true, bsamples: 3 },
   hard0: { depth: 2, beam: 3, lifeW: 8.5, exposeW: 1.4, noise: 0, stopChance: 0, reactHold: 6, reactSkip: 0, lifeGuard: true, pro: false, handW: 0.6 }, // the Hard of 2026-10-21 (tests)
 };
 TUNE.hard0f = { ...TUNE.hard0, fair: true }; // tests: the old Hard without peeking
-TUNE.hard1 = { ...TUNE.hard, pro2: false }; // tests: the Hard of 2026-10-26 (before the user's 2026-11-06 list)
+TUNE.hard2 = { ...TUNE.hard, beam: 3, samples: 3, bsamples: 1 }; // tests: the Hard of 2026-11-06 (before 2026-11-26 "make bot harder")
+TUNE.hard1 = { ...TUNE.hard2, pro2: false }; // tests: the Hard of 2026-10-26 (before the user's 2026-11-06 list)
 // tests only: BOT_X='{"fair":true,...}' makes level hardx = hard (or BOT_XBASE=hard0) plus those settings (node; never in the browser)
 try { const x = (globalThis as any).process?.env?.BOT_X; if (x) TUNE.hardx = { ...((globalThis as any).process?.env?.BOT_XBASE === 'hard0' ? TUNE.hard0 : TUNE.hard), ...JSON.parse(x) }; } catch { /* no env */ }
 
@@ -303,8 +304,10 @@ const Classic: Brain = {
       if (atts.length === 0) break;
       // pick the single best (attacker, target) by look-ahead, or stop
       newDecision();
-      const bs = look(g, me); const bnow = evaluate(bs, me); oppReply(bs, me);
-      const base = 0.4 * bnow + 0.6 * evaluate(bs, me);
+      // 2026-11-26 (user: "make bot harder"): Hard judges each attack over several guesses of the hidden cards too
+      const bdec = lookSeed, bn = T.fair ? Math.max(1, T.bsamples || 1) : 1;
+      let base = 0;
+      for (let k = 0; k < bn; k++) { lookSeed = bdec + k * 977; const bs = look(g, me); const bnow = evaluate(bs, me); oppReply(bs, me); base += (0.4 * bnow + 0.6 * evaluate(bs, me)) / bn; }
       let pick: [number, number | null, number[]] | null = null, bestS = base + 0.05;
       // v14 features item 1: a Construct is chosen as a target only with 15% probability when an Avatar or LIFE is open
       // user 2026-11-06: 50-50 now (was 15%)
@@ -320,17 +323,24 @@ const Classic: Brain = {
         if (!conOk && ts.some((t) => !isConstruct(t))) ts = ts.filter((t) => !isConstruct(t));
         for (const t of ts) {
           for (const hs of sets) {
-            const sim = look(g, me);
-            const sa = findCard(sim, att.uid)!, st = t ? findCard(sim, t.uid) : null;
-            // v14 features item 9: helpers give their buff in the Battle Phase first (applyBuff), then the attack
-            for (const u of hs) { const su = findCard(sim, u.uid); if (su) applyBuff(sim, me, su, sa); }
-            attack(sim, me, sa, st);
-            // attacks that remain this turn still matter: play the rest quickly
-            quickBattle(sim, me);
-            let s = evaluate(sim, me);
-            if (sim.winner === null) { const now = s; oppReply(sim, me); s = 0.4 * now + 0.6 * evaluate(sim, me); }
+            let s = 0, pen = 0;
+            for (let k = 0; k < bn; k++) {
+              lookSeed = bdec + k * 977;
+              const sim = look(g, me);
+              const sa = findCard(sim, att.uid)!, st = t ? findCard(sim, t.uid) : null;
+              // v14 features item 9: helpers give their buff in the Battle Phase first (applyBuff), then the attack
+              for (const u of hs) { const su = findCard(sim, u.uid); if (su) applyBuff(sim, me, su, sa); }
+              attack(sim, me, sa, st);
+              // attacks that remain this turn still matter: play the rest quickly
+              quickBattle(sim, me);
+              let sk = evaluate(sim, me);
+              if (sim.winner === null) { const now = sk; oppReply(sim, me); sk = 0.4 * now + 0.6 * evaluate(sim, me); }
+              s += sk / bn;
+              if (T.pro2) pen += attackPenalty(g, me, att, t, sim, attacks) / bn;
+            }
+            lookSeed = bdec;
             if (T.noise) s += (botRand() - 0.5) * 2 * T.noise;
-            if (T.pro2) s -= attackPenalty(g, me, att, t, sim, attacks);
+            s -= pen;
             if (s > bestS) { bestS = s; pick = [att.uid, t ? t.uid : null, hs.map((u) => u.uid)]; }
           }
         }
@@ -420,7 +430,7 @@ function reactStakes(g: Game, me: PID, ev: Ev): number {
 }
 
 /** A bot brain for a level. Each call sets the tuning used by evaluate() and the helpers above. */
-export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' | 'hard1' = 'normal'): Brain {
+export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' | 'hard1' | 'hard2' = 'normal'): Brain {
   const tune = TUNE[level] || TUNE.normal;
   const run = <R>(fn: () => R): R => { const prev = T; T = tune; try { return fn(); } finally { T = prev; } };
   return {
@@ -433,3 +443,32 @@ export function makeBot(level: Level | 'hard0' | 'hard0f' | 'hardx' | 'hard1' = 
 }
 export const Greedy: Brain = makeBot('normal');
 export const levelOf = (x: unknown): Level => (LEVELS.includes(x as Level) ? (x as Level) : 'normal');
+
+/** The old bot mulligan (until 2026-11-26): no Avatar of cost 3 or less = change every card that isn't one. */
+export function oldMulligan(g: Game, p: PID): Card[] {
+  const hand = P(g, p).hand;
+  const cheap = hand.filter((c) => isAvatarDef(c.def) && costOf(g, p, c) <= 3);
+  return cheap.length ? [] : hand.filter((c) => !isAvatarDef(c.def));
+}
+
+/** Bot mulligan (user 2026-11-26 "make bot harder"): keep an early curve (up to 3 cheap Avatars, one mid one), one
+ *  React and one Land; change expensive Avatars and spare Magic/Lands when the hand can't start the game. */
+export function botMulligan(g: Game, p: PID): Card[] {
+  const hand = P(g, p).hand;
+  const av = hand.filter((c) => isAvatarDef(c.def));
+  const cost = (c: Card) => costOf(g, p, c);
+  const cheap = av.filter((c) => cost(c) <= 3).sort((x, y) => cost(x) - cost(y) || y.def.power - x.def.power);
+  const keep = new Set<Card>(cheap.slice(0, 3));
+  const mid = av.filter((c) => !keep.has(c) && cost(c) <= 5).sort((x, y) => cost(x) - cost(y));
+  if (mid.length) keep.add(mid[0]);
+  if (cheap.length >= 2 && mid.length > 1) keep.add(mid[1]);
+  const react = hand.find((c) => isReactCard(c));
+  if (react) keep.add(react);
+  const land = hand.find((c) => c.def.type === 'Land');
+  if (land && cheap.length >= 1) keep.add(land);
+  if (cheap.length >= 2) { // a good start: only the clunky cards go back
+    for (const c of hand) if (!keep.has(c) && c.def.type === 'Magic' && c.def.subtype !== 'React' && hand.filter((x) => x.def.type === 'Magic' && keep.has(x)).length < 2) keep.add(c);
+    for (const c of hand) if (!keep.has(c) && isAvatarDef(c.def) && cost(c) >= 6 && !av.some((x) => keep.has(x) && cost(x) >= 6)) keep.add(c);
+  }
+  return hand.filter((c) => !keep.has(c));
+}
