@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-26",
+   "title": "Frozen game fix · แก้เกมดูเหมือนค้าง",
+   "lines": [
+    "Fixed: after ทำไมถึงเอาแต่ดูละครับ ?! the game looked frozen. The attack arrow now turns to your chosen Avatar, and ธอร์'s follow-up pick has a clear title. · แก้ไข: หลังใช้ ทำไมถึงเอาแต่ดูละครับ ?! เกมดูเหมือนค้าง ตอนนี้ลูกศรโจมตีจะหันไปยัง Avatar ที่เลือก และการเลือกเป้าของ ธอร์ มีหัวข้อชัดเจน"
+   ]
+  },
+  {
+   "date": "2026-11-26",
    "title": "Harder Hard bot · บอทระดับยากเก่งขึ้น",
    "lines": [
     "The Hard bot thinks further ahead: it checks more possibilities before each summon and attack. · บอทระดับยากคิดล่วงหน้ามากขึ้น ตรวจทางเลือกมากขึ้นก่อนอัญเชิญและโจมตี"
