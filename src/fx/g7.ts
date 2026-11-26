@@ -208,7 +208,8 @@ let shivaPower = 0; // handoff from พระอิศวร วีลแชร�
 
 function thorBlast(g: Game, p: PID, lifeIfNone: boolean) {
   const lim = 3 + Math.floor(P(g, p).hell.length / 10);
-  const t = best(P(g, opp(p)).avatars.filter((a) => costNow(g, a) <= lim), (a) => value(g, a));
+  // user 2026-11-26: its own title (it used to show the last action's, e.g. "Choose a card for React: ...")
+  const t = pickN(P(g, opp(p)).avatars.filter((a) => costNow(g, a) <= lim), 1, (a) => value(g, a), { title: `ธอร์ บุตรแห่งโอดิน: choose 1 opponent Avatar with Cost ${lim} or less to destroy` })[0] || null;
   log(g, `ธอร์ blast (Cost <= ${lim})`);
   if (t && destroy(g, t, p)) return;
   if (lifeIfNone) flipLife(g, opp(p));

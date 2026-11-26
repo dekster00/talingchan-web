@@ -526,7 +526,7 @@ setEvHook((g, e) => {
   postEv(g, e);
   // pacing: both screens play each event over this time
   if (e.ev === 'attack') sleep(1100);
-  else if (e.ev === 'shield') sleep(500);
+  else if (e.ev === 'shield' || e.ev === 'redirect') sleep(500);
   else if (e.ev === 'summon') {
     sleep(2200);
     const ac = findCard(g, (e as any).uid);

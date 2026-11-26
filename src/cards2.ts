@@ -12,6 +12,7 @@ import { forcedFight as forcedFightB17, askPick } from './engine.ts'; // bugfix1
 import { fieldAvatars } from './cards.ts'; // other-team audit Q12
 import { addToHand, ctrlUntilOwnerDraw, loseText, noAbilityNow } from './engine.ts'; // simplify1
 import { askMany } from './engine.ts'; // 2026-11-23 ลิลิธ multi-pick
+import { emit as emitRedirect } from './engine.ts'; // 2026-11-26 ทำไมถึงเอาแต่ดูละครับ
 import { effectTargetable as effectTargetableE } from './engine.ts'; // other-team audit
 import { gameOf as gameOfC } from './view.ts'; // other-team audit
 import type { Fx, HandAct } from './cards.ts';
@@ -759,7 +760,15 @@ const NEW: Record<string, Fx> = {
     react: {
       on: ['attack'], can: (g, p, c, ev) => ev.actor !== p && P(g, p).avatars.some((a) => isLinked(g, a)),
       want: (g, p, c, ev) => { const t = best(P(g, p).avatars.filter((a) => isLinked(g, a)), (a) => power(g, a)); return !!t && power(g, t) + 3 > power(g, ev.source!) && (ev.target === null || power(g, ev.target!) <= power(g, ev.source!)); },
-      resolve: (g, p, c, ev) => { const t = best(P(g, p).avatars.filter((a) => isLinked(g, a)), (a) => power(g, a)); if (t) { ev.target = t; boost(t, 3); } },
+      // user 2026-11-26 (the duel screen looked frozen): the attack arrow turns to the chosen Avatar ('redirect' event) and
+      // the pick has its own title, so the next question (e.g. ธอร์'s blast after it wins) is not mistaken for this one
+      resolve: (g, p, c, ev) => {
+        const t = pickN(P(g, p).avatars.filter((a) => isLinked(g, a)), 1, (a) => power(g, a), { title: 'ทำไมถึงเอาแต่ดูละครับ ?!: choose your [Link] Avatar to take the attack (POWER +3)' })[0];
+        if (!t) return;
+        ev.target = t; addPower(g, t, 3, 'turn', c);
+        emitRedirect(g, { ev: 'redirect', who: p, uid: t.uid, from: ev.source ? ev.source.uid : -1, s: `ทำไมถึงเอาแต่ดูละครับ ?!: the attack goes to ${t.def.name} (POWER +3)` } as any);
+        log(g, `ทำไมถึงเอาแต่ดูละครับ ?!: the attack of ${ev.source ? ev.source.def.name : '?'} goes to ${t.def.name}, POWER +3`);
+      },
     },
   },
   // 'ดินแดนยุติธรรม': group E entry at the end of this file
