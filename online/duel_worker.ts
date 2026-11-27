@@ -434,7 +434,7 @@ setAskSeats([0, 1], (xs, dflt, o) => {
     const ctx = o.context;
     const q: any = {
       type: 'pick', title: textLabel(o.title || 'สอดแนม'), scout: true, rest: o.rest || 'shuffle', // ui39: the screen arranges the rest
-      options: ctx.map((c) => ({ ...brief(G, c), label: `${c.def.name} · revealed`, disabled: o.none || !xs.includes(c) })),
+      options: ctx.map((c) => ({ ...brief(G, c), label: `${c.def.name} · ${/hand$/.test(zoneOf(G, c)) ? zoneOf(G, c) : 'revealed'}`, disabled: o.none || !xs.includes(c) })),
       def: dflt && !o.none ? ctx.indexOf(dflt) : -1,
     };
     if (o.none) q.pass = 'OK'; else if (o.optional || !xs.length) q.pass = 'Skip';

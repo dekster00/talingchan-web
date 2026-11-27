@@ -781,7 +781,7 @@ Object.assign(FX, {
         const pool = pl.exile.filter((x) => x !== c && army(x));
         const back = pickN(pool, pool.length, () => 1, { optional: true, title: 'จอมมาร: return "กองทัพปีศาจ" to the Deck (any number)' });
         let n = 0;
-        for (const x of back) if (toDeck(g2, x, 'shuffle')) n++;
+        for (const x of back) if (toDeck(g2, x, 'bottom')) n++; // user 2026-11-27: to the very bottom of the Deck, no shuffle
         if (!summon(g2, p, c, 'own')) return;
         c.f.armyN = n; // POWER ตั้งต้น = the number returned
         log(g2, `${c.def.name}: ${n} "กองทัพปีศาจ" back to the Deck, base POWER ${n}`);

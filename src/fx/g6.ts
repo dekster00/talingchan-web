@@ -2,6 +2,7 @@
 // Approximations are marked "approx:". Overdose locks, แผนการ : ตอกฝาโลง and โรงเรียนเวทย์มนต์'s
 // "คาถา" trigger need to see other cards' abilities, so this file wraps those hooks on every FX entry
 // (see the end of the file). The wrappers do nothing unless one of those cards is in the game.
+import { SHARED as SHARED_G6 } from '../cards.ts'; // 2026-11-27
 import { rollDie } from '../engine.ts';
 import fs from 'node:fs';
 import type { Card, Game, PID } from '../types.ts';
@@ -159,6 +160,7 @@ function destroyAnyCard(g: Game, p: PID) {
 }
 // other-team audit Q19: พระอิศวร เทพผู้ทำลาย destroys any card on the field (Avatars, cards in either Magic Zone, Lands,
 // worn cards), its own side included; optional = the สั่งใช้ ("สามารถ")
+SHARED_G6.fieldDestroy = (g, p, o, t, x) => shivaDestroy(g, p, o, t, x);
 export function shivaDestroy(g: Game, p: PID, optional: boolean, title = 'พระอิศวร เทพผู้ทำลาย: destroy a card on the field', exclude: Card | null = null) {
   const pool: Card[] = [];
   for (const q of g.p) {

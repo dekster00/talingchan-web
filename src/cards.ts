@@ -351,6 +351,8 @@ export const cancel = (g: Game, p: PID, c: Card, ev: Ev) => { ev.cancelled = tru
 /** Timed-rule predicates (engine RuleDef), keyed by rule key; re-exported by engine.ts. Defined here so card files can
  *  register rules at load time. */
 export const RULES: Record<string, RuleDef> = {};
+/** 2026-11-27: shared helpers set by a later fx file (fx/g6.ts sets fieldDestroy), so earlier files can call them without an import cycle. */
+export const SHARED: { fieldDestroy?: (g: Game, p: PID, optional: boolean, title?: string, exclude?: Card | null) => boolean } = {};
 export const FX: Record<string, Fx> = {
   // ===== นินจา deck =====
   'พรของอิศวร': {

@@ -741,7 +741,7 @@ const NEW: Record<string, any> = {
     onSummon: (g: Game, c: Card) => {
       if (!GEN_SUMMON && !GEN_BY.get(c.uid)) return;
       GEN_BY.delete(c.uid);
-      shivaDestroyG1(g, c.ctrl, false, 'แฮหัวตุ้น: destroy 1 card on the field', c);
+      SHARED_G1.fieldDestroy!(g, c.ctrl, false, 'แฮหัวตุ้น: destroy 1 card on the field', c);
     },
   },
   'แฮหัวเอี๋ยน ขุนพลธนูแห่งวุยก๊ก': {
@@ -1162,4 +1162,4 @@ Object.assign(FX, {
 import { humanSeat as humanSeatB12 } from '../engine.ts';
 import { deckRoom } from '../engine.ts'; // bugfix14
 import { addPower as addPowerB14 } from '../engine.ts'; // bugfix14
-import { shivaDestroy as shivaDestroyG1 } from './g6.ts'; // 2026-11-27 แฮหัวตุ้น: any card on the field
+import { SHARED as SHARED_G1 } from '../cards.ts'; // 2026-11-27 แฮหัวตุ้น: any card on the field (fx/g6.ts fieldDestroy)

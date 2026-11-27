@@ -13,6 +13,7 @@ import { fieldAvatars } from './cards.ts'; // other-team audit Q12
 import { addToHand, ctrlUntilOwnerDraw, loseText, noAbilityNow } from './engine.ts'; // simplify1
 import { askMany } from './engine.ts'; // 2026-11-23 ลิลิธ multi-pick
 import { emit as emitRedirect } from './engine.ts'; // 2026-11-26 ทำไมถึงเอาแต่ดูละครับ
+import { emit as emitWat, showCards } from './engine.ts'; // 2026-11-27 พี่วัฒน์ BGN
 import { effectTargetable as effectTargetableE } from './engine.ts'; // other-team audit
 import { gameOf as gameOfC } from './view.ts'; // other-team audit
 import type { Fx, HandAct } from './cards.ts';
@@ -390,6 +391,15 @@ const NEW: Record<string, Fx> = {
       for (const q of [p, opp(p)] as PID[]) { const pl = P(g, q); if (pl.hand.length < 5) draw(g, q, 5 - pl.hand.length); else decide(g, q, () => discardWorst(g, q, pl.hand.length - 5)); }
       const gp = P(g, p).hand.reduce((s, x) => s + x.def.gem, 0), go = P(g, opp(p)).hand.reduce((s, x) => s + x.def.gem, 0);
       log(g, `พี่วัฒน์ BGN: hands shown, GEM P${p} ${gp} / P${opp(p)} ${go}`); // แสดงการ์ดบนมือทั้งหมด
+      // user 2026-11-27: both hands are shown to both players until each presses OK, with who won (less GEM chooses)
+      for (const q of [opp(p), p] as PID[]) {
+        emitWat(g, { ev: 'reveal', who: q, cards: P(g, q).hand.map((x) => ({ uid: x.uid, print: x.def.print, name: x.def.name })), s: `พี่วัฒน์ BGN: P${q} shows their hand (GEM ${q === p ? gp : go})` } as any);
+      }
+      for (const q of [p, opp(p)] as PID[]) {
+        const mine = q === p ? gp : go, theirs = q === p ? go : gp;
+        const res = mine === theirs ? 'a tie: nobody chooses' : mine < theirs ? 'YOU WIN: you have less GEM and choose 1' : 'your opponent wins: they have less GEM and choose 1';
+        showCards(g, q, [...P(g, q).hand, ...P(g, opp(q)).hand], `พี่วัฒน์ BGN: your hand GEM ${mine} vs opponent's hand GEM ${theirs} · ${res}. Press OK`);
+      }
       if (gp !== go) { // the player with less GEM chooses (that may be the opponent)
         const q: PID = gp < go ? p : opp(p);
         decide(g, q, () => {

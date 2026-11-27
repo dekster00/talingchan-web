@@ -100,6 +100,11 @@ export function deckRoom(g: Game, p: number, n: number) { const d = g.p[p].deck.
 // optional: the human may also choose none (returns null); the bot's default is dflt.
 /** Run fn with p as the deciding player (the human is asked only in the real game, never in a look-ahead copy). */
 export function decide<T>(g: Game, p: number, fn: () => T): T { return withDecider(g.sim ? -1 : p, fn); }
+/** user 2026-11-27 (พี่วัฒน์ BGN): show cards to seat p (a human) and wait until they press OK. No-op for the bot / sims. */
+export function showCards(g: Game, p: PID, cards: Card[], title: string) {
+  if (!ASK || g.sim || !cards.length) return;
+  decide(g, p, () => { if (humanTop()) quiet(() => ASK!([], null, { none: true, optional: true, context: cards, rest: 'shuffle', title })); });
+}
 // Mode choice (เลือกปฏิบัติ / "choose one") for the human: labels, answer = index.
 type ChooseFn = (title: string, labels: string[], dflt: number) => number;
 let CHOOSE: ChooseFn | null = null;

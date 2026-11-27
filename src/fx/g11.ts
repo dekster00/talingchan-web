@@ -48,6 +48,8 @@ const killScore = (g: Game, p: PID, x: Card) => (x.ctrl !== p && x.owner !== p ?
 const notOnly = (x: Card) => !x.def.only;
 
 // ===== 1. พระอิศวร ผู้เมตตา / พระนารายณ์ ผู้คุ้มครอง =====
+import { inLink as inLinkG11 } from '../engine.ts'; // 2026-11-27
+import { shivaDestroy as shivaDestroyG11 } from './g6.ts';
 const ISHVARA = 'พระอิศวร ผู้เมตตา';
 const NARAI = 'พระนารายณ์ ผู้คุ้มครอง';
 const SAFE = 'lg:' + ISHVARA;
@@ -115,12 +117,12 @@ Object.assign(FX, {
       if (fromDeck) shuffle(g, pl.deck);
     },
     leaveGuard: noAbilityDestroy((g, self, t) => (t.f[SAFE] || 0) >= g.turn && t.ctrl === self.ctrl),
-    fieldActs: (g, p, c) => [act(`${ISHVARA}: destroy a card on the field`, (g2) => inMain(g2, p) && onField(g2, c) && once(g2, p, 'ishvara:' + c.uid)
+    // user 2026-11-27: this ability sits under [Link พระนารายณ์ ผู้คุ้มครอง]: it can be used only while in Link
+    fieldActs: (g, p, c) => [act(`${ISHVARA}: destroy a card on the field`, (g2) => inMain(g2, p) && onField(g2, c) && inLinkG11(g2, c) && once(g2, p, 'ishvara:' + c.uid)
       && (humanDeciding(g2) || fieldCards(g2).some((x) => x.ctrl !== p && x.owner !== p)),
     (g2) => {
       use(g2, p, 'ishvara:' + c.uid);
-      const t = pick1(fieldCards(g2), (x) => killScore(g2, p, x), `${ISHVARA}: destroy a card on the field`);
-      if (t) destroy(g2, t, p);
+      shivaDestroyG11(g2, p, false, `${ISHVARA}: destroy a card on the field`); // 2026-11-27: Magic Zone cards / Land too
       const others = P(g2, p).avatars.filter((a) => a !== c);
       if (!others.length) return;
       const b = pick1(others, (a) => (a.asleep ? 0 : 3) + power(g2, a), `${ISHVARA}: another Avatar POWER +2 until end of turn (optional)`, true);
