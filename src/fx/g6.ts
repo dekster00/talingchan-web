@@ -159,7 +159,7 @@ function destroyAnyCard(g: Game, p: PID) {
 }
 // other-team audit Q19: พระอิศวร เทพผู้ทำลาย destroys any card on the field (Avatars, cards in either Magic Zone, Lands,
 // worn cards), its own side included; optional = the สั่งใช้ ("สามารถ")
-function shivaDestroy(g: Game, p: PID, optional: boolean) {
+export function shivaDestroy(g: Game, p: PID, optional: boolean, title = 'พระอิศวร เทพผู้ทำลาย: destroy a card on the field', exclude: Card | null = null) {
   const pool: Card[] = [];
   for (const q of g.p) {
     pool.push(...q.avatars);
@@ -167,8 +167,9 @@ function shivaDestroy(g: Game, p: PID, optional: boolean) {
     pool.push(...q.mz.filter((x) => !x.f.faceDown || x.def.type !== 'Magic'));
   }
   if (g.land) pool.push(g.land);
+  if (exclude && pool.includes(exclude)) pool.splice(pool.indexOf(exclude), 1);
   const score = (y: Card) => (y.ctrl === p ? -1 : 1) * (isA(y) ? 100 + value(g, y) : 40 + keepValue(g, y));
-  const x = pickN(pool, 1, score, { optional, title: 'พระอิศวร เทพผู้ทำลาย: destroy a card on the field' })[0];
+  const x = pickN(pool, 1, score, { optional, title })[0];
   if (!x) return false;
   if (isA(x) && (P(g, x.ctrl).avatars.includes(x) || P(g, x.ctrl).mz.includes(x))) { destroy(g, x, p); return true; }
   if (g.land === x) { g.land = null; P(g, x.owner).hell.push(x); log(g, `destroy ${x.def.name}`); return true; }

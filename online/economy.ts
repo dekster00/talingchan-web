@@ -316,7 +316,7 @@ export function gameReward(a: { xp: number; prog: any }, e: GameEvent & { coinsO
     xp = Math.max(0, Math.min(r.xp, BOT.capXp - p.bot.xp)); coins = Math.max(0, Math.min(r.coins, BOT.capCoins - p.bot.coins));
     p.bot.xp += xp; p.bot.coins += coins; p.bot.games++;
   }
-  if (!e.coinsOk) coins = 0;
+  // user 2026-11-27: coins and EXP no longer need owned cards (any deck pays); Ranked keeps its owned-cards rule
   { const d = p.daily as any; d.duelCoins ??= 0; coins = Math.max(0, Math.min(coins, BOT.duelCoinsDay - d.duelCoins)); d.duelCoins += coins; }
   let firstWin = false;
   if (e.won && coins > 0 && !p.daily.firstWin) { p.daily.firstWin = true; firstWin = true; } // 2026-11-26: no x2 any more (wins pay 500 / 700 flat)
@@ -325,7 +325,7 @@ export function gameReward(a: { xp: number; prog: any }, e: GameEvent & { coinsO
   const ups = addXp(a, xp);
   passXp(p, xp); // free season pass (2026-11-06)
   if (e.pvp && !(e as any).ranked) firstWeekDone(p, 'casual');
-  return { xp, coins, firstWin, levelUps: ups, missionsDone: done, level: levelOf(a.xp), coinsNote: e.coinsOk ? '' : 'No coins: this deck has cards you don\'t own yet. · เด็คมีการ์ดที่ยังไม่มี' };
+  return { xp, coins, firstWin, levelUps: ups, missionsDone: done, level: levelOf(a.xp), coinsNote: '' };
 }
 
 // ranked: Elo for matchmaking (hidden), points for the badge; Bronze and Silver never drop below their floor

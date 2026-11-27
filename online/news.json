@@ -3,6 +3,13 @@
  "updates": [
   {
    "date": "2026-11-27",
+   "title": "Coins and EXP with any deck · ได้เหรียญและ EXP ทุกเด็ค",
+   "lines": [
+    "Coins and EXP no longer need cards you own: every bot and player duel pays with any deck (up to 3,000 coins a day). Ranked still needs your own cards. · ไม่ต้องมีการ์ดจริงก็ได้เหรียญและ EXP ดวลบอทและผู้เล่นด้วยเด็คไหนก็ได้รางวัล (สูงสุด 3,000 เหรียญต่อวัน) แรงก์ยังต้องใช้การ์ดที่มี"
+   ]
+  },
+  {
+   "date": "2026-11-27",
    "title": "Duel field update · ปรับสนามดวล",
    "lines": [
     "Removed the glowing zone corners on the duel field. · เอามุมโซนเรืองแสงบนสนามดวลออกแล้ว"

@@ -737,17 +737,18 @@ const NEW: Record<string, any> = {
     // v14 ruling: works when summoned by the ability of any "ขุนพล" {ชาวต่างชาติ} Avatar (อ้วนเสี้ยว's จุติ, โจโฉ's จุติ /
     // อัตโนมัติ, ...): summonIf records the card whose ability is summoning it; then destroy 1 card on the field (mandatory)
     summonIf: (g: Game, p: PID, c: Card) => { const s0 = currentSource(); GEN_BY.set(c.uid, !!s0 && s0 !== c && isGen(s0)); return true; },
+    // user 2026-11-27: "ทำลายการ์ดบนสนาม 1 ใบ" = any card on the field (Avatar, Construct, Magic Zone card, Modification, Land)
     onSummon: (g: Game, c: Card) => {
       if (!GEN_SUMMON && !GEN_BY.get(c.uid)) return;
       GEN_BY.delete(c.uid);
-      const pool = [...g.p[0].avatars, ...g.p[1].avatars, ...g.p[0].mz, ...g.p[1].mz].filter((x) => x !== c && (isA(x) || x.def.type === 'Construct'));
-      const t = best(pool, (a) => (a.ctrl === c.ctrl ? -10 - value(g, a) : value(g, a)));
-      if (t) destroy(g, t, c.ctrl);
+      shivaDestroyG1(g, c.ctrl, false, 'แฮหัวตุ้น: destroy 1 card on the field', c);
     },
   },
   'แฮหัวเอี๋ยน ขุนพลธนูแห่งวุยก๊ก': {
     keep: 3, // แทงหลัง: engine keyword (def.backstab)
-    onSummon: (g: Game, c: Card) => { if (GEN_SUMMON) draw(g, c.ctrl, 1); },
+    // user 2026-11-27: also when โจผี (or any ขุนพล {ต่างชาติ} ability) summons it, as แฮหัวตุ้น
+    summonIf: (g: Game, p: PID, c: Card) => { const s0 = currentSource(); GEN_BY.set(c.uid, !!s0 && s0 !== c && isGen(s0)); return true; },
+    onSummon: (g: Game, c: Card) => { const by = GEN_SUMMON || !!GEN_BY.get(c.uid); GEN_BY.delete(c.uid); if (by) draw(g, c.ctrl, 1); },
   },
   'ซุนเกี๋ยน ขุนพลพยัคฆ์แห่งง่อก๊ก': {
     keep: 4, shield: true,
@@ -1161,3 +1162,4 @@ Object.assign(FX, {
 import { humanSeat as humanSeatB12 } from '../engine.ts';
 import { deckRoom } from '../engine.ts'; // bugfix14
 import { addPower as addPowerB14 } from '../engine.ts'; // bugfix14
+import { shivaDestroy as shivaDestroyG1 } from './g6.ts'; // 2026-11-27 แฮหัวตุ้น: any card on the field
