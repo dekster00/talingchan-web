@@ -2,6 +2,13 @@
  "_help": "Home ticker + NEWS list. Newest first. Add one entry per shipped update: {date, title, lines}. Send changes to the Online thread (it pushes the online-server branch; the server re-reads this file from GitHub every 5 minutes, no redeploy needed).",
  "updates": [
   {
+   "date": "2026-11-27",
+   "title": "Duel field update · ปรับสนามดวล",
+   "lines": [
+    "Removed the glowing zone corners on the duel field. · เอามุมโซนเรืองแสงบนสนามดวลออกแล้ว"
+   ]
+  },
+  {
    "date": "2026-11-26",
    "title": "Frozen game fix · แก้เกมดูเหมือนค้าง",
    "lines": [
